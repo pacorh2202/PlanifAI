@@ -142,7 +142,7 @@ export const usePlanAILive = () => {
       console.log('[AI] Calendar tool configured:', calendarTool.name);
 
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        model: 'gemini-2.0-flash-exp',
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
@@ -229,9 +229,13 @@ Habla con naturalidad, precisión y profesionalismo.`,
               processor.connect(audioContextRef.current.destination);
             }
             if (isFirstRun) {
-              const session = await sessionPromise;
-              const greeting = language === 'es' ? `Hola ${userName}, soy ${assistantName}. ${t.onboarding_msg}` : `Hello ${userName}, I'm ${assistantName}. ${t.onboarding_msg}`;
-              session.sendRealtimeInput({ text: greeting });
+              try {
+                const session = await sessionPromise;
+                const greeting = language === 'es' ? `Hola ${userName}, soy ${assistantName}. ${t.onboarding_msg}` : `Hello ${userName}, I'm ${assistantName}. ${t.onboarding_msg}`;
+                session.sendRealtimeInput({ text: greeting });
+              } catch (greetingError) {
+                console.error('[AI] ❌ Failed to send greeting:', greetingError);
+              }
             }
           },
           onmessage: async (msg: LiveServerMessage) => {
@@ -289,12 +293,14 @@ Habla con naturalidad, precisión y profesionalismo.`,
               }
             }
           },
-          onclose: () => {
+          onclose: (event) => {
+            console.log('[AI] 🔌 Connection closed:', event);
             setConnected(false);
             setIsTalking(false);
             setIsConnecting(false);
           },
-          onerror: () => {
+          onerror: (error) => {
+            console.error('[AI] 🚨 WebSocket Error:', error);
             setConnected(false);
             setIsConnecting(false);
             disconnect();
