@@ -142,7 +142,7 @@ export const usePlanAILive = () => {
       console.log('[AI] Calendar tool configured:', calendarTool.name);
 
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
@@ -223,7 +223,11 @@ Habla con naturalidad, precisión y profesionalismo.`,
                 setVolume(rms);
 
                 const pcmBlob = createPcmBlob(inputData);
-                sessionPromise.then(session => session.sendRealtimeInput({ media: pcmBlob }));
+                sessionPromise.then(session => {
+                  if (connected) {
+                    session.sendRealtimeInput({ media: pcmBlob });
+                  }
+                }).catch(e => console.warn('[AI] ⚠️ Send failed:', e));
               };
               source.connect(processor);
               processor.connect(audioContextRef.current.destination);
