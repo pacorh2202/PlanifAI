@@ -101,9 +101,11 @@ export const usePlanAILive = () => {
 
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
-      console.error('VITE_GEMINI_API_KEY not found in environment variables');
+      console.error('[AI] ❌ VITE_GEMINI_API_KEY not found in environment variables');
       setIsConnecting(false);
       return;
+    } else {
+      console.log('[AI] 🔑 API Key found (length:', apiKey.length, ')');
     }
 
     const eventsSummary = events.map(e =>
@@ -122,6 +124,10 @@ export const usePlanAILive = () => {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     audioContextRef.current = new AudioContextClass({ sampleRate: 16000 });
     outputContextRef.current = new AudioContextClass({ sampleRate: 24000 });
+
+    // Important: Resume contexts if they are suspended (standard browser behavior)
+    if (audioContextRef.current.state === 'suspended') await audioContextRef.current.resume();
+    if (outputContextRef.current.state === 'suspended') await outputContextRef.current.resume();
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
