@@ -142,7 +142,7 @@ export const usePlanAILive = () => {
       console.log('[AI] Calendar tool configured:', calendarTool.name);
 
       const sessionPromise = ai.live.connect({
-        model: 'gemini-live-2.5-flash-native-audio',
+        model: 'gemini-2.0-flash-exp',
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
