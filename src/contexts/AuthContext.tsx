@@ -1,0 +1,238 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, Session, AuthError } from '@supabase/supabase-js';
+import { supabase, Tables } from '../lib/supabase';
+
+interface Profile extends Tables<'profiles'> { }
+
+interface AuthContextType {
+    user: User | null;
+    profile: Profile | null;
+    session: Session | null;
+    loading: boolean;
+    signUp: (email: string, password: string, userName: string) => Promise<{ error: AuthError | null }>;
+    signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+    signInWithGoogle: () => Promise<{ error: AuthError | null }>;
+    signOut: () => Promise<void>;
+    updateProfile: (updates: Partial<Profile>) => Promise<void>;
+    updateEmail: (newEmail: string) => Promise<{ error: AuthError | null }>;
+    updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [session, setSession] = useState<Session | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    // Fetch user profile from database
+    const fetchProfile = async (userId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (error) throw error;
+            setProfile(data);
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+            setProfile(null);
+        }
+    };
+
+    // Initialize auth state
+    useEffect(() => {
+        // Get initial session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setUser(session?.user ?? null);
+            if (session?.user) {
+                fetchProfile(session.user.id);
+            }
+            setLoading(false);
+        });
+
+        // Listen for auth changes
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            setUser(session?.user ?? null);
+            if (session?.user) {
+                fetchProfile(session.user.id);
+            } else {
+                setProfile(null);
+            }
+            setLoading(false);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    // Sign up new user
+    const signUp = async (
+        email: string,
+        password: string,
+        userName: string
+    ): Promise<{ error: AuthError | null }> => {
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        user_name: userName,
+                    },
+                },
+            });
+
+            if (error) return { error };
+
+            // Profile is created automatically via trigger
+            // Fetch it after signup
+            if (data.user) {
+                await fetchProfile(data.user.id);
+            }
+
+            return { error: null };
+        } catch (error) {
+            console.error('Signup error:', error);
+            return { error: error as AuthError };
+        }
+    };
+
+    // Sign in existing user
+    const signIn = async (
+        email: string,
+        password: string
+    ): Promise<{ error: AuthError | null }> => {
+        try {
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            return { error };
+        } catch (error) {
+            console.error('Signin error:', error);
+            return { error: error as AuthError };
+        }
+    };
+
+    // Sign in with Google OAuth
+    const signInWithGoogle = async (): Promise<{ error: AuthError | null }> => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}`,
+                },
+            });
+
+            return { error };
+        } catch (error) {
+            console.error('Google signin error:', error);
+            return { error: error as AuthError };
+        }
+    };
+
+    // Sign out current user
+    const signOut = async () => {
+        try {
+            await supabase.auth.signOut();
+            setUser(null);
+            setProfile(null);
+            setSession(null);
+        } catch (error) {
+            console.error('Sign out error:', error);
+        }
+    };
+
+    // Update user profile
+    const updateProfile = async (updates: Partial<Profile>) => {
+        if (!user) return;
+
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            // Refetch profile
+            await fetchProfile(user.id);
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        }
+    };
+
+    // Update user email
+    const updateEmail = async (newEmail: string): Promise<{ error: AuthError | null }> => {
+        if (!user) return { error: { message: 'No user logged in', name: 'AuthError', status: 401 } as AuthError };
+
+        try {
+            const { error } = await supabase.auth.updateUser({
+                email: newEmail,
+            });
+
+            if (error) return { error };
+
+            console.log('✅ Email update initiated. Check inbox for confirmation.');
+            return { error: null };
+        } catch (error) {
+            console.error('Error updating email:', error);
+            return { error: error as AuthError };
+        }
+    };
+
+    // Update user password
+    const updatePassword = async (newPassword: string): Promise<{ error: AuthError | null }> => {
+        if (!user) return { error: { message: 'No user logged in', name: 'AuthError', status: 401 } as AuthError };
+
+        try {
+            const { error } = await supabase.auth.updateUser({
+                password: newPassword,
+            });
+
+            if (error) return { error };
+
+            console.log('✅ Password updated successfully.');
+            return { error: null };
+        } catch (error) {
+            console.error('Error updating password:', error);
+            return { error: error as AuthError };
+        }
+    };
+
+    return (
+        <AuthContext.Provider
+            value={{
+                user,
+                profile,
+                session,
+                loading,
+                signUp,
+                signIn,
+                signInWithGoogle,
+                signOut,
+                updateProfile,
+                updateEmail,
+                updatePassword,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
+};
+
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};
