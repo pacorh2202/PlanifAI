@@ -127,13 +127,21 @@ export const usePlanAILive = () => {
     const localTimeFull = now.toString();
     const tzOffset = now.getTimezoneOffset();
 
-    const ai = new GoogleGenAI({ apiKey });
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    audioContextRef.current = new AudioContextClass({ sampleRate: 16000 });
-    outputContextRef.current = new AudioContextClass({ sampleRate: 24000 });
-
+    console.log('[AI] 📝 Initializing GoogleGenAI and AudioContext...');
     try {
+      const ai = new GoogleGenAI({ apiKey });
+      console.log('[AI] ✅ GoogleGenAI initialized');
+
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      console.log('[AI] 🔊 AudioContext class found:', !!AudioContextClass);
+
+      audioContextRef.current = new AudioContextClass({ sampleRate: 16000 });
+      outputContextRef.current = new AudioContextClass({ sampleRate: 24000 });
+      console.log('[AI] ✅ AudioContexts created');
+
+      console.log('[AI] 🎤 Requesting microphone access...');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('[AI] ✅ Microphone access granted');
       mediaStreamRef.current = stream;
 
       // Traducción dinámica de la instrucción del sistema
@@ -144,6 +152,7 @@ export const usePlanAILive = () => {
       console.log('[AI] Connecting with voice:', voiceName);
       console.log('[AI] Calendar tool configured:', calendarTool.name);
 
+      console.log('[AI] 📡 Connecting to Gemini Live API...');
       const sessionPromise = ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         config: {
@@ -306,6 +315,8 @@ Habla con naturalidad, precisión y profesionalismo.`,
       });
       sessionRef.current = sessionPromise;
     } catch (err) {
+      console.error('[AI] ❌ Critical connect error:', err);
+      alert('ERROR CRÍTICO: ' + (err instanceof Error ? err.message : String(err)));
       setConnected(false);
       setIsConnecting(false);
       disconnect();
