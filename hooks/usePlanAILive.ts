@@ -94,14 +94,23 @@ export const usePlanAILive = () => {
   }, []);
 
   const connect = useCallback(async (voiceName: string = 'Zephyr', isFirstRun: boolean = false) => {
-    if (connected || isConnecting) return;
+    console.log('[AI] 🚀 Connect function called');
+    console.log('[AI] 📊 Current state - connected:', connected, 'isConnecting:', isConnecting);
+
+    if (connected || isConnecting) {
+      console.log('[AI] ⚠️ Already connected or connecting, returning');
+      return;
+    }
     setIsConnecting(true);
     nextStartTimeRef.current = 0;
     activeSourceCountRef.current = 0;
 
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    console.log('[AI] 🔑 API Key status:', apiKey ? `Found (length: ${apiKey.length})` : 'NOT FOUND');
+
     if (!apiKey) {
-      console.error('VITE_GEMINI_API_KEY not found in environment variables');
+      console.error('[AI] ❌ VITE_GEMINI_API_KEY not found - check Vercel Environment Variables');
+      alert('ERROR: API Key no encontrada. Configura VITE_GEMINI_API_KEY en Vercel y haz Redeploy.');
       setIsConnecting(false);
       return;
     }
