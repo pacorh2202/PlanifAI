@@ -101,11 +101,9 @@ export const usePlanAILive = () => {
 
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
-      console.error('[AI] ❌ VITE_GEMINI_API_KEY not found in environment variables');
+      console.error('VITE_GEMINI_API_KEY not found in environment variables');
       setIsConnecting(false);
       return;
-    } else {
-      console.log('[AI] 🔑 API Key found (length:', apiKey.length, ')');
     }
 
     const eventsSummary = events.map(e =>
@@ -125,10 +123,6 @@ export const usePlanAILive = () => {
     audioContextRef.current = new AudioContextClass({ sampleRate: 16000 });
     outputContextRef.current = new AudioContextClass({ sampleRate: 24000 });
 
-    // Important: Resume contexts if they are suspended (standard browser behavior)
-    if (audioContextRef.current.state === 'suspended') await audioContextRef.current.resume();
-    if (outputContextRef.current.state === 'suspended') await outputContextRef.current.resume();
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaStreamRef.current = stream;
@@ -142,7 +136,7 @@ export const usePlanAILive = () => {
       console.log('[AI] Calendar tool configured:', calendarTool.name);
 
       const sessionPromise = ai.live.connect({
-        model: 'models/gemini-2.5-flash-native-audio-latest',
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
@@ -223,23 +217,15 @@ Habla con naturalidad, precisión y profesionalismo.`,
                 setVolume(rms);
 
                 const pcmBlob = createPcmBlob(inputData);
-                sessionPromise.then(session => {
-                  if (connected) {
-                    session.sendRealtimeInput({ media: pcmBlob });
-                  }
-                }).catch(e => console.warn('[AI] ⚠️ Send failed:', e));
+                sessionPromise.then(session => session.sendRealtimeInput({ media: pcmBlob }));
               };
               source.connect(processor);
               processor.connect(audioContextRef.current.destination);
             }
             if (isFirstRun) {
-              try {
-                const session = await sessionPromise;
-                const greeting = language === 'es' ? `Hola ${userName}, soy ${assistantName}. ${t.onboarding_msg}` : `Hello ${userName}, I'm ${assistantName}. ${t.onboarding_msg}`;
-                session.sendRealtimeInput({ text: greeting });
-              } catch (greetingError) {
-                console.error('[AI] ❌ Failed to send greeting:', greetingError);
-              }
+              const session = await sessionPromise;
+              const greeting = language === 'es' ? `Hola ${userName}, soy ${assistantName}. ${t.onboarding_msg}` : `Hello ${userName}, I'm ${assistantName}. ${t.onboarding_msg}`;
+              session.sendRealtimeInput({ text: greeting });
             }
           },
           onmessage: async (msg: LiveServerMessage) => {
@@ -297,14 +283,12 @@ Habla con naturalidad, precisión y profesionalismo.`,
               }
             }
           },
-          onclose: (event) => {
-            console.log('[AI] 🔌 Connection closed:', event);
+          onclose: () => {
             setConnected(false);
             setIsTalking(false);
             setIsConnecting(false);
           },
-          onerror: (error) => {
-            console.error('[AI] 🚨 WebSocket Error:', error);
+          onerror: () => {
             setConnected(false);
             setIsConnecting(false);
             disconnect();
