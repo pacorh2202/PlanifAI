@@ -156,7 +156,7 @@ export const usePlanAILive = () => {
 
       console.log('[AI] 📡 Connecting to Gemini Live API with origin:', window.location.origin);
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.0-flash-exp', // Reverting to -exp as it is the official Live API model
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025', // User requested exact model
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
