@@ -14,7 +14,8 @@ Antes de darle al botón "Deploy", baja hasta la sección **Environment Variable
 | :--- | :--- |
 | `VITE_SUPABASE_URL` | `https://ftybizjyqoezsmiqfmun.supabase.co` |
 | `VITE_SUPABASE_ANON_KEY` | `sb_publishable_E8MD06yHYlJzzvFwB5hsvQ_5MjQPkw2` |
-| `VITE_GEMINI_API_KEY` | `AIzaSyD1sV4wOeReO2zGzF4REnoZXPNVIgfHK7Y` |
+| `VITE_GEMINI_API_KEY` | `TU_NUEVA_API_KEY_AQUI
+` |
 
 > [!TIP]
 > Solo tienes que poner el nombre (ej: `VITE_SUPABASE_URL`) a la izquierda y el valor (la URL larga) a la derecha.

@@ -5,6 +5,7 @@
 
 import { supabase } from './supabase';
 import { Friend } from '../../types';
+import { createNotification } from './notifications-api';
 
 // ============================================================================
 // Type Definitions
@@ -47,7 +48,7 @@ function dbFriendToFrontend(dbFriend: DBFriend, currentUserId: string): Friend {
         name: dbFriend.friend_name, // This might need a join or better cache
         handle: dbFriend.friend_handle,
         avatar: dbFriend.friend_avatar || undefined,
-        status: dbFriend.status === 'friend' ? 'friend' : (isSender ? 'friend' : 'pending'),
+        status: dbFriend.status === 'friend' ? 'friend' : (isSender ? 'pending' : 'suggested'),
         friendshipId: dbFriend.id,
     };
 }
@@ -156,7 +157,7 @@ export async function sendFriendRequest(
             friend_name: friendProfile.user_name,
             friend_handle: friendProfile.handle,
             friend_avatar: friendProfile.profile_image,
-            status: 'pending',
+            status: 'pending' as const,
         })
         .select()
         .single();
@@ -166,7 +167,7 @@ export async function sendFriendRequest(
         throw error;
     }
 
-    return dbFriendToFrontend(data, fromUserId);
+    return dbFriendToFrontend(data as DBFriend, fromUserId);
 }
 
 /**
@@ -185,6 +186,19 @@ export async function acceptFriendRequest(
     if (error) {
         console.error('Error accepting friend request:', error);
         throw error;
+    }
+
+    // Trigger notification for the requester
+    const { data: friendship } = await supabase.from('friends').select('user_id').eq('id', friendshipId).single();
+    if (friendship) {
+        const { data: myProfile } = await supabase.from('profiles').select('user_name, profile_image').eq('id', userId).single();
+        await createNotification(
+            friendship.user_id,
+            'friend_accepted',
+            'Solicitud aceptada',
+            `${myProfile?.user_name || 'Alguien'} ha aceptado tu solicitud de amistad.`,
+            { profileImage: myProfile?.profile_image }
+        );
     }
 }
 
@@ -283,7 +297,29 @@ export async function shareEvent(
         throw error;
     }
 
-    // TODO: Trigger notification for each friend (Agent F)
+    // Fetch event details for notification metadata
+    const { data: eventData } = await supabase
+        .from('calendar_events')
+        .select('title, category_label')
+        .eq('id', eventId)
+        .single();
+
+    // Trigger notification for each friend
+    for (const friendId of friendIds) {
+        await createNotification(
+            friendId,
+            'event_shared',
+            'Nueva invitación de calendario',
+            `Te han invitado a un evento compartido: ${eventData?.title || ''}`,
+            {
+                eventId: eventId,
+                senderId: userId,
+                eventTitle: eventData?.title,
+                categoryLabel: eventData?.category_label
+            }
+        );
+    }
+
     console.log(`✅ Event ${eventId} shared with ${friendIds.length} friends`);
 }
 
@@ -343,8 +379,8 @@ export async function getEventParticipants(eventId: string): Promise<EventShare[
     return data.map(p => ({
         event_id: eventId,
         user_id: p.user_id,
-        role: p.role,
-        status: p.status,
+        role: p.role as 'owner' | 'editor' | 'viewer',
+        status: p.status as 'invited' | 'accepted' | 'declined',
     }));
 }
 

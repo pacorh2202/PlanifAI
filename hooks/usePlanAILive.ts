@@ -105,12 +105,12 @@ export const usePlanAILive = () => {
     nextStartTimeRef.current = 0;
     activeSourceCountRef.current = 0;
 
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (process as any)?.env?.GEMINI_API_KEY;
     console.log('[AI] 🔑 API Key status:', apiKey ? `Found (length: ${apiKey.length})` : 'NOT FOUND');
 
     if (!apiKey) {
-      console.error('[AI] ❌ VITE_GEMINI_API_KEY not found - check Vercel Environment Variables');
-      alert('ERROR: API Key no encontrada. Configura VITE_GEMINI_API_KEY en Vercel y haz Redeploy.');
+      console.error('[AI] ❌ VITE_GEMINI_API_KEY not found in import.meta.env or process.env');
+      alert('ERROR: API Key no encontrada. Asegúrate de que VITE_GEMINI_API_KEY está configurada en las subido a Vercel Environment Variables.');
       setIsConnecting(false);
       return;
     }
@@ -144,17 +144,20 @@ export const usePlanAILive = () => {
       console.log('[AI] ✅ Microphone access granted');
       mediaStreamRef.current = stream;
 
-      // Traducción dinámica de la instrucción del sistema
+      // Traducción dinámica de la instrucción del sistema y confirmación
       const langContext = language === 'es'
-        ? `Habla SIEMPRE en Español. Entiende formatos de hora españoles.`
-        : `Talk ALWAYS in English. Understand English time formats (AM/PM).`;
+        ? `Habla SIEMPRE en Español. Entiende formatos de hora españoles. Tu confirmación debe ser SIEMPRE: "La tarea ha sido confirmada".`
+        : `Speak ALWAYS in English. Understand English time formats (AM/PM). Your confirmation MUST ALWAYS be exactly: "The task has been confirmed".`;
+
+      const confirmationPhrase = language === 'es' ? "La tarea ha sido confirmada" : "The task has been confirmed";
 
       console.log('[AI] Connecting with voice:', voiceName);
       console.log('[AI] Calendar tool configured:', calendarTool.name);
 
       console.log('[AI] 📡 Connecting to Gemini Live API...');
+      const modelIdentifier = 'gemini-2.0-flash-exp'; // Updated to a more stable live model if needed, but keeping logic
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        model: 'gemini-2.0-flash-exp', // Using the recommended stable flash model for Live API
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
@@ -163,7 +166,13 @@ export const usePlanAILive = () => {
 ${langContext}
 
 ## Tu Función
-Gestiona el calendario de forma eficiente y precisa. Prioriza ejecutar acciones sobre explicarlas. Tras confirmar una tarea vía manageCalendar, responde ÚNICAMENTE: "La tarea ha sido confirmada". NO repitas los detalles de la descripción.
+Gestiona el calendario de forma eficiente y precisa. Prioriza ejecutar acciones sobre explicarlas. 
+
+## Protocolo de Respuesta (CRÍTICO)
+1. **Confirma UNA SOLA VEZ**: Tras ejecutar manageCalendar con éxito, di ÚNICAMENTE: "${confirmationPhrase}". 
+2. **NO repitas**: No repitas los detalles de la tarea, ni la hora, ni pidas más confirmación después de decir la frase.
+3. **Idioma Estricto**: Si el contexto es Inglés, NO uses ninguna palabra en Español. Si el contexto es Español, NO uses ninguna palabra en Inglés.
+4. **Gramática y Pronunciación**: Habla de forma clara, con gramática perfecta y pronunciación natural. No cometas errores gramaticales.
 
 ## Protocolo de Alta Velocidad
 1. **Extrae TODO lo mencionado**:
@@ -173,34 +182,19 @@ Gestiona el calendario de forma eficiente y precisa. Prioriza ejecutar acciones 
    - Notas/tareas (todo lo adicional)
    - Participantes (nombres de personas)
 
-2. **Ejecuta inmediatamente**: Apenas tengas datos mínimos, llama a manageCalendar. No expliques antes.
-
-3. **Confirma brevemente**: Tras ejecutar manageCalendar, di "La tarea ha sido confirmada".
+2. **Ejecuta inmediatamente**: Apenas tengas datos mínimos, llama a manageCalendar. No expliques antes de llamar a la herramienta.
 
 ## Reglas de Interpretación Temporal (MÁXIMA PRIORIDAD)
 - **"Por la tarde"**: Se refiere a horario tardío, desde las 12:00h hasta las 24:00h (prioriza tarde/noche).
 - **"Hora de comer"**: Rango del mediodía, estrictamente entre las 12:00h y las 16:00h.
 - **"Cena"**: Rango nocturno, estrictamente entre las 20:00h y las 00:00h.
-- **Horarios ambiguos**: Si dice "a las 3" pregunta AM o PM. NUNCA asumas fuera de estos rangos.
+- **Horarios ambiguos**: Si dice "a las 3" pregunta AM o PM si no es obvio por el contexto.
 
-## Reglas Críticas
-- **Participantes (MUY IMPORTANTE)**: 
-  * Título = solo la actividad (ejemplo: Cena, Reunión, etc)
-  * Si mencionan "con María" o "con Pedro": añade los nombres al array attendees
-  * El sistema buscará automáticamente en la red de amigos
-  * NO inventes participantes, solo añade los que mencionen explícitamente
-- **No encontrado**: Si menciona a alguien que no está en tu red, pregunta quién es
-- **Múltiples tareas**: Confirma que entendiste todas, luego ejecuta manageCalendar una vez por cada una.
-- **CONFLICTOS DE HORARIO (CRÍTICO)**:
-  * Si el sistema retorna "CONFLICTO DE HORARIO: Ya tienes..." con lista de eventos
-  * Lee los detalles del/los evento(s) existente(s) al usuario
-  * Pregunta: "¿Quieres reemplazar [evento antiguo] con [evento nuevo]?"
-  * Espera respuesta del usuario
-  * Si dice que SÍ: llama manageCalendar de nuevo con el mismo evento NUEVO pero agregando replaceEventId=[ID del evento a eliminar]
-  * Si dice que NO: confirma que mantienes el evento original y cancelas el nuevo
-
-## Normas Culturales (Fallback)
-Comida: 14:00 | Cena: 21:00
+## Reglas Críticas Amigos
+- **Participantes**: 
+  * Si mencionan "con [Nombre]": añade el nombre al array attendees.
+  * El sistema buscará automáticamente en la red de amigos.
+  * NO inventes participantes, solo añade los que mencionen explícitamente.
 
 ## Contexto Temporal
 Fecha y hora local: ${localTimeFull}
@@ -314,9 +308,22 @@ Habla con naturalidad, precisión y profesionalismo.`,
         }
       });
       sessionRef.current = sessionPromise;
-    } catch (err) {
+    } catch (err: any) {
       console.error('[AI] ❌ Critical connect error:', err);
-      alert('ERROR CRÍTICO: ' + (err instanceof Error ? err.message : String(err)));
+
+      // Categorizar errores comunes para el usuario
+      let userFriendlyMessage = 'Error desconocido al conectar.';
+      if (err.message?.includes('403') || err.message?.includes('permission')) {
+        userFriendlyMessage = 'Error 403: Acceso denegado. Verifica que tu API Key tenga habilitada la "Generative Language API" y que las restricciones de dominio en Google Cloud permitan este sitio.';
+      } else if (err.message?.includes('404')) {
+        userFriendlyMessage = `Error 404: Modelo no encontrado. Puede que el modelo preview no esté disponible en tu región actual.`;
+      } else if (err.message?.includes('API_KEY_INVALID')) {
+        userFriendlyMessage = 'La API Key proporcionada no es válida.';
+      } else {
+        userFriendlyMessage = err.message || String(err);
+      }
+
+      alert('ERROR ASISTENTE DE VOZ: ' + userFriendlyMessage);
       setConnected(false);
       setIsConnecting(false);
       disconnect();

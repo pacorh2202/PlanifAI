@@ -259,7 +259,12 @@ export const FriendsScreen: React.FC = () => {
                         className="w-14 h-14 rounded-2xl object-cover bg-gray-50 dark:bg-gray-800"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{friend.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{friend.name}</h3>
+                          {friend.status === 'pending' && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[8px] font-black uppercase tracking-widest">{t.friends_pending || 'Pendiente'}</span>
+                          )}
+                        </div>
                         <p className="text-[11px] text-gray-400 font-medium mt-0.5 truncate">{friend.handle}</p>
                       </div>
                       <div className="relative">
