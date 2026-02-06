@@ -157,7 +157,7 @@ export const usePlanAILive = () => {
       console.log('[AI] 📡 Connecting to Gemini Live API...');
       const modelIdentifier = 'gemini-2.0-flash-exp'; // Updated to a more stable live model if needed, but keeping logic
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.0-flash-exp', // Using the recommended stable flash model for Live API
+        model: 'gemini-2.0-flash', // Use stable 'gemini-2.0-flash' model for better compatibility
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
