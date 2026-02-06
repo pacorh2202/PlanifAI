@@ -283,13 +283,16 @@ Habla con naturalidad, precisión y profesionalismo.`,
             const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (audioData && playbackNodeRef.current) {
               setIsTalking(true);
-              const pcmData = new Int16Array(base64ToArrayBuffer(audioData));
+              const buffer = base64ToArrayBuffer(audioData);
+              const pcmData = new Int16Array(buffer);
               playbackNodeRef.current.port.postMessage(pcmData);
 
-              // Simple timeout to reset talking state as Worklet doesn't easily notify 'ended' without more code
+              // Reset talking state after a proportional delay to the audio length
+              // (24k samples/sec, so buffer.byteLength / 2 / 24000 seconds)
+              const durationMs = (pcmData.length / 24000) * 1000;
               setTimeout(() => {
-                setIsTalking(false);
-              }, 2000);
+                if (connected) setIsTalking(false);
+              }, durationMs + 100);
             }
             if (msg.toolCall) {
               console.log('[AI] 🔧 Tool call received:', JSON.stringify(msg.toolCall, null, 2));
