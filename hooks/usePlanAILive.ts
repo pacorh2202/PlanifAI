@@ -154,10 +154,9 @@ export const usePlanAILive = () => {
       console.log('[AI] Connecting with voice:', voiceName);
       console.log('[AI] Calendar tool configured:', calendarTool.name);
 
-      console.log('[AI] 📡 Connecting to Gemini Live API...');
-      const modelIdentifier = 'gemini-2.0-flash-exp'; // Updated to a more stable live model if needed, but keeping logic
+      console.log('[AI] 📡 Connecting to Gemini Live API with origin:', window.location.origin);
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.0-flash', // Use stable 'gemini-2.0-flash' model for better compatibility
+        model: 'gemini-2.0-flash-exp', // Reverting to -exp as it is the official Live API model
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
