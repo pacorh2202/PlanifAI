@@ -14,7 +14,8 @@ export const usePlanAILive = () => {
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const processorRef = useRef<AudioWorkletNode | null>(null);
+  const playbackNodeRef = useRef<AudioWorkletNode | null>(null);
   const outputContextRef = useRef<AudioContext | null>(null);
   const nextStartTimeRef = useRef<number>(0);
   const sessionRef = useRef<Promise<any> | null>(null);
@@ -78,6 +79,10 @@ export const usePlanAILive = () => {
       processorRef.current.disconnect();
       processorRef.current = null;
     }
+    if (playbackNodeRef.current) {
+      playbackNodeRef.current.disconnect();
+      playbackNodeRef.current = null;
+    }
     if (audioContextRef.current) {
       if (audioContextRef.current.state !== 'closed') await audioContextRef.current.close();
       audioContextRef.current = null;
@@ -138,6 +143,13 @@ export const usePlanAILive = () => {
       audioContextRef.current = new AudioContextClass({ sampleRate: 16000 });
       outputContextRef.current = new AudioContextClass({ sampleRate: 24000 });
       console.log('[AI] ✅ AudioContexts created');
+
+      console.log('[AI] 📦 Loading AudioWorklets...');
+      await Promise.all([
+        audioContextRef.current.audioWorklet.addModule('/worklets/pcm-processor.js'),
+        outputContextRef.current.audioWorklet.addModule('/worklets/playback-processor.js')
+      ]);
+      console.log('[AI] ✅ AudioWorklets loaded');
 
       console.log('[AI] 🎤 Requesting microphone access...');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -217,29 +229,34 @@ Habla con naturalidad, precisión y profesionalismo.`,
             console.log('[AI] ✅ WebSocket connection opened');
             setConnected(true);
             setIsConnecting(false);
-            if (audioContextRef.current && mediaStreamRef.current) {
+            if (audioContextRef.current && mediaStreamRef.current && outputContextRef.current) {
               const source = audioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
-              const processor = audioContextRef.current.createScriptProcessor(4096, 1, 1);
-              processorRef.current = processor;
-              processor.onaudioprocess = (e) => {
+
+              // 1. Input Processor
+              const pcmNode = new AudioWorkletNode(audioContextRef.current, 'pcm-processor');
+              processorRef.current = pcmNode;
+
+              pcmNode.port.onmessage = (e) => {
                 if (!connected) return;
-                const inputData = e.inputBuffer.getChannelData(0);
-                let sum = 0;
-                for (let i = 0; i < inputData.length; i++) sum += inputData[i] * inputData[i];
-                const rms = Math.sqrt(sum / inputData.length);
+                const { pcm, rms } = e.data;
                 setVolume(rms);
 
-                const pcmBlob = createPcmBlob(inputData);
                 sessionPromise.then(session => {
                   try {
-                    session.sendRealtimeInput({ media: pcmBlob });
+                    session.sendRealtimeInput({ media: { data: btoa(String.fromCharCode(...new Uint8Array(pcm))), mimeType: 'audio/pcm;rate=16000' } });
                   } catch (err) {
-                    console.warn('[AI] ⚠️ Failed to send audio (socket might be closed):', err);
+                    console.warn('[AI] ⚠️ Failed to send audio:', err);
                   }
                 });
               };
-              source.connect(processor);
-              processor.connect(audioContextRef.current.destination);
+
+              // 2. Playback Processor
+              const playbackNode = new AudioWorkletNode(outputContextRef.current, 'playback-processor');
+              playbackNodeRef.current = playbackNode;
+              playbackNode.connect(outputContextRef.current.destination);
+
+              source.connect(pcmNode);
+              pcmNode.connect(audioContextRef.current.destination);
             }
             if (isFirstRun) {
               const session = await sessionPromise;
@@ -252,31 +269,15 @@ Habla con naturalidad, precisión y profesionalismo.`,
               console.log('[AI] 💬 Text message:', msg.serverContent.modelTurn.parts[0].text);
             }
             const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (audioData) {
-              activeSourceCountRef.current += 1;
+            if (audioData && playbackNodeRef.current) {
               setIsTalking(true);
-              const ctx = outputContextRef.current;
-              if (ctx) {
-                if (nextStartTimeRef.current < ctx.currentTime) nextStartTimeRef.current = ctx.currentTime;
-                try {
-                  const audioBuffer = await decodeAudioData(new Uint8Array(base64ToArrayBuffer(audioData)), ctx);
-                  const source = ctx.createBufferSource();
-                  source.buffer = audioBuffer;
-                  source.connect(ctx.destination);
-                  source.start(nextStartTimeRef.current);
-                  source.onended = () => {
-                    activeSourceCountRef.current -= 1;
-                    if (activeSourceCountRef.current <= 0) {
-                      activeSourceCountRef.current = 0;
-                      setIsTalking(false);
-                    }
-                  };
-                  nextStartTimeRef.current += audioBuffer.duration;
-                } catch (e) {
-                  activeSourceCountRef.current -= 1;
-                  if (activeSourceCountRef.current <= 0) setIsTalking(false);
-                }
-              }
+              const pcmData = new Int16Array(base64ToArrayBuffer(audioData));
+              playbackNodeRef.current.port.postMessage(pcmData);
+
+              // Simple timeout to reset talking state as Worklet doesn't easily notify 'ended' without more code
+              setTimeout(() => {
+                setIsTalking(false);
+              }, 2000);
             }
             if (msg.toolCall) {
               console.log('[AI] 🔧 Tool call received:', JSON.stringify(msg.toolCall, null, 2));
