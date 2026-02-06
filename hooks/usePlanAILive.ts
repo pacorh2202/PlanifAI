@@ -110,7 +110,7 @@ export const usePlanAILive = () => {
 
     if (!apiKey) {
       console.error('[AI] ❌ VITE_GEMINI_API_KEY not found in import.meta.env or process.env');
-      alert('ERROR: API Key no encontrada. Asegúrate de que VITE_GEMINI_API_KEY está configurada en las subido a Vercel Environment Variables.');
+      alert('ERROR: API Key no encontrada. Asegúrate de que VITE_GEMINI_API_KEY esté correctamente configurada en las Variables de Entorno de tu hosting (Cloudflare/Vercel).');
       setIsConnecting(false);
       return;
     }
@@ -215,6 +215,7 @@ Habla con naturalidad, precisión y profesionalismo.`,
         },
         callbacks: {
           onopen: async () => {
+            console.log('[AI] ✅ WebSocket connection opened');
             setConnected(true);
             setIsConnecting(false);
             if (audioContextRef.current && mediaStreamRef.current) {
@@ -222,6 +223,7 @@ Habla con naturalidad, precisión y profesionalismo.`,
               const processor = audioContextRef.current.createScriptProcessor(4096, 1, 1);
               processorRef.current = processor;
               processor.onaudioprocess = (e) => {
+                if (!connected) return;
                 const inputData = e.inputBuffer.getChannelData(0);
                 let sum = 0;
                 for (let i = 0; i < inputData.length; i++) sum += inputData[i] * inputData[i];
@@ -229,7 +231,13 @@ Habla con naturalidad, precisión y profesionalismo.`,
                 setVolume(rms);
 
                 const pcmBlob = createPcmBlob(inputData);
-                sessionPromise.then(session => session.sendRealtimeInput({ media: pcmBlob }));
+                sessionPromise.then(session => {
+                  try {
+                    session.sendRealtimeInput({ media: pcmBlob });
+                  } catch (err) {
+                    console.warn('[AI] ⚠️ Failed to send audio (socket might be closed):', err);
+                  }
+                });
               };
               source.connect(processor);
               processor.connect(audioContextRef.current.destination);
@@ -241,6 +249,9 @@ Habla con naturalidad, precisión y profesionalismo.`,
             }
           },
           onmessage: async (msg: LiveServerMessage) => {
+            if (msg.serverContent?.modelTurn?.parts?.[0]?.text) {
+              console.log('[AI] 💬 Text message:', msg.serverContent.modelTurn.parts[0].text);
+            }
             const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (audioData) {
               activeSourceCountRef.current += 1;
@@ -295,12 +306,14 @@ Habla con naturalidad, precisión y profesionalismo.`,
               }
             }
           },
-          onclose: () => {
+          onclose: (e: any) => {
+            console.log('[AI] 🔌 WebSocket connection closed:', e.code, e.reason);
             setConnected(false);
             setIsTalking(false);
             setIsConnecting(false);
           },
-          onerror: () => {
+          onerror: (e: any) => {
+            console.error('[AI] ⚠️ WebSocket error event:', e);
             setConnected(false);
             setIsConnecting(false);
             disconnect();
