@@ -14,6 +14,7 @@ import { LanguageScreen } from './components/LanguageScreen';
 import { AccountConfigScreen } from './components/AccountConfigScreen';
 import { SubscriptionScreen } from './components/SubscriptionScreen';
 import { VoiceSettingsScreen } from './components/VoiceSettingsScreen';
+import { SuggestionsScreen } from './components/SuggestionsScreen';
 import {
   BarChart2, Users, Calendar, MessageSquare, Menu, ChevronRight,
   Check, Palette, Mic, Settings, Bell, Sparkles, Globe, Pencil, Loader2
@@ -24,7 +25,7 @@ type TabType = 'chat' | 'calendar' | 'friends' | 'stats' | 'settings';
 const AppContent: React.FC = () => {
   const { accentColor, isDetailViewOpen, t } = useCalendar();
   const [activeTab, setActiveTab] = useState<TabType>('chat');
-  const [settingsView, setSettingsView] = useState<'main' | 'colors' | 'custom-palette' | 'privacy' | 'language' | 'account' | 'subscriptions' | 'voice-settings'>('main');
+  const [settingsView, setSettingsView] = useState<'main' | 'colors' | 'custom-palette' | 'privacy' | 'language' | 'account' | 'subscriptions' | 'voice-settings' | 'suggestions'>('main');
 
   const TABS: { id: TabType; icon: any; label: string }[] = [
     { id: 'chat', icon: Mic, label: t.chat_tab },
@@ -53,6 +54,7 @@ const AppContent: React.FC = () => {
           case 'account': return <AccountConfigScreen onBack={() => setSettingsView('main')} />;
           case 'subscriptions': return <SubscriptionScreen onBack={() => setSettingsView('main')} />;
           case 'voice-settings': return <VoiceSettingsScreen onBack={() => setSettingsView('main')} />;
+          case 'suggestions': return <SuggestionsScreen onBack={() => setSettingsView('main')} />;
           default: return null;
         }
       default: return null;
@@ -261,6 +263,17 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
                 <LockIcon size={18} />
               </div>
               <span className="font-bold text-sm">{t.privacy}</span>
+            </div>
+            <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
+          </button>
+
+          {/* New Suggestions Section */}
+          <button onClick={() => onViewChange('suggestions')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
+                <MessageSquare size={18} />
+              </div>
+              <span className="font-bold text-sm">Sugerencias</span>
             </div>
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>

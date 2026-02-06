@@ -189,15 +189,33 @@ export async function acceptFriendRequest(
     }
 
     // Trigger notification for the requester
-    const { data: friendship } = await supabase.from('friends').select('user_id').eq('id', friendshipId).single();
+    const { data: friendship } = await supabase
+        .from('friends')
+        .select('user_id, friend_id')
+        .eq('id', friendshipId)
+        .single();
+
     if (friendship) {
-        const { data: myProfile } = await supabase.from('profiles').select('user_name, profile_image').eq('id', userId).single();
+        // Find who is the 'other' person (the requester)
+        // If I accepted, I am friend_id, the requester is user_id
+        const targetUserId = friendship.user_id === userId ? friendship.friend_id : friendship.user_id;
+
+        const { data: myProfile } = await supabase
+            .from('profiles')
+            .select('user_name, profile_image')
+            .eq('id', userId)
+            .single();
+
         await createNotification(
-            friendship.user_id,
+            targetUserId,
             'friend_accepted',
             'Solicitud aceptada',
-            `${myProfile?.user_name || 'Alguien'} ha aceptado tu solicitud de amistad.`,
-            { profileImage: myProfile?.profile_image }
+            `${myProfile?.user_name || 'Un usuario'} ha aceptado tu solicitud de amistad.`,
+            {
+                profileImage: myProfile?.profile_image,
+                friendshipId: friendshipId,
+                acceptedBy: userId
+            }
         );
     }
 }
@@ -222,21 +240,35 @@ export async function rejectFriendRequest(
 }
 
 /**
- * Remove a friend (friendship)
+ * Remove a friend (friendship) - Bidirectional deletion
  */
 export async function removeFriend(
     friendshipId: string,
     userId: string
 ): Promise<void> {
-    const { error } = await supabase
+    // First, get the friend's ID to ensure we delete both ways if duplicates exist
+    const { data: friendship } = await supabase
         .from('friends')
-        .delete()
+        .select('user_id, friend_id')
         .eq('id', friendshipId)
-        .or(`user_id.eq.${userId},friend_id.eq.${userId}`); // Either party can remove
+        .single();
 
-    if (error) {
-        console.error('Error removing friend:', error);
-        throw error;
+    if (friendship) {
+        const otherId = friendship.user_id === userId ? friendship.friend_id : friendship.user_id;
+
+        // Delete any record involving both users
+        const { error } = await supabase
+            .from('friends')
+            .delete()
+            .or(`and(user_id.eq.${userId},friend_id.eq.${otherId}),and(user_id.eq.${otherId},friend_id.eq.${userId})`);
+
+        if (error) {
+            console.error('Error removing friend:', error);
+            throw error;
+        }
+    } else {
+        // Fallback: just try to delete by ID if record not found (might have been deleted already)
+        await supabase.from('friends').delete().eq('id', friendshipId);
     }
 }
 

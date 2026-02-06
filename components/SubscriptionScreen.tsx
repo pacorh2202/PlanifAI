@@ -10,6 +10,7 @@ interface SubscriptionScreenProps {
 export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }) => {
     const { accentColor, t } = useCalendar();
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+    const [activePlanId, setActivePlanId] = useState<string | null>(null);
 
     const plans = [
         {
@@ -45,8 +46,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                 <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
                     <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
                 </button>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.sub_title}</h1>
-                <div className="w-10"></div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight text-center flex-1 pr-6">{t.sub_title}</h1>
             </header>
 
             <main className="px-6 pt-4 space-y-8">
@@ -71,56 +71,68 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                 </div>
 
                 <div className="space-y-6 pb-8">
-                    {plans.map((plan) => (
-                        <div
-                            key={plan.id}
-                            className={`relative bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border-2 transition-all duration-300 ${plan.recommended ? 'scale-[1.02]' : ''}`}
-                            style={{ borderColor: plan.recommended ? accentColor : 'transparent' }}
-                        >
-                            {plan.recommended && (
-                                <div className="absolute top-4 right-8 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg" style={{ backgroundColor: accentColor, opacity: 0.9 }}>
-                                    RECOMENDADO
-                                </div>
-                            )}
+                    {plans.map((plan) => {
+                        const isActive = activePlanId === plan.id || (activePlanId === null && plan.recommended);
 
-                            <div className="flex justify-between items-start mb-6">
-                                <div>
-                                    <h3 className="font-bold text-gray-900 dark:text-white text-2xl tracking-tight">{plan.name}</h3>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">
-                                        {billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
-                                    </span>
-                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                                        / {billingPeriod === 'monthly' ? (t.sub_monthly === 'Mensual' ? 'mes' : 'month') : (t.sub_yearly === 'Anual' ? 'año' : 'year')}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4 mb-8">
-                                {plan.features.map((feature, i) => (
-                                    <div key={i} className="flex items-start gap-3">
-                                        <div
-                                            className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${plan.id === 'free' ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
-                                            style={{ backgroundColor: plan.id !== 'free' ? `${accentColor}20` : undefined }}
-                                        >
-                                            <Check size={12} style={{ color: plan.id === 'free' ? '#94A3B8' : accentColor }} strokeWidth={4} />
-                                        </div>
-                                        <span className="text-sm text-gray-600 dark:text-gray-400 font-medium leading-tight">
-                                            {feature}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button
-                                className="w-full py-5 rounded-3xl text-white font-black text-sm uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all"
-                                style={{ backgroundColor: accentColor }}
+                        return (
+                            <div
+                                key={plan.id}
+                                onMouseEnter={() => setActivePlanId(plan.id)}
+                                onClick={() => setActivePlanId(plan.id)}
+                                className={`relative bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border-2 transition-all duration-500 transform ${isActive ? 'scale-[1.02] shadow-xl' : 'scale-100 opacity-90'}`}
+                                style={{
+                                    borderColor: isActive ? accentColor : 'transparent',
+                                    boxShadow: isActive ? `0 20px 40px -15px ${accentColor}33` : undefined
+                                }}
                             >
-                                {plan.buttonText}
-                            </button>
-                        </div>
-                    ))}
+                                {plan.recommended && (
+                                    <div className="absolute top-4 right-8 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg z-10" style={{ backgroundColor: accentColor, opacity: 0.9 }}>
+                                        RECOMENDADO
+                                    </div>
+                                )}
+
+                                <div className="flex justify-between items-start mb-6">
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 dark:text-white text-2xl tracking-tight transition-colors" style={{ color: isActive ? accentColor : undefined }}>{plan.name}</h3>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter transition-all" style={{ color: isActive ? accentColor : undefined }}>
+                                            {billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
+                                        </span>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                            / {billingPeriod === 'monthly' ? (t.sub_monthly === 'Mensual' ? 'mes' : 'month') : (t.sub_yearly === 'Anual' ? 'año' : 'year')}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 mb-8">
+                                    {plan.features.map((feature, i) => (
+                                        <div key={i} className="flex items-start gap-3">
+                                            <div
+                                                className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-300`}
+                                                style={{ backgroundColor: isActive ? `${accentColor}20` : '#F1F5F9' }}
+                                            >
+                                                <Check size={12} style={{ color: isActive ? accentColor : '#94A3B8' }} strokeWidth={4} />
+                                            </div>
+                                            <span className={`text-sm font-medium leading-tight transition-colors ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                {feature}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    className="w-full py-5 rounded-3xl text-white font-black text-sm uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all duration-300"
+                                    style={{
+                                        backgroundColor: isActive ? accentColor : '#94A3B8',
+                                        transform: isActive ? 'translateY(-2px)' : 'none'
+                                    }}
+                                >
+                                    {plan.buttonText}
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
 
                 <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest px-12 leading-relaxed pb-10">

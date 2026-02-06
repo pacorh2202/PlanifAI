@@ -39,11 +39,8 @@ export const StatsScreen: React.FC = () => {
     >
       <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20">
         <div className="w-10"></div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">PlanAI Analytics</h1>
-        <button className="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-500 relative">
-          <Bell size={20} />
-          <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-black"></div>
-        </button>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Estadísticas</h1>
+        <div className="w-10"></div>
       </header>
 
       <main className="flex flex-col gap-6 px-6 pt-2">
