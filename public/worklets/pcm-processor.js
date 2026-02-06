@@ -19,9 +19,9 @@ class PcmProcessor extends AudioWorkletProcessor {
 
             // Send to main thread
             this.port.postMessage({
-                pcm: pcmData,
+                pcm: pcmData.buffer, // Send buffer to avoid clone issues
                 rms: rms
-            });
+            }, [pcmData.buffer]); // Transferable
         }
         return true;
     }

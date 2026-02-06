@@ -227,6 +227,9 @@ Habla con naturalidad, precisión y profesionalismo.`,
         callbacks: {
           onopen: async () => {
             console.log('[AI] ✅ WebSocket connection opened');
+            await audioContextRef.current?.resume();
+            await outputContextRef.current?.resume();
+
             setConnected(true);
             setIsConnecting(false);
             if (audioContextRef.current && mediaStreamRef.current && outputContextRef.current) {
@@ -237,15 +240,24 @@ Habla con naturalidad, precisión y profesionalismo.`,
               processorRef.current = pcmNode;
 
               pcmNode.port.onmessage = (e) => {
-                if (!connected) return;
                 const { pcm, rms } = e.data;
+                // Periodic log to verify worklet is alive
+                if (Math.random() < 0.01) console.log('[AI] 🎙️ AudioWorklet active, rms:', rms.toFixed(4));
+
                 setVolume(rms);
 
                 sessionPromise.then(session => {
                   try {
-                    session.sendRealtimeInput({ media: { data: btoa(String.fromCharCode(...new Uint8Array(pcm))), mimeType: 'audio/pcm;rate=16000' } });
+                    // Correct conversion: Uint8Array(pcm) -> base64
+                    const uint8 = new Uint8Array(pcm);
+                    let binary = '';
+                    for (let i = 0; i < uint8.length; i++) {
+                      binary += String.fromCharCode(uint8[i]);
+                    }
+                    const base64 = btoa(binary);
+                    session.sendRealtimeInput({ media: { data: base64, mimeType: 'audio/pcm;rate=16000' } });
                   } catch (err) {
-                    console.warn('[AI] ⚠️ Failed to send audio:', err);
+                    // Silently warn, don't flood console
                   }
                 });
               };
