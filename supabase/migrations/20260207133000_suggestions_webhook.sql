@@ -19,7 +19,7 @@ begin
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
         -- REEMPLAZA 'tu_service_role_key_aqui' con la clave real que copiaste
-        'Authorization', 'Bearer tu_service_role_key_aqui'
+        'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0eWJpemp5cW9lenNtaXFmbXVuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDEyMTQxNSwiZXhwIjoyMDg1Njk3NDE1fQ.C5Ep-wJIjLhzSYXOPs-bpvZXMNpamiqZw0X6PMjD4Ek'
       ),
       body := jsonb_build_object(
         'record', row_to_json(new)
