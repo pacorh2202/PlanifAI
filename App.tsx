@@ -17,7 +17,7 @@ import { VoiceSettingsScreen } from './components/VoiceSettingsScreen';
 import { SuggestionsScreen } from './components/SuggestionsScreen';
 import {
   BarChart2, Users, Calendar, MessageSquare, Menu, ChevronRight,
-  Check, Palette, Mic, Settings, Bell, Sparkles, Globe, Pencil, Loader2
+  Check, Palette, Mic, Settings, Bell, Sparkles, Globe, Pencil, Loader2, LogOut
 } from 'lucide-react';
 
 type TabType = 'chat' | 'calendar' | 'friends' | 'stats' | 'settings';
@@ -146,21 +146,29 @@ const App: React.FC = () => {
 const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () => void }> = ({ onViewChange, onClose }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { accentColor, userName, assistantName, profileImage, t, language } = useCalendar();
+  const { signOut } = useAuth();
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto no-scrollbar bg-background-light dark:bg-background-dark transition-colors duration-300">
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-20">
+    <div className="flex flex-col h-full overflow-y-auto no-scrollbar bg-[#F8FAFC] dark:bg-black transition-colors duration-500">
+      {/* Premium Background Glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className={`absolute -top-1/4 -right-1/4 w-[100%] h-[60%] rounded-full blur-[120px] transition-all duration-[2000ms] opacity-[0.08] dark:opacity-[0.15]`} style={{ backgroundColor: accentColor }}></div>
+        <div className={`absolute -bottom-1/4 -left-1/4 w-[100%] h-[60%] rounded-full blur-[120px] transition-all duration-[2000ms] opacity-[0.05] dark:opacity-[0.1]`} style={{ backgroundColor: accentColor }}></div>
+      </div>
+
+      <header className="px-6 pt-14 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-xl z-20">
         <div className="w-10"></div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.settings_title}</h1>
+        <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase tracking-[0.1em]">{t.settings_title}</h1>
         <div className="w-10"></div>
       </header>
 
-      <div className="px-6 pt-2">
-        <section className="flex flex-col items-center py-8 bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-sm mb-6 border border-gray-100 dark:border-gray-800">
-          <div className="mb-4">
+      <div className="px-6 pt-2 relative z-10">
+        <section className="flex flex-col items-center py-10 bg-white/40 dark:bg-gray-900/40 backdrop-blur-3xl rounded-[3rem] shadow-xl mb-8 border border-white/60 dark:border-gray-800/60 transition-all">
+          <div className="mb-6 relative group">
+            <div className="absolute inset-0 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-700" style={{ backgroundColor: accentColor }}></div>
             <div
-              className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-4 border-white dark:border-gray-800 shadow-lg transition-colors duration-500 overflow-hidden"
-              style={{ backgroundColor: profileImage ? 'transparent' : `${accentColor}33`, color: accentColor }}
+              className="relative w-24 h-24 rounded-full flex items-center justify-center text-4xl font-black border-4 border-white dark:border-gray-800 shadow-2xl transition-all duration-700 overflow-hidden"
+              style={{ backgroundColor: profileImage ? 'transparent' : `${accentColor}22`, color: accentColor }}
             >
               {profileImage ? (
                 <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
@@ -168,115 +176,137 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
                 userName.charAt(0).toUpperCase()
               )}
             </div>
+            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center border-2 border-white dark:border-gray-900">
+              <Check size={14} style={{ color: accentColor }} strokeWidth={4} />
+            </div>
           </div>
 
-          <div className="flex flex-col items-center text-center">
-            <h2 className="text-2xl font-black text-gray-900 dark:text-white leading-tight">
+          <div className="flex flex-col items-center text-center px-4">
+            <h2 className="text-2xl font-black text-gray-900 dark:text-white leading-tight tracking-tight">
               {t.hello}, {userName}!
             </h2>
-            <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mt-1">{t.premium_plan}</p>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="bg-indigo-500/10 text-indigo-500 text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-sm">{t.premium_plan}</span>
+            </div>
           </div>
         </section>
 
-        <main className="space-y-3 pb-52">
-          <button onClick={() => onViewChange('colors')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+        <main className="space-y-3.5 pb-40">
+          <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em] ml-6 mb-4">{t.personalization}</p>
+
+          <button onClick={() => onViewChange('colors')} className="w-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-[2.2rem] p-5 flex items-center justify-between border border-white/80 dark:border-gray-800/80 active:scale-[0.98] transition-all group shadow-sm hover:shadow-md">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
-                <Palette size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center transition-colors group-hover:bg-white dark:group-hover:bg-gray-700" style={{ color: accentColor }}>
+                <Palette size={20} />
               </div>
-              <span className="font-bold text-sm">{t.personalization}</span>
+              <span className="font-bold text-[15px] text-gray-800 dark:text-gray-100">{t.personalization}</span>
             </div>
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>
 
-          <button onClick={() => onViewChange('voice-settings')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <button onClick={() => onViewChange('voice-settings')} className="w-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-[2.2rem] p-5 flex items-center justify-between border border-white/80 dark:border-gray-800/80 active:scale-[0.98] transition-all group shadow-sm hover:shadow-md">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
-                <Mic size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center transition-colors group-hover:bg-white dark:group-hover:bg-gray-700" style={{ color: accentColor }}>
+                <Mic size={20} />
               </div>
               <div className="flex flex-col items-start">
-                <span className="font-bold text-sm">{t.voice_assistant}</span>
-                <span className="text-[10px] text-gray-400 font-bold uppercase">{assistantName}</span>
+                <span className="font-bold text-[15px] text-gray-800 dark:text-gray-100">{t.voice_assistant}</span>
+                <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider">{assistantName}</span>
               </div>
             </div>
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>
 
-          <button onClick={() => onViewChange('account')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em] ml-6 mt-8 mb-4">{t.account_config}</p>
+
+          <button onClick={() => onViewChange('account')} className="w-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-[2.2rem] p-5 flex items-center justify-between border border-white/80 dark:border-gray-800/80 active:scale-[0.98] transition-all group shadow-sm hover:shadow-md">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
-                <Settings size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center transition-colors group-hover:bg-white dark:group-hover:bg-gray-700" style={{ color: accentColor }}>
+                <Settings size={20} />
               </div>
-              <span className="font-bold text-sm">{t.account_config}</span>
+              <span className="font-bold text-[15px] text-gray-800 dark:text-gray-100">{t.account_config}</span>
             </div>
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>
 
-          <div className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 transition-colors">
+          <div className="w-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-[2.2rem] p-5 flex items-center justify-between border border-white/80 dark:border-gray-800/80 transition-all shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
-                <Bell size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
+                <Bell size={20} />
               </div>
-              <span className="font-bold text-sm">{t.notifications}</span>
+              <span className="font-bold text-[15px] text-gray-800 dark:text-gray-100">{t.notifications}</span>
             </div>
             <button
               onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-              className="relative inline-flex items-center h-7 w-12 rounded-full transition-colors duration-300 focus:outline-none"
-              style={{ backgroundColor: notificationsEnabled ? accentColor : '#E2E8F0' }}
+              className="relative inline-flex items-center h-8 w-14 rounded-full transition-all duration-500 focus:outline-none shadow-inner"
+              style={{ backgroundColor: notificationsEnabled ? accentColor : 'rgba(226, 232, 240, 0.4)' }}
             >
-              <span
-                className={`inline-block w-5 h-5 transform bg-white rounded-full transition-transform duration-300 ease-in-out shadow-sm ${notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+              <div
+                className={`inline-block w-6 h-6 transform bg-white rounded-full transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] shadow-lg ${notificationsEnabled ? 'translate-x-7' : 'translate-x-1'
                   }`}
               />
             </button>
           </div>
 
-          <button onClick={() => onViewChange('language')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <button onClick={() => onViewChange('language')} className="w-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-[2.2rem] p-5 flex items-center justify-between border border-white/80 dark:border-gray-800/80 active:scale-[0.98] transition-all group shadow-sm hover:shadow-md">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
-                <Globe size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center transition-colors group-hover:bg-white dark:group-hover:bg-gray-700" style={{ color: accentColor }}>
+                <Globe size={20} />
               </div>
-              <span className="font-bold text-sm">{t.language}</span>
+              <span className="font-bold text-[15px] text-gray-800 dark:text-gray-100">{t.language}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-xs font-bold">{language === 'es' ? 'Español' : 'English'}</span>
+              <span className="text-gray-400 text-xs font-black uppercase tracking-widest">{language === 'es' ? 'Esp' : 'Eng'}</span>
               <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
             </div>
           </button>
 
-          <button onClick={() => onViewChange('subscriptions')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <button onClick={() => onViewChange('subscriptions')} className="w-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-[2.2rem] p-5 flex items-center justify-between border border-white/80 dark:border-gray-800/80 active:scale-[0.98] transition-all group shadow-sm hover:shadow-md">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
-                <Sparkles size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center transition-colors group-hover:bg-white dark:group-hover:bg-gray-700" style={{ color: accentColor }}>
+                <Sparkles size={20} />
               </div>
-              <span className="font-bold text-sm">{t.subscriptions}</span>
+              <span className="font-bold text-[15px] text-gray-800 dark:text-gray-100">{t.subscriptions}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="bg-indigo-500/10 text-indigo-500 text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest">Premium</span>
+              <span className="bg-indigo-500/10 text-indigo-500 text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-sm">Premium</span>
               <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
             </div>
           </button>
 
-          <button onClick={() => onViewChange('privacy')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <button onClick={() => onViewChange('privacy')} className="w-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-[2.2rem] p-5 flex items-center justify-between border border-white/80 dark:border-gray-800/80 active:scale-[0.98] transition-all group shadow-sm hover:shadow-md">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
-                <LockIcon size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center transition-colors group-hover:bg-white dark:group-hover:bg-gray-700" style={{ color: accentColor }}>
+                <Pencil size={20} /> {/* Changed from LockIcon to Pencil as LockIcon is not imported */}
               </div>
-              <span className="font-bold text-sm">{t.privacy}</span>
+              <span className="font-bold text-[15px] text-gray-800 dark:text-gray-100">{t.privacy}</span>
             </div>
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>
 
-          {/* New Suggestions Section */}
-          <button onClick={() => onViewChange('suggestions')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <button onClick={() => onViewChange('suggestions')} className="w-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-[2.2rem] p-5 flex items-center justify-between border border-white/80 dark:border-gray-800/80 active:scale-[0.98] transition-all group shadow-sm hover:shadow-md">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
-                <MessageSquare size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center transition-colors group-hover:bg-white dark:group-hover:bg-gray-700" style={{ color: accentColor }}>
+                <MessageSquare size={20} />
               </div>
-              <span className="font-bold text-sm">Sugerencias</span>
+              <span className="font-bold text-[15px] text-gray-800 dark:text-gray-100">{t.suggestions || 'Sugerencias'}</span>
             </div>
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>
+
+          <div className="pt-10 flex flex-col gap-4">
+            <button
+              onClick={signOut}
+              className="w-full bg-red-500/10 dark:bg-red-500/5 rounded-[2rem] p-5 flex items-center justify-center gap-3 border border-red-500/20 dark:border-red-500/10 active:scale-[0.98] transition-all group"
+            >
+              <LogOut size={18} className="text-red-500" />
+              <span className="text-red-500 font-black text-xs uppercase tracking-[0.2em]">{t.sign_out || 'Cerrar sesión'}</span>
+            </button>
+
+            <p className="text-[9px] text-center text-gray-400 font-black uppercase tracking-[0.3em] opacity-40 py-4">
+              PlanifAI v1.0.0
+            </p>
+          </div>
 
         </main>
       </div>
