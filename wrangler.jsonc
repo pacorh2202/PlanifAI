@@ -1,10 +1,5 @@
 {
     "name": "planif-ai",
     "compatibility_date": "2026-02-06",
-    "pages_build_output_dir": "./dist",
-    // Ensure Cloudflare doesn't try to deploy Supabase functions as Pages Functions
-    "build": {
-        "command": "npm run build",
-        "watch_dir": "src"
-    }
+    "pages_build_output_dir": "./dist"
 }
