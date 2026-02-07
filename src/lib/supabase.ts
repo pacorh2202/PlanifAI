@@ -6,13 +6,15 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-        'Missing Supabase environment variables. Please check your .env.local file.'
-    );
+    console.error('Missing Supabase environment variables. Please check your Cloudflare Pages settings.');
 }
 
+// Fallback to empty strings if missing (prevents crash, but API calls will fail)
+const validUrl = supabaseUrl || 'https://placeholder.supabase.co';
+const validKey = supabaseAnonKey || 'placeholder-key';
+
 // Create Supabase client with TypeScript types
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(validUrl, validKey, {
     auth: {
         persistSession: true,
         autoRefreshToken: true,
