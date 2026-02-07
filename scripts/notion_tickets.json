@@ -1,0 +1,170 @@
+[
+  {
+    "id": "2ff084e0-54b2-800c-8279-d7eed17a474c",
+    "title": "Corregir doble respuesta de la IA.",
+    "status": "Para hacer",
+    "severity": "Alta",
+    "description": "Duplicación de tarea al cerrar el chat\n• Al finalizar la conversación, la IA crea y dice la misma tarea dos veces \n• Se ejecuta dos veces el flujo de creación al cierre del chat\n• Esto genera un bucle / trigger duplicado\n• Debe cortarse la ejecución tras la primera creación\n• La tarea solo puede crearse una vez por conversación",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-8029-b214-d6077dc0754e",
+    "title": "Traducción al inglés. ",
+    "status": "Para hacer",
+    "severity": "Normal",
+    "description": "Errores de traducción (3 casos)\n1. Plantilla personalizada sin traducir\n    ◦ En modo inglés, se traducen las plantillas del sistema\n    ◦ La plantilla personalizada del usuario queda en español\n    ◦ No puede aparecer ningún texto en español cuando el idioma es EN\n2. Pantalla de notificaciones sin traducir\n    ◦ La vista de la campanita / notificaciones no se traduce al inglés\n    ◦ Ignora el idioma seleccionado por el usuario\n3. Categoría de tarea no traducida\n    ◦ Al crear una tarea manual en inglés:\n        ▪ Se traducen todas las etiquetas\n        ▪ La categoría permanece en español\n    ◦ Traducción incompleta del formulario de creación",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-803a-9d46-f70ea37c0f9c",
+    "title": "Finalizar los KPIs.",
+    "status": "Para hacer",
+    "severity": "Alta",
+    "description": " KPIs incompletos (antiguos eliminados)\n• Actualmente solo se muestran los KPIs nuevos\n• Los KPIs antiguos han desaparecido\n• Deben coexistir KPIs antiguos + KPIs nuevos\n• No se debe eliminar ningún KPI previo al añadir nuevos\n• Todos los KPIs deben:\n    ◦ Mostrarse juntos\n    ◦ Mantener su lógica y cálculo original\n    ◦ Actualizarse correctamente",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-8047-b677-f4d4f800e78b",
+    "title": "Mejorar configuración.",
+    "status": "Para hacer",
+    "severity": "Media",
+    "description": "Configuración – contraseña y credenciales\n• En Configuración → Contraseña:\n    ◦ El botón para visualizar la contraseña está desactivado\n    ◦ El usuario no puede ver su contraseña\n• Funcionalidades de credenciales:\n    ◦ Cambiar correo y contraseña no están bien conectadas\n    ◦ Si se activan, deben sincronizarse con el provider (Supabase)\nDecisión propuesta:\n• ❌ No permitir cambiar el correo\n• ✅ Permitir cambiar la contraseña\n• Al cambiar la contraseña:\n    ◦ Se actualiza correctamente en Supabase\n    ◦ La nueva contraseña funciona al iniciar sesión",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-8053-91b2-ef355e8c94c1",
+    "title": "Mejorar sugerencias.",
+    "status": "Para hacer",
+    "severity": "Media",
+    "description": "\n• La sección Sugerencias está implementada como chatbot\n• No debe parecer un chat en ningún caso\nComportamiento correcto:\n• Campo de texto único: “Escribe tu sugerencia aquí”\n• Botón Enviar\n• Al enviar:\n    ◦ Mostrar mensaje fijo:\n“Gracias por tu ayuda. Valoramos mucho tu input y trataremos de mejorar lo máximo posible.”\n• No permitir respuestas tipo conversación\n• No historial de mensajes\nBackend:\n• La sugerencia debe:\n    ◦ Guardarse en Supabase\n    ◦ Quedar asociada al usuario (si aplica)\n    ◦ Permitirse su revisión interna",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-806f-a242-e9f4f37de6e2",
+    "title": "La app, por defecto, tiene que estar en inglés.",
+    "status": "Para hacer",
+    "severity": "Alta",
+    "description": " Idioma por defecto incorrecto (localización)\n• La app no debe iniciarse en español por defecto\n• Idioma por defecto obligatorio: Inglés\n• El idioma no debe depender del país en primera carga\n• El usuario debe poder cambiar manualmente el idioma (ES ↔ EN)\nCambios necesarios:\n• Forzar inglés por defecto en:\n    ◦ Onboarding\n    ◦ Login\n    ◦ Registro de cuenta\n    ◦ Primera carga de la app\n• Aplicar configuración de idioma desde el primer render\n• Guardar preferencia de idioma tras el cambio del usuario",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-8071-819d-d1572db1cd0f",
+    "title": "Mejorar KPIs.",
+    "status": "Para hacer",
+    "severity": "Media",
+    "description": "Artículos recomendados – UI y contenido mejorables\n• Las imágenes actuales (productividad en rosa y verde) deben eliminarse\n• Sustituirlas por las imágenes de gradientes proporcionadas por Héctor\n• Mantener consistencia visual con el resto de la app\nInteracción:\n• Al clicar en una tarjeta, debe abrirse en modo Apple-style:\n    ◦ Vista limpia\n    ◦ Transiciones suaves\n    ◦ Jerarquía clara de texto\nContenido:\n• El artículo debe mostrarse como un documento bien estructurado\n• Incluir:\n    ◦ UI cuidada y moderna\n    ◦ Explicación clara de qué trata el contenido\n    ◦ Buena legibilidad y diseño visual atractivo",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-8084-8641-f6bb25a8a096",
+    "title": "Pulir la conversación con la IA.",
+    "status": "En progreso",
+    "severity": "Alta",
+    "description": " Flujo incompleto de optimización de tareas (IA)\n• La IA crea, edita y elimina tareas, pero el flujo es limitado\n• Faltan opciones explícitas para optimizar una tarea una vez creada\n• El usuario no tiene control total sobre la mejora iterativa de la tarea\nOpciones que el usuario debería poder hacer sobre una tarea:\n• Ajustar fecha y hora (mover, retrasar, adelantar)\n• Cambiar duración estimada\n• Dividir la tarea en subtareas\n• Repriorizar (alta / media / baja)\n• Añadir o editar recordatorios\n• Cambiar categoría / tipo de actividad\n• Marcar como recurrente\n• Añadir notas o contexto\n• Sugerir mejor momento del día según carga del calendario\n• Optimizar por energía, foco o tiempo disponible\n• Detectar y resolver conflictos con otras tareas\n• Sugerir automatizaciones futuras (si pasa X, hacer Y)\n• El flujo debe permitir iterar sobre una tarea sin recrearla\n• La IA debe tratar la tarea como un objeto editable, no como output final",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-8090-961b-e72e524a0d68",
+    "title": "Hacer toda la funcionalidad de las notificaciones activa.",
+    "status": "Para hacer",
+    "severity": "Media",
+    "description": "Flujo incorrecto de notificaciones en solicitudes de amistad\n• Al enviar una solicitud de amistad, el flujo de notificaciones no está totalmente controlado\n• Hasta que el receptor no acepta, el amigo no debe aparecer en la red del usuario emisor\n• La visibilidad del amigo no puede adelantarse al estado de aceptación\n• Las notificaciones deben reflejar claramente cada estado:\n    ◦ Solicitud enviada\n    ◦ Solicitud recibida\n    ◦ Solicitud pendiente\n    ◦ Solicitud aceptada\n• No debe haber notificaciones duplicadas, tardías o fuera de estado\n• El estado de la solicitud debe estar sincronizado entre ambos usuarios\n• Al aceptar la solicitud:\n    ◦ Se notifica correctamente a ambos\n    ◦ El amigo aparece en la red de los dos usuarios",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-80a3-ba78-e21fc435f400",
+    "title": "Calendario",
+    "status": "Para hacer",
+    "severity": "Media",
+    "description": "Cambio de copy – “Tarea manual”\n• El nombre “Tarea manual” no es óptimo\n• Propuesta de cambio: “Crear tarea”\n• Suena más técnico, claro y profesional\n• Aplicar el cambio en:\n    ◦ Botón\n    ◦ Títulos\n    ◦ Textos relacionados (ES / EN si aplica)",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-80b3-8017-d55230f14893",
+    "title": "Mejorar los KPIs.",
+    "status": "Para hacer",
+    "severity": "Media",
+    "description": " KPI Deporte – Gráfica no funcional y mal renderizada\n• La gráfica del KPI de deporte no funciona o no se renderiza correctamente\n• Hay que asegurar que la gráfica funcione (datos + render)\n• La tarjeta está mal dimensionada\n• La gráfica aparece:\n    ◦ Cortada por la derecha\n    ◦ Cortada en la parte superior\n• Debe verse completa y natural, sin cortes ni overflow\n• Ajustar layout, padding y responsive de la tarjeta",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-80ca-82ad-f01e56e453cc",
+    "title": "Mejorar KPI.",
+    "status": "Para hacer",
+    "severity": "Alta",
+    "description": "KPI de estrés – diseño pobre\n• El KPI de estrés se ve mal visualmente\n• Diseño actual poco atractivo y poco claro\nMejoras necesarias:\n• Rediseñar el KPI para que sea más bonito y limpio\n• Mejorar tipografía de:\n    ◦ “Óptimo”\n    ◦ “Regular”\n    ◦ “Muy estresado”\n• Hacer la barra de colores más gruesa y visual\n• Mejorar colores y proporciones para una lectura clara",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-80ce-9f14-ef2fb3f196f9",
+    "title": "Mejorar planes.",
+    "status": "Para hacer",
+    "severity": "Media",
+    "description": "Planes y suscripciones – plan recomendado (anual)\n• En la vista anual, el plan Plus aparece como recomendado\n• El botón de “recomendado”:\n    ◦ Sale en color verde (incorrecto)\n    ◦ Debe ser azul\n• El badge/botón de recomendado tapa parcialmente el precio\n• Hay que:\n    ◦ Corregir color\n    ◦ Ajustar layout para que no oculte información",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "2ff084e0-54b2-80e9-9b86-db4480ace6f7",
+    "title": "Mejorar KPI.",
+    "status": "Para hacer",
+    "severity": "Alta",
+    "description": "Faltan KPIs específicos de mejora de hábitosLos KPIs de hábitos usan el color general de la appEl color del KPI debe heredar el color de la categoría del hábito\n• Ejercicio → color de la categoría ejercicio del usuario\n• Comer sano / Salud → color de la categoría salud del usuarioEl color debe ser dinámico y configurable por usuarioDebe mantenerse consistencia visual entre hábito, categoría y KPI",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "300084e0-54b2-8011-9037-c97cb207bec8",
+    "title": "Sugerencia Amigos. ",
+    "status": "Para hacer",
+    "severity": "Normal",
+    "description": "Social – mostrar “amigos en común” en resultados/lista\n• Ahora mismo, en amigos/búsqueda solo se muestra nombre de usuario + foto\n• Falta señal social para validar identidad y mejorar comunidad\nMejora requerida:\n• Añadir indicador de amigos en común:\n    ◦ Texto tipo: “3 amigos en común”\n    ◦ Ubicación: a la derecha del nombre/foto (o debajo, si no cabe)\n    ◦ Estilo: más pequeño y tono gris (menos protagonista)\n• Mostrar el conteo (ej. 0–N) y, opcionalmente, limitar a un máximo visual (ej. “5+”)\nCasos de uso:\n• En búsqueda (lupa) y en listados de sugerencias de amigos\n• Reduce confusión cuando hay nombres repetidos o sin foto\n• Aumenta confianza y facilita conectar con gente correcta",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "300084e0-54b2-8034-99ba-f5bd315415a9",
+    "title": "Error de nombre. ",
+    "status": "Para hacer",
+    "severity": "Normal",
+    "description": "Error de naming en pantalla de registro\n• En la pantalla inicial de registro aparece el nombre “PlanAI”\n• El nombre correcto es “PlanifAI”\n• Cambiar el texto para que muestre “PlanifAI”\n• Aplicar el cambio solo a nivel visual / copy",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "300084e0-54b2-8090-b421-de291f516b08",
+    "title": "Automatizar tarea manual ",
+    "status": "Para hacer",
+    "severity": "Normal",
+    "description": " Automatización en “Crear tarea” (tarea manual)\n• Falta una opción de automatización al crear una tarea manual\n• El usuario debe poder:\n    ◦ Marcar que la tarea se repite\n    ◦ Definir hora fija\n    ◦ Seleccionar días concretos o varios días por semana\n• La tarea debe:\n    ◦ Añadirse automáticamente al calendario\n    ◦ Evitar que el usuario tenga que crearla una a una\n• La automatización:\n    ◦ Solo aplica al mes actual\n    ◦ Al cambiar de mes, no se renueva automáticamente\n    ◦ El usuario debe reconfigurarla manualmente\n• Debe integrarse como parte clara del formulario de “Crear tarea”",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "300084e0-54b2-80d9-b13b-cc8a836d8173",
+    "title": "Color de acento visible ",
+    "status": "Para hacer",
+    "severity": "Normal",
+    "description": "Color de acento personalizado no visible\n• El usuario puede personalizar el color de acento\n• En la pantalla de personalización:\n    ◦ Solo aparecen los colores predeterminados\n    ◦ El color actualmente activo del usuario no se muestra\n• El color de acento en uso debe aparecer visible/seleccionado\n• Debe mostrarse aunque no sea uno de los colores por defecto\n• El usuario puede cambiarlo después, pero:\n    ◦ El color activo siempre debe verse",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "300084e0-54b2-80f0-929b-cc63d8db59db",
+    "title": "Fallo de lógica en los colores de la plantilla. ",
+    "status": "Para hacer",
+    "severity": "Normal",
+    "description": "Cambio de plantilla de color no aplicado a tareas existentes\n• El usuario puede cambiar la plantilla de colores (ej. OCEAN → otra)\n• Las nuevas tareas respetan la nueva plantilla\n• Las tareas ya creadas:\n    ◦ Mantienen los colores de la plantilla antigua\n• Comportamiento esperado:\n    ◦ Al cambiar de plantilla, todas las tareas existentes deben:\n        ▪ Adoptar automáticamente los colores de la nueva plantilla\n• El color de las tareas no debe quedar hardcodeado\n• Debe depender siempre de la plantilla activa del usuario",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "300084e0-54b2-80f4-8ef0-dc43ba1fd488",
+    "title": "Falta de espacio para salir. ",
+    "status": "Para hacer",
+    "severity": "Normal",
+    "description": "Falta de espacio superior para cerrar vistas (UX móvil)\n• En “Crear tarea” y en la pantalla de la campana (notificaciones):\n    ◦ No hay suficiente margen superior para pulsar y salir\n• En móvil, la zona táctil superior es muy pequeña o inexistente\n• No hay botón alternativo para cerrar la vista\n• La navegación no es intuitiva\nCorrección necesaria:\n• Aumentar padding/margen superior\n• Garantizar zona táctil clara para cerrar/salir\n• Asegurar buena usabilidad en móvil",
+    "assigned": "Unassigned"
+  },
+  {
+    "id": "300084e0-54b2-80fd-98eb-f4d7f9663b12",
+    "title": "Fallo de lógica en los colores de la plantilla de mi amigo. ",
+    "status": "Para hacer",
+    "severity": "Normal",
+    "description": "Tareas compartidas usan el color del amigo (no el mío)\n• Cuando un amigo me invita a una tarea, la tarea adopta el color/plantilla del amigo\n• Comportamiento esperado: en mi calendario debe usar mi plantilla activa (mis colores)\n• Actualmente el color queda “pegado” a la plantilla del creador, y luego:\n    ◦ Si yo cambio mi plantilla, esa tarea compartida tampoco se actualiza\n• Hay que unificar ambos fallos:\n    ◦ Colores de tareas (propias y compartidas) deben depender siempre de la plantilla activa del usuario que la visualiza\n    ◦ Nunca de la plantilla del creador/invitador",
+    "assigned": "Unassigned"
+  }
+]

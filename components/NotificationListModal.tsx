@@ -13,7 +13,8 @@ interface NotificationListModalProps {
 }
 
 // Función helper para timestamps relativos
-const getRelativeTime = (date: string): string => {
+// Función helper para timestamps relativos
+const getRelativeTime = (date: string, t: any): string => {
     const now = new Date();
     const notifDate = new Date(date);
     const diffMs = now.getTime() - notifDate.getTime();
@@ -21,23 +22,24 @@ const getRelativeTime = (date: string): string => {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Ahora';
+    if (diffMins < 1) return t.notif_time_now || 'Ahora';
     if (diffMins < 60) return `${diffMins}m`;
     if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays === 1) return 'Ayer';
+    if (diffDays === 1) return t.notif_time_yesterday || 'Ayer';
     if (diffDays < 7) return `${diffDays}d`;
     return notifDate.toLocaleDateString();
 };
 
 // Helper para obtener configuración según tipo, categoría e información del evento
-const getDisplayConfig = (notif: any, activeTemplate: any) => {
+// Helper para obtener configuración según tipo, categoría e información del evento
+const getDisplayConfig = (notif: any, activeTemplate: any, t: any) => {
     const { type, metadata } = notif;
     const categoryLabel = metadata?.categoryLabel;
     const categoryType = metadata?.categoryType;
 
     // Configuración base por tipo de notificación
     let config = {
-        tag: 'NOTIFICACIÓN',
+        tag: t.notif_tag_general,
         icon: Calendar,
         tagColor: 'bg-gray-100 text-gray-500',
         iconBg: 'bg-gray-100 dark:bg-gray-800',
@@ -47,7 +49,7 @@ const getDisplayConfig = (notif: any, activeTemplate: any) => {
 
     if (type === 'event_shared') {
         config = {
-            tag: 'SOLICITUD DE TAREA',
+            tag: t.notif_tag_request,
             icon: Calendar,
             tagColor: 'bg-[#FF6B6B]/10 text-[#FF6B6B]',
             iconBg: 'bg-[#FF6B6B]/10',
@@ -56,7 +58,7 @@ const getDisplayConfig = (notif: any, activeTemplate: any) => {
         };
     } else if (type === 'friend_accepted') {
         config = {
-            tag: 'CONEXIÓN',
+            tag: t.notif_tag_connection,
             icon: UserCheck,
             tagColor: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
             iconBg: 'bg-gray-100 dark:bg-gray-800',
@@ -65,7 +67,7 @@ const getDisplayConfig = (notif: any, activeTemplate: any) => {
         };
     } else if (type === 'event_reminder') {
         config = {
-            tag: 'RECORDATORIO',
+            tag: t.notif_tag_reminder,
             icon: Clock,
             tagColor: 'bg-[#6A99A8]/10 text-[#6A99A8]',
             iconBg: 'bg-[#6A99A8]/10',
@@ -109,7 +111,7 @@ const formatEventTime = (isoString: string, language: string) => {
 
 export const NotificationListModal: React.FC<NotificationListModalProps> = ({ onClose, onNotificationUpdate }) => {
     const { user } = useAuth();
-    const { events, refreshEvents, activeTemplate, language } = useCalendar();
+    const { events, refreshEvents, activeTemplate, language, t } = useCalendar();
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -185,10 +187,10 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
             loadNotifications();
             if (refreshEvents) await refreshEvents();
 
-            alert('Invitación aceptada ✅');
+            alert(t.notif_action_accepted || 'Invitación aceptada ✅');
         } catch (e) {
             console.error(e);
-            alert('Error al aceptar invitación.');
+            alert(t.notif_error_accept || 'Error al aceptar invitación.');
         }
     };
 
@@ -220,12 +222,20 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
 
                 {/* Header */}
                 <div className="px-8 py-6 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-800/50 shrink-0">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight" style={{ letterSpacing: '-0.02em' }}>Notificaciones</h2>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onClose}
+                            className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight" style={{ letterSpacing: '-0.02em' }}>{t.notifications}</h2>
+                    </div>
                     <button
                         onClick={handleClearAll}
                         className="text-[#FF6B6B] hover:text-[#FF5252] font-semibold text-sm transition-colors active:scale-95 transform"
                     >
-                        Limpiar
+                        {t.notif_clear}
                     </button>
                 </div>
 
@@ -234,20 +244,20 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
                     {loading ? (
                         <div className="text-center py-12 text-gray-400">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400 mx-auto mb-3"></div>
-                            Cargando...
+                            {t.notif_loading}
                         </div>
                     ) : notifications.length === 0 ? (
                         <div className="text-center py-12 flex flex-col items-center">
                             <div className="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4 text-gray-300 dark:text-gray-600">
                                 <Calendar size={28} />
                             </div>
-                            <p className="text-gray-500 dark:text-gray-400 font-medium tracking-tight">Sin notificaciones</p>
+                            <p className="text-gray-500 dark:text-gray-400 font-medium tracking-tight">{t.notif_empty}</p>
                         </div>
                     ) : (
                         notifications
                             .filter(notif => notif.type !== 'ai_prediction' && notif.type !== 'sugerencia_ia')
                             .map(notif => {
-                                const config = getDisplayConfig(notif, activeTemplate);
+                                const config = getDisplayConfig(notif, activeTemplate, t);
                                 const Icon = config.icon;
                                 const isUnread = !notif.is_read;
                                 const eventTime = notif.metadata?.startTime ? formatEventTime(notif.metadata.startTime, language) : null;
@@ -266,7 +276,7 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
                                                 {config.tag}
                                             </span>
                                             <span className="text-[12px] text-gray-400 font-semibold tracking-tight">
-                                                {getRelativeTime(notif.created_at)}
+                                                {getRelativeTime(notif.created_at, t)}
                                             </span>
                                         </div>
 
@@ -312,10 +322,10 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
                                                             <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-[12px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-0.5">
-                                                                    Conflicto de horario
+                                                                    {t.notif_conflict_title}
                                                                 </p>
                                                                 <p className="text-[13px] text-amber-600 dark:text-amber-500/80 font-medium leading-tight">
-                                                                    Coincide con "{conflict.title}". Si aceptas, esta tarea será eliminada.
+                                                                    {t.notif_conflict_desc} "{conflict.title}". {t.notif_conflict_suffix}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -331,13 +341,13 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
                                                                 onClick={() => handleAccept(notif, conflict?.id)}
                                                                 className={`flex-1 px-5 py-3.5 ${conflict ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20' : 'bg-[#FF6B6B] hover:bg-[#FF5252] shadow-[#FF6B6B]/20'} text-white rounded-[1.25rem] text-[15px] font-bold transition-all active:scale-[0.98] shadow-lg`}
                                                             >
-                                                                {conflict ? 'Priorizar esta' : 'Aceptar'}
+                                                                {conflict ? t.notif_action_prioritize : t.notif_action_accept}
                                                             </button>
                                                             <button
                                                                 onClick={() => handleReject(notif)}
                                                                 className="flex-1 px-5 py-3.5 bg-[#F3F4F6] dark:bg-gray-700 hover:bg-[#E5E7EB] dark:hover:bg-gray-600 text-[#4B5563] dark:text-gray-300 rounded-[1.25rem] text-[15px] font-bold transition-all active:scale-[0.98]"
                                                             >
-                                                                Ignorar
+                                                                {t.notif_action_ignore}
                                                             </button>
                                                         </div>
                                                     );

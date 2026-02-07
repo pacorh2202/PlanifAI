@@ -12,6 +12,7 @@ export const usePlanAILive = () => {
   const [volume, setVolume] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // Added isProcessing state
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -63,6 +64,7 @@ export const usePlanAILive = () => {
   };
 
   const disconnect = useCallback(async () => {
+    setIsProcessing(false); // Clear processing flag
     if (sessionRef.current) {
       try {
         const session = await sessionRef.current;
@@ -109,6 +111,7 @@ export const usePlanAILive = () => {
       return;
     }
     setIsConnecting(true);
+    setIsProcessing(false); // Reset processing flag
     nextStartTimeRef.current = 0;
     activeSourceCountRef.current = 0;
 
@@ -186,6 +189,14 @@ export const usePlanAILive = () => {
 2. **Confirmación Única**: Tras una acción EXITOSA, di SOLO: "${confirmationPhrase}". NADA MÁS.
 3. **Manejo de Errores**: Si algo falla, explica brevemente por qué y pregunta qué quieres hacer.
 
+## Capacidades de Optimización
+Puedes y DEBES modificar tareas existentes si el usuario lo pide. Trata las tareas como objetos editables. Puedes:
+- Cambiar hora de inicio/fin o duración.
+- Repriorizar o mover de día.
+- Añadir detalles, subtareas o recordatorios.
+- Dividir una tarea en varias.
+NO crees una tarea nueva si el usuario solo quiere editar una existente. Usa \`actionType: 'update'\`.
+
 ## Contexto Temporal y Amigos
 - Fecha actual: ${localTimeFull} (Llevamos cuenta de la zona horaria UTC${tzOffset >= 0 ? '+' : ''}${-tzOffset / 60}).
 - Amigos disponibles: ${friendsSummary}
@@ -256,6 +267,8 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             }
           },
           onmessage: async (msg: LiveServerMessage) => {
+            if (!connected) return; // Ignore messages if disconnected
+
             if (msg.serverContent?.modelTurn?.parts?.[0]?.text) {
               console.log('[AI] 💬 Text message:', msg.serverContent.modelTurn.parts[0].text);
             }
@@ -268,8 +281,16 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
               playbackNodeRef.current.port.postMessage(pcmData);
             }
             if (msg.toolCall) {
+              // Fix: Prevent duplicate processing
+              if (isProcessing) {
+                console.log('[AI] ⚠️ Ignoring duplicate tool call while processing.');
+                return;
+              }
+
               console.log('[AI] 🔧 Tool call received:', JSON.stringify(msg.toolCall, null, 2));
               setIsThinking(true);
+              setIsProcessing(true); // Set processing flag
+
               const functionResponses = [];
               for (const fc of msg.toolCall.functionCalls) {
                 console.log('[AI] 📞 Function:', fc.name, '| Args:', JSON.stringify(fc.args, null, 2));
@@ -288,6 +309,9 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
                   console.warn('[AI] ⚠️ Unknown function:', fc.name);
                 }
               }
+
+              setIsProcessing(false); // Clear processing flag
+
               if (functionResponses.length > 0) {
                 console.log('[AI] 📤 Sending responses:', functionResponses);
                 const session = await sessionPromise;
@@ -330,7 +354,7 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
       setIsConnecting(false);
       disconnect();
     }
-  }, [connected, isConnecting, events, executeAction, userName, assistantName, activeTemplate, disconnect, language, t]);
+  }, [connected, isConnecting, events, executeAction, userName, assistantName, activeTemplate, disconnect, language, t, isProcessing]); // Added isProcessing to deps
 
   return { connect, disconnect, connected, isTalking, isThinking, volume };
 };

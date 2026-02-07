@@ -55,7 +55,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [eventsLoaded, setEventsLoaded] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
 
-  const [language, setLanguageState] = useState<Language>('es');
+  const [language, setLanguageState] = useState<Language>('en');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [accentColor, setAccentColorState] = useState<string>('#B2D3A1');
   const [userName, setUserNameState] = useState<string>('');
@@ -118,7 +118,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Initialize from profile
   useEffect(() => {
     if (profile) {
-      setLanguageState(profile.language as Language || 'es');
+      setLanguageState(profile.language as Language || 'en');
       setIsDarkMode(profile.is_dark_mode || false);
       setAccentColorState(profile.accent_color || '#B2D3A1');
       setUserNameState(profile.user_name || '');
@@ -306,8 +306,23 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const addEvent = async (eventData: Omit<CalendarEvent, 'id'>): Promise<string> => {
     if (!user) return '';
+
+    // Task 20: Prevent saving hardcoded color if it matches the category default
+    const cleanData = { ...eventData };
+    if (cleanData.color && cleanData.categoryLabel && activeTemplate) {
+      const category = activeTemplate.categories.find((c: any) => c.label === cleanData.categoryLabel);
+      if (category && category.color === cleanData.color) {
+        delete cleanData.color;
+      }
+    } else if (cleanData.color && cleanData.type && activeTemplate) {
+      const category = activeTemplate.categories.find((c: any) => c.type === cleanData.type);
+      if (category && category.color === cleanData.color) {
+        delete cleanData.color;
+      }
+    }
+
     const tempId = Math.random().toString(36).substr(2, 9);
-    const newEvent: CalendarEvent = { ...eventData, id: tempId };
+    const newEvent: CalendarEvent = { ...cleanData, id: tempId };
 
     // Optimistic update
     setEvents(prev => [...prev, newEvent]);
@@ -330,8 +345,31 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Optimistic update
     setEvents(prev => prev.map(e => e.id === id ? { ...e, ...data } : e));
 
+    // Task 20: Also clean color on update if it matches category
+    const cleanData = { ...data };
+    if (cleanData.color && activeTemplate) {
+      // We need the event's type/category to check. 
+      // If data has new type/category, use that. Else use originalEvent's.
+      const type = cleanData.type || originalEvent?.type;
+      const catLabel = cleanData.categoryLabel || originalEvent?.categoryLabel;
+
+      let category;
+      if (catLabel) {
+        category = activeTemplate.categories.find((c: any) => c.label === catLabel);
+      } else if (type) {
+        category = activeTemplate.categories.find((c: any) => c.type === type);
+      }
+
+      if (category && category.color === cleanData.color) {
+        cleanData.color = null as any; // Send null to DB to clear it? Or delete?
+        // Since it's partial update, if we delete key, it won't update DB.
+        // If we want to REMOVE the color from DB, we must send NULL.
+        // Assume DB supports nullable color.
+      }
+    }
+
     try {
-      await calendarApi.updateEvent(id, data, user.id);
+      await calendarApi.updateEvent(id, cleanData, user.id);
     } catch (err) {
       console.error('Error updating event:', err);
       // Rollback on error

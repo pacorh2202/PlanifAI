@@ -86,7 +86,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                                 }}
                             >
                                 {plan.recommended && (
-                                    <div className="absolute top-4 right-8 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg z-10" style={{ backgroundColor: accentColor, opacity: 0.9 }}>
+                                    <div className="absolute -top-3 right-8 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg z-10" style={{ backgroundColor: '#3b82f6' }}>
                                         RECOMENDADO
                                     </div>
                                 )}

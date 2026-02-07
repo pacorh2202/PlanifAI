@@ -294,19 +294,9 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>
 
-          <div className="pt-10 flex flex-col gap-4">
-            <button
-              onClick={signOut}
-              className="w-full bg-red-500/10 dark:bg-red-500/5 rounded-[2rem] p-5 flex items-center justify-center gap-3 border border-red-500/20 dark:border-red-500/10 active:scale-[0.98] transition-all group"
-            >
-              <LogOut size={18} className="text-red-500" />
-              <span className="text-red-500 font-black text-xs uppercase tracking-[0.2em]">{t.sign_out || 'Cerrar sesión'}</span>
-            </button>
-
-            <p className="text-[9px] text-center text-gray-400 font-black uppercase tracking-[0.3em] opacity-40 py-4">
-              PlanifAI v1.0.0
-            </p>
-          </div>
+          <p className="text-[9px] text-center text-gray-400 font-black uppercase tracking-[0.3em] opacity-40 py-4">
+            PlanifAI v1.0.0
+          </p>
 
         </main>
       </div>

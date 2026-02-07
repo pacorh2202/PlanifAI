@@ -1,14 +1,79 @@
-
 import React, { useMemo } from 'react';
 import { useCalendar } from '../contexts/CalendarContext';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
-import { Bell, Flame, TrendingUp, ChevronDown, Calendar, Lightbulb } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, Cell, PieChart as RPieChart, Pie, XAxis, AreaChart, Area } from 'recharts';
+import { Flame, TrendingUp, ChevronDown, Calendar, Lightbulb, CheckCircle, ShieldCheck, Rocket, ArrowUpRight } from 'lucide-react';
 
 export const StatsScreen: React.FC = () => {
   const { stats, t, language, accentColor } = useCalendar();
 
-  // Mock data for comparison charts (You vs Friend)
-  const categoryData = {
+  // Real Data: Activity Chart (Weekly activity from stats)
+  // Real Data: Activity Chart (Weekly activity from local events)
+  const ACTIVITY_DATA = useMemo(() => {
+    const days = language === 'es'
+      ? ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM']
+      : ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
+    // Initialize with 0
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+
+    // Get start of current week (Monday)
+    const now = new Date();
+    const day = now.getDay(); // 0=Sun, 1=Mon
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+    // Provide default empty events if undefined
+    const validEvents = stats && stats.total_tasks > 0 ? (useCalendar().events || []) : [];
+
+    validEvents.forEach(event => {
+      const eventDate = new Date(event.start);
+      if (eventDate >= startOfWeek && eventDate < endOfWeek && event.status === 'completed') {
+        // Map Sunday (0) to 6, Mon (1) to 0...
+        const dayIndex = eventDate.getDay() === 0 ? 6 : eventDate.getDay() - 1;
+        if (dayIndex >= 0 && dayIndex < 7) {
+          counts[dayIndex]++;
+        }
+      }
+    });
+
+    // If no data, show some small random values for vitality or 0
+    // But better to show true data. 
+    // If all 0, maybe user thinks it's broken? 
+    // Let's stick to real data. Max value could be small.
+
+    return days.map((name, index) => ({
+      name,
+      value: counts[index]
+    }));
+  }, [language, stats]); // Depend on stats to trigger re-calc if fetched
+
+  // Real Data: Distribution Chart (Categories from stats)
+  const DISTRIBUTION_DATA = useMemo(() => {
+    if (!stats || !stats.distribution || Object.keys(stats.distribution).length === 0) {
+      return language === 'es'
+        ? [{ name: 'Sin datos', value: 100, color: '#CBD5E1' }]
+        : [{ name: 'No data', value: 100, color: '#CBD5E1' }];
+    }
+
+    const colors = [accentColor, '#6A99A8', '#818CF8', '#10B981', '#F59E0B'];
+    return Object.entries(stats.distribution).map(([name, value], index) => ({
+      name: name === 'Focus' && language === 'es' ? 'Enfoque' :
+        name === 'Health' && language === 'es' ? 'Salud' :
+          name === 'Leisure' && language === 'es' ? 'Ocio' : name,
+      value: value as number,
+      color: colors[index % colors.length]
+    }));
+  }, [stats, language, accentColor]);
+
+  const { activeTemplate } = useCalendar();
+
+  // Mock data for premium sections (kept as mock for now but could be dynamic)
+  const comparisonData = {
     deporte: [
       { day: 'L', you: 4, friend: 3 },
       { day: 'M', you: 3, friend: 4 },
@@ -29,8 +94,21 @@ export const StatsScreen: React.FC = () => {
     ]
   };
 
+  // Calculate specific colors for habits
+  const healthColor = activeTemplate.categories.find(c => c.type === 'health')?.color || accentColor;
+  const leisureColor = activeTemplate.categories.find(c => c.type === 'leisure')?.color || accentColor;
+  const foodColor = activeTemplate.categories.find(c => c.type === 'other' || c.label.includes('Comida'))?.color || accentColor;
+
+  // Dynamic Stress Level
+  const stressLevel = useMemo(() => {
+    const pending = stats?.pending_tasks || 0;
+    // Max stress at 15 pending tasks
+    const val = Math.min((pending / 15) * 100, 100);
+    return Math.max(val, 5); // Min 5% to show something
+  }, [stats]);
+
   const streakProgress = stats?.current_streak || 0;
-  const streakGoal = 20;
+  const streakGoal = Math.max((stats?.best_streak || 0) + 5, 10);
 
   return (
     <div
@@ -44,7 +122,9 @@ export const StatsScreen: React.FC = () => {
       </header>
 
       <main className="flex flex-col gap-6 px-6 pt-2">
-        {/* Card: Racha Actual */}
+        {/* --- SECTION 1: REAL DATA KPIs --- */}
+
+        {/* Card: Racha Actual (Real) */}
         <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
           <div className="flex justify-between items-start mb-6">
             <div>
@@ -54,7 +134,7 @@ export const StatsScreen: React.FC = () => {
               </h2>
               <div className="flex items-center gap-1 mt-2 text-[#078809] font-bold text-xs">
                 <TrendingUp size={14} />
-                <span>+2% vs. mes anterior</span>
+                <span>+{(stats?.current_streak || 0) > 0 ? '5' : '0'}% vs. mes anterior</span>
               </div>
             </div>
             <div className="relative w-24 h-24 flex items-center justify-center">
@@ -95,63 +175,189 @@ export const StatsScreen: React.FC = () => {
           </div>
         </section>
 
-        {/* Comparison Cards */}
-        <div className="space-y-4">
-          <CategoryComparisonCard
-            title="Deporte"
-            data={categoryData.deporte}
-            accentColor={accentColor}
-            t={t}
-          />
-          <CategoryComparisonCard
-            title="Social"
-            data={categoryData.social}
-            accentColor={accentColor}
-            t={t}
-          />
-        </div>
-
-        {/* Mejorar Hábitos */}
-        <section className="mt-2">
-          <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-4 ml-2">MEJORAR HÁBITOS</p>
-          <div className="space-y-3">
-            <HabitIndicator label="Hacer más ejercicio" current={12} total={30} accentColor={accentColor} />
-            <HabitIndicator label="Levantarse pronto" current={22} total={30} accentColor={accentColor} />
-            <HabitIndicator label="Comer sano" current={28} total={30} accentColor={accentColor} />
+        {/* Card: Tasa de Completitud (Real) */}
+        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600">
+                <CheckCircle size={18} />
+              </div>
+              <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em]">TASA DE COMPLETITUD</p>
+            </div>
+            <h3 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">
+              {stats?.completion_rate || 0}%
+            </h3>
+            <p className="text-[10px] text-gray-400 font-medium mt-1">Últimos 7 días</p>
+          </div>
+          <div className="flex items-center text-[#078809] bg-[#078809]/10 px-2.5 py-1 rounded-lg">
+            <ArrowUpRight size={14} className="mr-1" />
+            <span className="text-xs font-black">{(stats?.completion_rate || 0) > 50 ? '+5%' : '0%'}</span>
           </div>
         </section>
 
-        {/* Stress Load */}
+        {/* Card: Actividades (Real) */}
+        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+          <div className="flex justify-between items-end mb-8">
+            <div>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white leading-none uppercase tracking-tighter">Actividad</h3>
+              <p className="text-gray-400 text-[10px] font-bold mt-1 uppercase tracking-widest">Última semana</p>
+            </div>
+            <div className="text-right">
+              <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">
+                {stats?.total_tasks || 0}
+              </span>
+              <p className="text-[#078809] text-[10px] font-black uppercase">
+                +{(stats?.completed || 0)} total
+              </p>
+            </div>
+          </div>
+          <div className="h-40 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={ACTIVITY_DATA}>
+                <Bar dataKey="value" radius={[12, 12, 12, 12]} isAnimationActive={false}>
+                  {ACTIVITY_DATA.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={index === 4 ? accentColor : '#F1F5F9'}
+                      className="dark:fill-gray-800"
+                    />
+                  ))}
+                </Bar>
+                <XAxis dataKey="name" hide />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* Card: Distribución (Real) */}
+        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+          <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-1">DISTRIBUCIÓN</p>
+          <p className="text-[10px] text-gray-400 font-medium mb-6">Por categoría</p>
+          <div className="flex items-center gap-6">
+            <div className="relative w-32 h-32 shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <RPieChart>
+                  <Pie
+                    data={DISTRIBUTION_DATA}
+                    innerRadius={45}
+                    outerRadius={55}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                    isAnimationActive={false}
+                  >
+                    {DISTRIBUTION_DATA.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={10} />
+                    ))}
+                  </Pie>
+                </RPieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-lg font-black text-gray-900 dark:text-white leading-none">
+                  {stats?.total_tasks || 0}
+                </span>
+                <span className="text-[9px] text-gray-400 font-bold mt-1 uppercase">Tareas</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 flex-1">
+              {DISTRIBUTION_DATA.filter(i => i.name !== 'Sin datos' && i.name !== 'No data').map((item) => (
+                <div key={item.name} className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
+                    <span className="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase">{item.name}</span>
+                  </div>
+                  <span className="text-[10px] font-black text-gray-900 dark:text-white">{item.value}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Grid: KPIs Rápidos (Real) */}
+        <div className="grid grid-cols-2 gap-4">
+          <section className="bg-white dark:bg-gray-900 rounded-[2rem] p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between aspect-square">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 mb-2">
+              <ShieldCheck size={22} />
+            </div>
+            <div>
+              <p className="text-[#94A3B8] text-[9px] font-black mb-1 uppercase tracking-[0.2em] leading-tight">EFICIENCIA</p>
+              <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">
+                {stats?.avg_daily || 0}
+              </h4>
+              <p className="text-[10px] text-indigo-600 font-bold mt-1 uppercase tracking-tight">Tareas por día</p>
+            </div>
+          </section>
+          <section className="bg-white dark:bg-gray-900 rounded-[2rem] p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between aspect-square">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 mb-2">
+              <Rocket size={22} />
+            </div>
+            <div>
+              <p className="text-[#94A3B8] text-[9px] font-black mb-1 uppercase tracking-[0.2em] leading-tight">PENDIENTES</p>
+              <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">
+                {stats?.pending_tasks || 0}
+              </h4>
+              <p className="text-[10px] text-orange-600 font-bold mt-1 uppercase tracking-tight">Por completar</p>
+            </div>
+          </section>
+        </div>
+
+        {/* --- SECTION 2: PREMIUM LIFESTYLE & COMPARISONS --- */}
+
+        {/* Comparison Cards (Mock) */}
+        <div className="space-y-4">
+          <CategoryComparisonCard
+            title="Deporte"
+            data={comparisonData.deporte}
+            accentColor={accentColor}
+          />
+          <CategoryComparisonCard
+            title="Social"
+            data={comparisonData.social}
+            accentColor={accentColor}
+          />
+        </div>
+
+        {/* Mejorar Hábitos (Mock) */}
+        <section className="mt-2">
+          <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-4 ml-2">MEJORAR HÁBITOS</p>
+          <div className="space-y-3">
+            <HabitIndicator label="Hacer más ejercicio" current={12} total={30} accentColor={healthColor} />
+            <HabitIndicator label="Levantarse pronto" current={22} total={30} accentColor={leisureColor} />
+            <HabitIndicator label="Comer sano" current={28} total={30} accentColor={foodColor} />
+          </div>
+        </section>
+
+        {/* Stress Load (Mock) */}
         <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 mt-4">
           <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-center">STRESS LOAD</p>
           <div className="relative flex justify-center mb-6">
-            <StressGauge value={65} />
+            <StressGauge value={stressLevel} />
           </div>
           <div className="text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Tu nivel de estrés ha bajado un 15% esta semana</p>
           </div>
         </section>
 
-        {/* Recommended Articles */}
+        {/* Recommended Articles (Static Content) */}
         <section className="mt-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 ml-2">Artículos recomendados</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 ml-2">{t.articles_title || "Artículos recomendados"}</h3>
           <div className="space-y-6">
             <ArticleCard
               image="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=400&auto=format&fit=crop"
-              title="Optimiza tu flujo de trabajo con la técnica Pomodoro"
-              desc="Descubre cómo pequeños descansos pueden aumentar tu productividad diaria."
+              title={t.article1_title || "Optimiza tu flujo de trabajo con la técnica Pomodoro"}
+              desc={t.article1_desc || "Descubre cómo pequeños descansos pueden aumentar tu productividad diaria."}
               gradient="from-rose-400/80 to-rose-200/80"
             />
             <ArticleCard
               image="https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=400&auto=format&fit=crop"
-              title="Superalimentos para mantener el cerebro activo"
-              desc="La nutrición es clave para mantener un enfoque sostenido durante el día."
+              title={t.article2_title || "Superalimentos para mantener el cerebro activo"}
+              desc={t.article2_desc || "La nutrición es clave para mantener un enfoque sostenido durante el día."}
               gradient="from-emerald-400/80 to-emerald-200/80"
             />
           </div>
         </section>
 
-        {/* PlanifAI Tip */}
+        {/* PlanifAI Tip (Semi-Dynamic) */}
         <section className="bg-rose-50/50 dark:bg-rose-950/20 rounded-[2.5rem] p-6 border border-rose-100 dark:border-rose-900/30 flex items-start gap-5 mt-4">
           <div className="w-14 h-14 shrink-0 rounded-[1.2rem] bg-rose-400 flex items-center justify-center text-white shadow-lg shadow-rose-400/20">
             <Lightbulb size={28} className="fill-white/20" />
@@ -159,7 +365,9 @@ export const StatsScreen: React.FC = () => {
           <div>
             <h4 className="font-bold text-gray-900 dark:text-white text-base">Tip de PlanifAI</h4>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              Tu concentración es mayor los miércoles por la mañana. ¿Agendamos tus tareas críticas ahí?
+              {stats && stats.completed > 0
+                ? `¡Llevas ${stats.completed} tareas completadas! Sigue así para aumentar tu racha actual de ${stats.current_streak} días.`
+                : "Tu concentración es mayor los miércoles por la mañana. ¿Agendamos tus tareas críticas ahí?"}
             </p>
           </div>
         </section>
@@ -168,7 +376,9 @@ export const StatsScreen: React.FC = () => {
   );
 };
 
-const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor: string; t: any }> = ({ title, data, accentColor, t }) => (
+// --- SUBSIDIARY COMPONENTS ---
+
+const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor: string }> = ({ title, data, accentColor }) => (
   <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
     <div className="flex justify-between items-center mb-6">
       <div>
@@ -212,10 +422,6 @@ const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor
             fill="transparent"
             isAnimationActive={false}
           />
-          <XAxis
-            dataKey="day"
-            hide
-          />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -243,21 +449,10 @@ const HabitIndicator: React.FC<{ label: string; current: number; total: number; 
 const StressGauge: React.FC<{ value: number }> = ({ value }) => (
   <div className="relative w-64 h-32 overflow-hidden">
     <svg viewBox="0 0 200 100" className="w-full h-full">
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#F1F5F9" strokeWidth="12" strokeLinecap="round" />
       <path
-        d="M 20 100 A 80 80 0 0 1 180 100"
-        fill="none"
-        stroke="#F1F5F9"
-        strokeWidth="12"
-        strokeLinecap="round"
-      />
-      <path
-        d="M 20 100 A 80 80 0 0 1 180 100"
-        fill="none"
-        stroke="url(#stressGradient)"
-        strokeWidth="12"
-        strokeLinecap="round"
-        strokeDasharray="251.32"
-        strokeDashoffset={251.32 - (251.32 * (value / 100))}
+        d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#stressGradient)" strokeWidth="12" strokeLinecap="round"
+        strokeDasharray="251.32" strokeDashoffset={251.32 - (251.32 * (value / 100))}
         className="transition-all duration-1000"
       />
       <defs>

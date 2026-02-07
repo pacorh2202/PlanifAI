@@ -33,15 +33,13 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onBack }) => {
               <button
                 key={lang.id}
                 onClick={() => setLanguage(lang.id as any)}
-                className={`w-full flex items-center justify-between p-7 rounded-[2.5rem] bg-white dark:bg-gray-900 shadow-sm border transition-all duration-300 active:scale-[0.98] ${
-                  isSelected ? 'border-indigo-500/30 ring-1 ring-indigo-500/10' : 'border-gray-100 dark:border-gray-800 opacity-70'
-                }`}
+                className={`w-full flex items-center justify-between p-7 rounded-[2.5rem] bg-white dark:bg-gray-900 shadow-sm border transition-all duration-300 active:scale-[0.98] ${isSelected ? 'border-indigo-500/30 ring-1 ring-indigo-500/10' : 'border-gray-100 dark:border-gray-800 opacity-70'
+                  }`}
               >
                 <div className="flex items-center gap-5">
-                  <div 
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors shadow-inner ${
-                      isSelected ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-gray-50 dark:bg-gray-800'
-                    }`}
+                  <div
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors shadow-inner ${isSelected ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-gray-50 dark:bg-gray-800'
+                      }`}
                     style={{ color: isSelected ? accentColor : '#94A3B8' }}
                   >
                     <Globe size={24} />
@@ -55,9 +53,9 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onBack }) => {
                     </p>
                   </div>
                 </div>
-                
+
                 {isSelected && (
-                  <div 
+                  <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg animate-fade-in"
                     style={{ backgroundColor: accentColor }}
                   >
@@ -71,9 +69,9 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onBack }) => {
 
         <div className="pt-12 px-8">
           <p className="text-[10px] text-gray-400 dark:text-gray-500 font-black uppercase tracking-[0.25em] text-center leading-relaxed opacity-60">
-            {language === 'es' 
+            {language === 'es'
               ? "Cambiar el idioma afectará a la interfaz y a la voz de respuesta del asistente PlanAI."
-              : "Changing the language will affect the interface and the response voice of the PlanAI assistant."}
+              : "Changing the language will affect the interface and the response voice of the PlanifAI assistant."}
           </p>
         </div>
       </main>

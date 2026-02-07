@@ -121,7 +121,8 @@ export const FriendsScreen: React.FC = () => {
   };
 
   const incomingRequests = friends.filter(f => f.status === 'suggested'); // From our API logic
-  const myNetwork = friends.filter(f => f.status === 'friend' || f.status === 'pending'); // Show accepted AND outgoing
+
+  const myNetwork = friends.filter(f => f.status === 'friend'); // Only show accepted friends
 
   // Show search results if searching, otherwise show friends
   const displayList = search.length >= 2 ? searchResults : [];
@@ -180,6 +181,13 @@ export const FriendsScreen: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{user.name || 'Usuario'}</h3>
                       <p className="text-[11px] text-gray-400 font-medium mt-0.5 truncate">{user.handle || `@${user.id.slice(0, 8)}`}</p>
+                      <div className="flex items-center gap-1.5 mt-1 opacity-60">
+                        <div className="flex -space-x-1.5">
+                          <div className="w-3.5 h-3.5 rounded-full bg-blue-100 border border-white"></div>
+                          <div className="w-3.5 h-3.5 rounded-full bg-green-100 border border-white"></div>
+                        </div>
+                        <span className="text-[9px] text-gray-400 font-medium">3 amigos en común</span>
+                      </div>
                     </div>
                     <button
                       onClick={() => handleSendRequest(user.id)}

@@ -19,40 +19,9 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
     const { accentColor, t } = useCalendar();
     const { user } = useAuth();
     const [message, setMessage] = useState('');
-    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [loading, setLoading] = useState(false);
-    const [fetching, setFetching] = useState(true);
     const [showThankYou, setShowThankYou] = useState(false);
-    const scrollRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (user) {
-            fetchSuggestions();
-        }
-    }, [user]);
-
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [suggestions]);
-
-    const fetchSuggestions = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('user_suggestions')
-                .select('*')
-                .eq('user_id', user?.id)
-                .order('created_at', { ascending: true });
-
-            if (error) throw error;
-            setSuggestions(data || []);
-        } catch (error) {
-            console.error('Error fetching suggestions:', error);
-        } finally {
-            setFetching(false);
-        }
-    };
 
     const handleSend = async () => {
         if (!message.trim() || !user || loading) return;
@@ -60,7 +29,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
         setLoading(true);
         try {
             const { data, error } = await supabase
-                .from('user_suggestions')
+                .from('user_suggestions' as any)
                 .insert({
                     user_id: user.id,
                     message: message.trim()
@@ -70,11 +39,13 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
 
             if (error) throw error;
 
-            setSuggestions([...suggestions, data]);
+            if (error) throw error;
+
             setMessage('');
             setShowThankYou(true);
-            setTimeout(() => setShowThankYou(false), 3000);
+            setTimeout(() => setShowThankYou(false), 3000); // Hide after 3s
         } catch (error) {
+
             console.error('Error sending suggestion:', error);
             alert('Error al enviar sugerencia. Por favor intenta de nuevo.');
         } finally {
@@ -98,94 +69,68 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                 <div className="w-10"></div>
             </header>
 
-            <main className="flex-1 flex flex-col overflow-hidden relative z-10">
-                {/* Explanation Section */}
-                <div className="px-8 py-8 text-center flex flex-col items-center">
-                    <div className="relative mb-6">
-                        <div className="absolute inset-0 rounded-[2rem] blur-2xl opacity-20 animate-pulse" style={{ backgroundColor: accentColor }}></div>
-                        <div className="relative w-16 h-16 bg-white dark:bg-gray-900 rounded-[1.5rem] flex items-center justify-center shadow-xl border border-white dark:border-gray-800" style={{ color: accentColor }}>
-                            <MessageSquare size={28} />
-                        </div>
-                    </div>
-                    <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2 tracking-tight uppercase tracking-[0.05em]">¡Ayúdanos a mejorar!</h2>
-                    <p className="text-[11px] text-gray-400 dark:text-gray-500 font-bold leading-relaxed px-4 uppercase tracking-wider opacity-80">
-                        Tu opinión es fundamental. Envíanos cualquier idea o función que te gustaría ver. Leemos todos vuestros mensajes.
-                    </p>
-                </div>
-
-                {/* Chat Area */}
-                <div
-                    ref={scrollRef}
-                    className="flex-1 overflow-y-auto px-6 py-4 space-y-4 no-scrollbar"
-                >
-                    {fetching ? (
-                        <div className="flex justify-center py-10 text-gray-400">
-                            <Loader2 className="animate-spin" size={24} />
-                        </div>
-                    ) : suggestions.length === 0 ? (
-                        <div className="text-center py-20 opacity-20 flex flex-col items-center gap-3">
-                            <div className="w-16 h-px bg-gray-400"></div>
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em]">Sin mensajes</span>
-                            <div className="w-16 h-px bg-gray-400"></div>
-                        </div>
-                    ) : (
-                        suggestions.map((sug) => (
-                            <div key={sug.id} className="flex flex-col items-end animate-fade-in">
-                                <div
-                                    className="max-w-[85%] px-5 py-4 rounded-[2rem] rounded-tr-none text-white text-sm font-bold shadow-xl border border-white/10"
-                                    style={{
-                                        backgroundColor: accentColor,
-                                        boxShadow: `0 10px 30px -5px ${accentColor}44`
-                                    }}
-                                >
-                                    {sug.message}
-                                </div>
-                                <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 mt-2 uppercase tracking-[0.2em] mr-2 opacity-60">
-                                    {new Date(sug.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </span>
+            <div className="flex-1 flex flex-col items-center justify-center p-6 pb-20 z-10">
+                {!showThankYou ? (
+                    <div className="w-full max-w-lg space-y-6 animate-fade-in">
+                        <div className="space-y-2 text-center mb-8">
+                            <div className="w-20 h-20 bg-white dark:bg-gray-900 rounded-[2rem] flex items-center justify-center shadow-xl border border-white dark:border-gray-800 mx-auto mb-6 text-gray-900 dark:text-white transform rotate-3 hover:rotate-6 transition-transform duration-300">
+                                <MessageSquare size={32} style={{ color: accentColor }} />
                             </div>
-                        ))
-                    )}
-
-                    {showThankYou && (
-                        <div className="flex justify-center animate-bounce-in pt-4">
-                            <div className="bg-white dark:bg-gray-900 border-2 border-green-500/20 text-green-500 px-6 py-4 rounded-[2rem] text-[10px] font-black shadow-2xl uppercase tracking-[0.25em] flex items-center gap-3">
-                                <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg">
-                                    <CheckCircle2 size={14} strokeWidth={4} />
-                                </div>
-                                ¡Gracias por tu sugerencia!
-                            </div>
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight uppercase">Tu opinión importa</h2>
+                            <p className="text-sm font-medium text-gray-400 dark:text-gray-500 leading-relaxed max-w-xs mx-auto">
+                                ¿Tienes alguna idea, problema o sugerencia? Cuéntanoslo todo. Leemos cada mensaje.
+                            </p>
                         </div>
-                    )}
-                </div>
 
-                {/* Input Area */}
-                <div className="p-8 bg-white/40 dark:bg-gray-900/40 backdrop-blur-3xl border-t border-white/60 dark:border-gray-800/60 shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.1)]">
-                    <div className="relative flex items-center gap-3 max-w-2xl mx-auto">
-                        <input
-                            type="text"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Escribe tu sugerencia aquí..."
-                            className="flex-1 bg-white/80 dark:bg-gray-800/80 border-none shadow-inner rounded-[1.8rem] py-5 px-6 text-sm font-bold focus:ring-2 focus:ring-offset-2 transition-all placeholder:text-gray-400 dark:text-white"
-                            style={{ '--tw-ring-color': accentColor } as any}
-                        />
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-[2rem] blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
+                            <textarea
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                placeholder="Escribe tu sugerencia aquí..."
+                                rows={6}
+                                className="w-full bg-white dark:bg-gray-900 border-2 border-transparent focus:border-gray-200 dark:focus:border-gray-700 rounded-[2rem] p-6 text-sm font-bold text-gray-900 dark:text-white shadow-xl placeholder:text-gray-300 dark:placeholder:text-gray-600 resize-none outline-none transition-all relative z-10"
+                            />
+                        </div>
+
                         <button
                             onClick={handleSend}
                             disabled={!message.trim() || loading}
-                            className="w-16 h-16 rounded-[1.8rem] flex items-center justify-center text-white shadow-2xl active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 group"
+                            className="w-full py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-[0.2em] text-white shadow-xl active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
                             style={{
                                 backgroundColor: accentColor,
-                                boxShadow: `0 15px 35px -5px ${accentColor}66`
+                                boxShadow: `0 20px 40px -10px ${accentColor}55`
                             }}
                         >
-                            {loading ? <Loader2 size={24} className="animate-spin" /> : <Send size={24} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />}
+                            {loading ? <Loader2 size={18} className="animate-spin" /> : (
+                                <>
+                                    Enviar Sugerencia
+                                    <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                </>
+                            )}
                         </button>
                     </div>
-                    <div className="h-6 sm:h-2"></div> {/* Bottom safe area padding */}
-                </div>
-            </main>
+                ) : (
+                    <div className="flex flex-col items-center justify-center text-center animate-bounce-in max-w-xs mx-auto">
+                        <div className="w-24 h-24 rounded-full bg-green-500 text-white flex items-center justify-center shadow-2xl mb-8 border-4 border-green-100 dark:border-green-900/30">
+                            <CheckCircle2 size={40} strokeWidth={3} />
+                        </div>
+                        <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">¡Enviado!</h3>
+                        <p className="text-gray-400 font-medium text-sm leading-relaxed mb-8">
+                            Muchísimas gracias por tu tiempo. Tu feedback nos ayuda a construir un mejor PlanifAI.
+                        </p>
+                        <button
+                            onClick={() => setShowThankYou(false)}
+                            className="px-8 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-xs font-black uppercase tracking-widest active:scale-95 transition-transform"
+                        >
+                            Enviar otra
+                        </button>
+                    </div>
+                )}
+            </div>
+            {/* Background elements */}
+            <div className="absolute top-1/3 -right-20 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+            <div className="absolute bottom-1/3 -left-20 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none"></div>
         </div>
     );
 };

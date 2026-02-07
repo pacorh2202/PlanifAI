@@ -55,6 +55,10 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
   const [now, setNow] = useState(new Date());
   const [hasManuallySelectedCategory, setHasManuallySelectedCategory] = useState(!isCreating);
 
+  // Recurrence State
+  const [isRecurrenceEnabled, setIsRecurrenceEnabled] = useState(false);
+  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]); // 0=Sun, 1=Mon...
+
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
@@ -110,13 +114,57 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     return t.pending;
   }, [event, editedEvent, now, isCreating, t]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editedEvent.title.trim()) {
       alert(t.alert_title);
       return;
     }
-    if (isCreating) addEvent(editedEvent);
-    else if (event) updateEvent(event.id, editedEvent);
+
+    if (isCreating && isRecurrenceEnabled && recurrenceDays.length > 0) {
+      // BATCH CREATION logic
+      const eventsToCreate: Promise<any>[] = [];
+      const currentMonth = new Date(editedEvent.start).getMonth();
+      const currentYear = new Date(editedEvent.start).getFullYear();
+      const baseStartDate = new Date(editedEvent.start);
+      const baseEndDate = new Date(editedEvent.end);
+      const duration = baseEndDate.getTime() - baseStartDate.getTime();
+
+      // Start iterating from tomorrow (or today?) - Let's iterate from baseStartDate
+      // If baseStartDate is today, we check today and future days in month.
+      let iterDate = new Date(baseStartDate);
+
+      // We limit to current month as per requirements
+      while (iterDate.getMonth() === currentMonth) {
+        if (recurrenceDays.includes(iterDate.getDay())) {
+          // Create event for this day
+          const newStart = new Date(iterDate);
+          const newEnd = new Date(iterDate.getTime() + duration);
+
+          // Only add if it's not in the past relative to baseStartDate (or maybe allow it? Requirement says "automate manual task")
+          // Let's assume we create for all matching days from start date onwards in this month.
+
+          const eventPayload = {
+            ...editedEvent,
+            start: newStart.toISOString(),
+            end: newEnd.toISOString()
+          };
+          eventsToCreate.push(addEvent(eventPayload));
+        }
+        iterDate.setDate(iterDate.getDate() + 1);
+      }
+
+      if (eventsToCreate.length > 0) {
+        await Promise.all(eventsToCreate);
+      } else {
+        // Fallback if no days matched in remaining month, allow creating just the single one?
+        // Maybe alert user? For now just create the single one.
+        addEvent(editedEvent);
+      }
+    } else {
+      // Normal single creation/update
+      if (isCreating) addEvent(editedEvent);
+      else if (event) updateEvent(event.id, editedEvent);
+    }
     onClose();
   };
 
@@ -171,14 +219,14 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
           <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full"></div>
         </div>
 
-        <div className="absolute top-4 right-6 flex items-center gap-2.5 z-[120]">
+        <div className="absolute top-6 right-6 flex items-center gap-2.5 z-[120]">
           {!isEditing ? (
             <>
-              <button onClick={handleStartEditing} className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-500 shadow-md border border-gray-100 dark:border-gray-700 active:scale-90 transition-transform">
-                <MoreHorizontal size={18} />
+              <button onClick={handleStartEditing} className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-500 shadow-md border border-gray-100 dark:border-gray-700 active:scale-90 transition-transform">
+                <MoreHorizontal size={20} />
               </button>
-              <button onClick={onClose} className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-500 shadow-md border border-gray-100 dark:border-gray-700 active:scale-90 transition-transform">
-                <X size={18} />
+              <button onClick={onClose} className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-500 shadow-md border border-gray-100 dark:border-gray-700 active:scale-90 transition-transform">
+                <X size={20} />
               </button>
             </>
           ) : (
@@ -214,7 +262,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
 
           {isEditing && (
             <section className="mb-8 animate-fade-in">
-              <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em] mb-4">Categoría</h2>
+              <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em] mb-4">{t.category}</h2>
               <div className="flex overflow-x-auto no-scrollbar gap-3 pb-2">
                 {activeTemplate.categories.map((cat, idx) => {
                   const isSelected = editedEvent.categoryLabel === cat.label || (!editedEvent.categoryLabel && editedEvent.type === cat.type);
@@ -317,6 +365,45 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
               </div>
             )}
           </section>
+
+          {/* New Automation Section */}
+          {isCreating && isEditing && (
+            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 mb-8 border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in">
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em]">{t.recurrence_title}</h2>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={isRecurrenceEnabled} onChange={(e) => setIsRecurrenceEnabled(e.target.checked)} />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              {isRecurrenceEnabled && (
+                <div className="space-y-4 animate-slide-down">
+                  <p className="text-xs text-gray-500 font-medium">{t.recurrence_desc}</p>
+                  <div className="flex justify-between gap-1">
+                    {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day, idx) => {
+                      // idx 0 = Sunday, 1 = Monday... matches getDay()
+                      const isSelected = recurrenceDays.includes(idx);
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setRecurrenceDays(prev => prev.includes(idx) ? prev.filter(d => d !== idx) : [...prev, idx]);
+                          }}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all ${isSelected
+                            ? 'bg-blue-500 text-white shadow-md scale-105'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                            }`}
+                        >
+                          {day}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
           <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 mb-8 border border-gray-100 dark:border-gray-800 shadow-sm">
             <div className="flex justify-between items-center mb-5">

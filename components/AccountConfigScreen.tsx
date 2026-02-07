@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, Camera, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, Camera, Eye, EyeOff, Loader2, CheckCircle2, LogOut } from 'lucide-react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { useAuth } from '../src/contexts/AuthContext';
 
@@ -178,9 +178,9 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
             <input
               type="email"
               value={formData.email}
-              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              disabled={true}
               placeholder="correo@ejemplo.com"
-              className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-gray-100 dark:focus:border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900 dark:text-white transition-all focus:ring-0"
+              className="w-full bg-gray-100 dark:bg-gray-800/50 border-2 border-transparent rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-500 dark:text-gray-500 cursor-not-allowed"
             />
           </div>
 
@@ -196,7 +196,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
               />
               <button
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
                 type="button"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -229,9 +229,10 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
 
           <button
             onClick={signOut}
-            className="w-full py-4 text-red-500 dark:text-red-400 font-black text-xs uppercase tracking-widest active:scale-95 transition-all"
+            className="w-full bg-red-500/10 dark:bg-red-500/5 rounded-[2rem] p-5 flex items-center justify-center gap-3 border border-red-500/20 dark:border-red-500/10 active:scale-[0.98] transition-all group"
           >
-            Cerrar sesión
+            <LogOut size={18} className="text-red-500" />
+            <span className="text-red-500 font-black text-xs uppercase tracking-[0.2em]">{t.logout || 'Cerrar sesión'}</span>
           </button>
         </div>
       </main>
