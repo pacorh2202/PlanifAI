@@ -20,6 +20,7 @@ class PlaybackProcessor extends AudioWorkletProcessor {
         const sampleCount = channel.length; // Usually 128
 
         let samplesFilled = 0;
+        const wasNotEmpty = this.queue.length > 0;
 
         while (samplesFilled < sampleCount && this.queue.length > 0) {
             const currentChunk = this.queue[0];
@@ -37,6 +38,10 @@ class PlaybackProcessor extends AudioWorkletProcessor {
                 this.queue.shift();
                 this.bufferOffset = 0;
             }
+        }
+
+        if (wasNotEmpty && this.queue.length === 0) {
+            this.port.postMessage('playback-ended');
         }
 
         return true;

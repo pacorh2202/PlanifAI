@@ -5,7 +5,7 @@ import { useCalendar } from '../contexts/CalendarContext';
 import { Visualizer } from './Visualizer';
 
 export const ChatScreen: React.FC = () => {
-  const { connect, disconnect, connected, isTalking, volume } = usePlanAILive();
+  const { connect, disconnect, connected, isTalking, isThinking, volume } = usePlanAILive();
   const { t, assistantVoice } = useCalendar();
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export const ChatScreen: React.FC = () => {
 
       {/* Main Visualizer */}
       <div className="flex-1 flex flex-col items-center justify-center z-10 relative">
-        <Visualizer active={connected} volume={volume} isTalking={isTalking} />
+        <Visualizer active={connected} volume={volume} isTalking={isTalking} isThinking={isThinking} />
       </div>
 
       {/* Connection Toggle Button */}

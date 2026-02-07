@@ -11,6 +11,7 @@ export const usePlanAILive = () => {
   const [isTalking, setIsTalking] = useState(false);
   const [volume, setVolume] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -93,6 +94,7 @@ export const usePlanAILive = () => {
     }
     setConnected(false);
     setIsTalking(false);
+    setIsThinking(false);
     setVolume(0);
     setIsConnecting(false);
     activeSourceCountRef.current = 0;
@@ -172,52 +174,24 @@ export const usePlanAILive = () => {
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
-          systemInstruction: `Eres ${assistantName}, asistente de voz de ${userName} en PlanifAI.
+          systemInstruction: `Eres ${assistantName}, el asistente inteligente de ${userName} en PlanifAI.
 
-${langContext}
+## Personalidad y Tono
+- **Natural y Humano**: Habla de forma fluida, como un amigo eficiente. Evita sonar como un robot.
+- **Brevedad Extrema**: Nunca des explicaciones largas. Si puedes decir algo en 5 palabras, no uses 10.
+- **Sin Repeticiones**: Si ya has confirmado algo o el usuario lo sabe, no lo repitas. 
 
-## Tu Función
-Gestiona el calendario de forma eficiente y precisa. Prioriza ejecutar acciones sobre explicarlas. 
+## Protocolo de Acción (CRÍTICO)
+1. **Ejecución Directa**: Cuando el usuario pida algo, llama a la herramienta manageCalendar INMEDIATAMENTE. No pidas permiso ni digas "vale, lo hago".
+2. **Confirmación Única**: Tras una acción EXITOSA, di SOLO: "${confirmationPhrase}". NADA MÁS.
+3. **Manejo de Errores**: Si algo falla, explica brevemente por qué y pregunta qué quieres hacer.
 
-## Protocolo de Respuesta (CRÍTICO)
-1. **Confirma UNA SOLA VEZ**: Tras ejecutar manageCalendar con éxito, di ÚNICAMENTE: "${confirmationPhrase}". 
-2. **NO repitas**: No repitas los detalles de la tarea, ni la hora, ni pidas más confirmación después de decir la frase.
-3. **Idioma Estricto**: Si el contexto es Inglés, NO uses ninguna palabra en Español. Si el contexto es Español, NO uses ninguna palabra en Inglés.
-4. **Gramática y Pronunciación**: Habla de forma clara, con gramática perfecta y pronunciación natural. No cometas errores gramaticales.
+## Contexto Temporal y Amigos
+- Fecha actual: ${localTimeFull} (Llevamos cuenta de la zona horaria UTC${tzOffset >= 0 ? '+' : ''}${-tzOffset / 60}).
+- Amigos disponibles: ${friendsSummary}
+- Eventos hoy: ${eventsSummary || "No hay eventos hoy."}
 
-## Protocolo de Alta Velocidad
-1. **Extrae TODO lo mencionado**:
-   - Título SIN emoji (el icono se asigna automáticamente según categoryLabel)
-   - Inicio + Fin (si no dice fin: +1 hora)
-   - Ubicación (ej: "en casa de Ana")
-   - Notas/tareas (todo lo adicional)
-   - Participantes (nombres de personas)
-
-2. **Ejecuta inmediatamente**: Apenas tengas datos mínimos, llama a manageCalendar. No expliques antes de llamar a la herramienta.
-
-## Reglas de Interpretación Temporal (MÁXIMA PRIORIDAD)
-- **"Por la tarde"**: Se refiere a horario tardío, desde las 12:00h hasta las 24:00h (prioriza tarde/noche).
-- **"Hora de comer"**: Rango del mediodía, estrictamente entre las 12:00h y las 16:00h.
-- **"Cena"**: Rango nocturno, estrictamente entre las 20:00h y las 00:00h.
-- **Horarios ambiguos**: Si dice "a las 3" pregunta AM o PM si no es obvio por el contexto.
-
-## Reglas Críticas Amigos
-- **Participantes**: 
-  * Si mencionan "con [Nombre]": añade el nombre al array attendees.
-  * El sistema buscará automáticamente en la red de amigos.
-  * NO inventes participantes, solo añade los que mencionen explícitamente.
-
-## Contexto Temporal
-Fecha y hora local: ${localTimeFull}
-Zona horaria: UTC${tzOffset >= 0 ? '+' : ''}${-tzOffset / 60}
-
-## Red de Amigos
-${friendsSummary}
-
-## Eventos Programados
-${eventsSummary || "Sin eventos actualmente."}
-
-Habla con naturalidad, precisión y profesionalismo.`,
+Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática perfecta.`,
           inputAudioTranscription: {},
           outputAudioTranscription: {},
           speechConfig: {
@@ -265,6 +239,11 @@ Habla con naturalidad, precisión y profesionalismo.`,
               // 2. Playback Processor
               const playbackNode = new AudioWorkletNode(outputContextRef.current, 'playback-processor');
               playbackNodeRef.current = playbackNode;
+              playbackNode.port.onmessage = (e) => {
+                if (e.data === 'playback-ended') {
+                  setIsTalking(false);
+                }
+              };
               playbackNode.connect(outputContextRef.current.destination);
 
               source.connect(pcmNode);
@@ -283,19 +262,14 @@ Habla con naturalidad, precisión y profesionalismo.`,
             const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (audioData && playbackNodeRef.current) {
               setIsTalking(true);
+              setIsThinking(false);
               const buffer = base64ToArrayBuffer(audioData);
               const pcmData = new Int16Array(buffer);
               playbackNodeRef.current.port.postMessage(pcmData);
-
-              // Reset talking state after a proportional delay to the audio length
-              // (24k samples/sec, so buffer.byteLength / 2 / 24000 seconds)
-              const durationMs = (pcmData.length / 24000) * 1000;
-              setTimeout(() => {
-                if (connected) setIsTalking(false);
-              }, durationMs + 100);
             }
             if (msg.toolCall) {
               console.log('[AI] 🔧 Tool call received:', JSON.stringify(msg.toolCall, null, 2));
+              setIsThinking(true);
               const functionResponses = [];
               for (const fc of msg.toolCall.functionCalls) {
                 console.log('[AI] 📞 Function:', fc.name, '| Args:', JSON.stringify(fc.args, null, 2));
@@ -358,5 +332,5 @@ Habla con naturalidad, precisión y profesionalismo.`,
     }
   }, [connected, isConnecting, events, executeAction, userName, assistantName, activeTemplate, disconnect, language, t]);
 
-  return { connect, disconnect, connected, isTalking, volume };
+  return { connect, disconnect, connected, isTalking, isThinking, volume };
 };

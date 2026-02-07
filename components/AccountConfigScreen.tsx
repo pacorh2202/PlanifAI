@@ -10,7 +10,7 @@ interface AccountConfigScreenProps {
 
 export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack }) => {
   const { accentColor, setProfileImage, profileImage, t } = useCalendar();
-  const { user, profile, updateProfile, updateEmail, updatePassword } = useAuth();
+  const { user, profile, updateProfile, updateEmail, updatePassword, signOut } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -135,8 +135,8 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
         {/* Status Message */}
         {message && (
           <div className={`p-4 rounded-2xl flex items-center gap-3 animate-fade-in ${message.type === 'success'
-              ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-              : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+            ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+            : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
             }`}>
             {message.type === 'success' && <CheckCircle2 size={18} />}
             <p className="text-xs font-bold uppercase tracking-widest">{message.text}</p>
@@ -225,6 +225,13 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
             className="w-full py-4 text-gray-500 dark:text-gray-400 font-black text-xs uppercase tracking-widest active:scale-95 transition-all"
           >
             Cancelar
+          </button>
+
+          <button
+            onClick={signOut}
+            className="w-full py-4 text-red-500 dark:text-red-400 font-black text-xs uppercase tracking-widest active:scale-95 transition-all"
+          >
+            Cerrar sesión
           </button>
         </div>
       </main>

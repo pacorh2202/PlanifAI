@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Send, MessageSquare, Loader2 } from 'lucide-react';
+import { ChevronLeft, Send, MessageSquare, Loader2, CheckCircle2 } from 'lucide-react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { useAuth } from '../src/contexts/AuthContext';
 import { supabase } from '../src/lib/supabase';
@@ -22,6 +22,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
+    const [showThankYou, setShowThankYou] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -71,6 +72,8 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
 
             setSuggestions([...suggestions, data]);
             setMessage('');
+            setShowThankYou(true);
+            setTimeout(() => setShowThankYou(false), 3000);
         } catch (error) {
             console.error('Error sending suggestion:', error);
             alert('Error al enviar sugerencia. Por favor intenta de nuevo.');
@@ -129,6 +132,15 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                                 </span>
                             </div>
                         ))
+                    )}
+
+                    {showThankYou && (
+                        <div className="flex justify-center animate-bounce-in">
+                            <div className="bg-green-500 text-white px-6 py-3 rounded-2xl text-xs font-black shadow-lg uppercase tracking-widest flex items-center gap-2">
+                                <CheckCircle2 size={16} />
+                                ¡Gracias por tu sugerencia!
+                            </div>
+                        </div>
                     )}
                 </div>
 
