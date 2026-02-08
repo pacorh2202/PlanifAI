@@ -45,15 +45,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Initialize auth state
     useEffect(() => {
-        // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                fetchProfile(session.user.id);
+        // Get initial session with error handling
+        const initAuth = async () => {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+
+                setSession(session);
+                setUser(session?.user ?? null);
+                if (session?.user) {
+                    await fetchProfile(session.user.id);
+                }
+            } catch (error) {
+                console.error('Error during auth initialization:', error);
+                // Ensure state is at least consistent even if auth fails
+                setUser(null);
+                setProfile(null);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
-        });
+        };
+
+        initAuth();
 
         // Listen for auth changes
         const {

@@ -115,11 +115,11 @@ export const usePlanAILive = () => {
     nextStartTimeRef.current = 0;
     activeSourceCountRef.current = 0;
 
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (process as any)?.env?.GEMINI_API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     console.log('[AI] 🔑 API Key status:', apiKey ? `Found (length: ${apiKey.length})` : 'NOT FOUND');
 
     if (!apiKey) {
-      console.error('[AI] ❌ VITE_GEMINI_API_KEY not found in import.meta.env or process.env');
+      console.error('[AI] ❌ VITE_GEMINI_API_KEY not found in import.meta.env');
       alert('ERROR: API Key no encontrada. Asegúrate de que VITE_GEMINI_API_KEY esté correctamente configurada en las Variables de Entorno de tu hosting (Cloudflare/Vercel).');
       setIsConnecting(false);
       return;
