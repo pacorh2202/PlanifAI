@@ -10,6 +10,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
+  <script>
+    window.onerror = function (msg, url, line, col, error) {
+      document.body.innerHTML = '<div style="background:white;color:red;padding:20px;font-family:sans-serif;">' +
+        '<h1>Fatal Load Error</h1>' +
+        '<p><b>Error:</b> ' + msg + '</p>' +
+        '<p><b>Source:</b> ' + url + ':' + line + ':' + col + '</p>' +
+        '<pre>' + (error ? error.stack : "") + '</pre>' +
+        '</div>';
+    };
+  </script>
 </head>
 
 <body>
