@@ -207,11 +207,15 @@ export const usePlanAILive = () => {
         callbacks: {
           onopen: async () => {
             console.log('[AI] ✅ WebSocket connection opened');
-            await audioContextRef.current?.resume();
-            await outputContextRef.current?.resume();
-
             const session = await sessionPromise;
             sessionRef.current = session;
+
+            // CRITICAL: Force resume contexts on open
+            if (audioContextRef.current?.state === 'suspended') await audioContextRef.current.resume();
+            if (outputContextRef.current?.state === 'suspended') await outputContextRef.current.resume();
+
+            console.log('[AI] 🔊 AudioContexts states:', audioContextRef.current?.state, outputContextRef.current?.state);
+
             setConnected(true);
             setIsConnecting(false);
             if (audioContextRef.current && mediaStreamRef.current && outputContextRef.current) {
@@ -280,11 +284,18 @@ export const usePlanAILive = () => {
                 }
                 const audioData = part.inlineData?.data;
                 if (audioData && playbackNodeRef.current) {
-                  console.log('[AI] 🔊 Audio data received, length:', audioData.length);
+                  // Diagnostic: Check if output context is still running
+                  if (outputContextRef.current?.state === 'suspended') {
+                    console.log('[AI] 🔊 Resuming output context...');
+                    outputContextRef.current.resume();
+                  }
+
                   setIsTalking(true);
                   setIsThinking(false);
                   const buffer = base64ToArrayBuffer(audioData);
                   const pcmData = new Int16Array(buffer);
+
+                  if (Math.random() < 0.1) console.log('[AI] 🔊 Audio chunk playing, size:', pcmData.length);
                   playbackNodeRef.current.port.postMessage(pcmData);
                 }
               }
