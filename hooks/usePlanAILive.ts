@@ -187,7 +187,7 @@ export const usePlanAILive = () => {
       const sessionPromise = ai.live.connect({
         model: GEMINI_CONFIG.MODEL,
         config: {
-          responseModalities: [Modality.AUDIO],
+          responseModalities: [Modality.AUDIO, Modality.TEXT],
           tools: [{ functionDeclarations: [calendarTool] }],
           systemInstruction: GEMINI_CONFIG.SYSTEM_INSTRUCTION(
             userName,
@@ -270,10 +270,14 @@ export const usePlanAILive = () => {
             if (isFirstRun) {
               const session = await sessionPromise;
               const greeting = language === 'es' ? `Hola ${userName}, soy ${assistantName}. ${t.onboarding_msg}` : `Hello ${userName}, I'm ${assistantName}. ${t.onboarding_msg}`;
+              console.log('[AI] 📤 Sending initial greeting:', greeting);
               session.sendRealtimeInput({ text: greeting });
             }
           },
           onmessage: async (msg: LiveServerMessage) => {
+            // Diagnostic: Log everything except raw audio data to avoid flooding console
+            console.log('[AI] 📥 Incoming message:', JSON.stringify(msg, (key, val) => key === 'inlineData' ? '(audio data)' : val));
+
             if (!connected) return;
 
             // 1. Handle Model Turn (Audio/Text)
