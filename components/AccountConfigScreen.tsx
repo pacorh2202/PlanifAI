@@ -30,7 +30,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
         name: profile?.user_name || '',
         handle: profile?.handle || '',
         email: user?.email || '',
-        password: '' // Always empty initially for security
+        password: ''// Always empty initially for security
       });
     }
   }, [profile, user]);
@@ -43,11 +43,11 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
   const handleSave = async () => {
     setLoading(true);
     try {
-      // 1. Update Profile (Name & Handle)
+     // 1. Update Profile (Name & Handle)
       const profileUpdates: any = {};
       if (formData.name !== profile?.user_name) profileUpdates.user_name = formData.name;
       if (formData.handle !== profile?.handle) {
-        const handleRegex = /^[a-z0-9_]{3,20}$/;
+        const handleRegex =/^[a-z0-9_]{3,20}$/;
         if (!handleRegex.test(formData.handle.toLowerCase())) {
           throw new Error('El ID de usuario debe tener entre 3 y 20 caracteres (letras, números o guiones bajos)');
         }
@@ -58,14 +58,14 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
         await updateProfile(profileUpdates);
       }
 
-      // 2. Update Email if changed
+     // 2. Update Email if changed
       if (formData.email !== user?.email) {
         const { error: emailError } = await updateEmail(formData.email);
         if (emailError) throw emailError;
         showToast('success', 'Email de confirmación enviado');
       }
 
-      // 3. Update Password if provided
+     // 3. Update Password if provided
       if (formData.password) {
         if (formData.password.length < 6) {
           throw new Error('La contraseña debe tener al menos 6 caracteres');
@@ -100,9 +100,9 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
   return (
     <div className="flex flex-col h-full bg-white  transition-colors duration-300">
       {/* Header */}
-      <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-white/80 /80 backdrop-blur-md z-20">
+      <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-white/80/80 backdrop-blur-md z-20">
         <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 :bg-gray-800 transition-colors">
-          <ChevronLeft className="text-gray-900 " size={28} />
+          <ChevronLeft className="text-gray-900 " size={28}/>
         </button>
         <h1 className="text-xl font-bold text-gray-900  tracking-tight">Configuración</h1>
         <div className="w-10"></div>
@@ -117,7 +117,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
               style={{ backgroundColor: profileImage ? 'transparent' : accentColor }}
             >
               {profileImage ? (
-                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                <img src={profileImage} alt="Profile" className="w-full h-full object-cover"/>
               ) : (
                 initials
               )}
@@ -126,19 +126,19 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-0 right-0 w-10 h-10 bg-gray-900  rounded-full flex items-center justify-center shadow-lg border-2 border-white  active:scale-90 transition-transform"
             >
-              <Camera size={18} className="text-white " />
+              <Camera size={18} className="text-white "/>
             </button>
-            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*"/>
           </div>
         </div>
 
         {/* Status Message */}
         {message && (
           <div className={`p-4 rounded-2xl flex items-center gap-3 animate-fade-in ${message.type === 'success'
-            ? 'bg-green-50 text-green-600 /20 '
-            : 'bg-red-50 text-red-600 /20 '
+            ? 'bg-green-50 text-green-600/20 '
+            : 'bg-red-50 text-red-600/20 '
             }`}>
-            {message.type === 'success' && <CheckCircle2 size={18} />}
+            {message.type === 'success' && <CheckCircle2 size={18}/>}
             <p className="text-xs font-bold uppercase tracking-widest">{message.text}</p>
           </div>
         )}
@@ -154,7 +154,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Tu nombre"
                 className="w-full bg-gray-50  border-2 border-transparent focus:border-gray-100 :border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900  transition-all focus:ring-0"
-              />
+             />
             </div>
           </div>
 
@@ -168,7 +168,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                 placeholder="nombre_usuario"
                 className="w-full bg-gray-50  border-2 border-transparent focus:border-gray-100 :border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900  transition-all focus:ring-0"
                 style={{ paddingLeft: formData.handle.length > 0 ? '2.8rem' : '1.5rem' }}
-              />
+             />
               <span className="absolute left-7 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none font-bold">@</span>
             </div>
           </div>
@@ -180,8 +180,8 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
               value={formData.email}
               disabled={true}
               placeholder="correo@ejemplo.com"
-              className="w-full bg-gray-100 /50 border-2 border-transparent rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-500  cursor-not-allowed"
-            />
+              className="w-full bg-gray-100/50 border-2 border-transparent rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-500  cursor-not-allowed"
+           />
           </div>
 
           <div className="space-y-2">
@@ -193,13 +193,13 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"
                 className="w-full bg-gray-50  border-2 border-transparent focus:border-gray-100 :border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900  transition-all focus:ring-0"
-              />
+             />
               <button
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
                 type="button"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
               </button>
             </div>
           </div>
@@ -217,7 +217,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
             className="w-full py-5 rounded-[2rem] text-white font-black text-sm uppercase tracking-[0.15em] shadow-xl active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             style={{ backgroundColor: accentColor }}
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : 'Guardar perfil'}
+            {loading ? <Loader2 className="animate-spin" size={20}/> : 'Guardar perfil'}
           </button>
 
           <button
@@ -229,9 +229,9 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
 
           <button
             onClick={signOut}
-            className="w-full bg-red-500/10 /5 rounded-[2rem] p-5 flex items-center justify-center gap-3 border border-red-500/20 /10 active:scale-[0.98] transition-all group"
+            className="w-full bg-red-500/10/5 rounded-[2rem] p-5 flex items-center justify-center gap-3 border border-red-500/20/10 active:scale-[0.98] transition-all group"
           >
-            <LogOut size={18} className="text-red-500" />
+            <LogOut size={18} className="text-red-500"/>
             <span className="text-red-500 font-black text-xs uppercase tracking-[0.2em]">{t.logout || 'Cerrar sesión'}</span>
           </button>
         </div>

@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, FunctionDeclaration, Type, Modality } from '@google/genai';
 import { useCalendar } from '../contexts/CalendarContext';
+import { supabase } from '../src/lib/supabase';
+import { GEMINI_CONFIG } from '../src/lib/ai-config';
 import { createPcmBlob, decodeAudioData, base64ToArrayBuffer } from './audio-utils';
 import { CalendarEvent } from '../types';
 
@@ -19,6 +21,10 @@ export const usePlanAILive = () => {
   const processorRef = useRef<AudioWorkletNode | null>(null);
   const playbackNodeRef = useRef<AudioWorkletNode | null>(null);
   const outputContextRef = useRef<AudioContext | null>(null);
+  const lastUserVoiceRef = useRef<number>(0);
+  const userIntentConnected = useRef<boolean>(false);
+  const reconnectAttempts = useRef<number>(0);
+  const maxReconnectAttempts = 5;
   const nextStartTimeRef = useRef<number>(0);
   const sessionRef = useRef<any>(null);
   const activeSourceCountRef = useRef<number>(0);
@@ -64,6 +70,9 @@ export const usePlanAILive = () => {
   };
 
   const disconnect = useCallback(async () => {
+    console.log('[PlanifAI Agent] 🛑 User requested disconnect.');
+    userIntentConnected.current = false;
+    reconnectAttempts.current = 0;
     setIsProcessing(false); // Clear processing flag
     if (sessionRef.current) {
       try {
@@ -107,20 +116,22 @@ export const usePlanAILive = () => {
     console.log('[AI] 📊 Current state - connected:', connected, 'isConnecting:', isConnecting);
 
     if (connected || isConnecting) {
-      console.log('[AI] ⚠️ Already connected or connecting, returning');
+      console.log('[PlanifAI Agent] ⚠️ Already in state:', connected ? 'Connected' : 'Connecting');
       return;
     }
+    userIntentConnected.current = true;
     setIsConnecting(true);
     setIsProcessing(false); // Reset processing flag
     nextStartTimeRef.current = 0;
     activeSourceCountRef.current = 0;
 
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    console.log('[AI] 🔑 API Key status:', apiKey ? `Found (length: ${apiKey.length})` : 'NOT FOUND');
+    // Use hardcoded key from GEMINI_CONFIG as priority to bypass Cloudflare Env Var issues
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || GEMINI_CONFIG.API_KEY;
+    console.log('[AI Agent] 🔑 API Key resolved:', apiKey ? 'VALID' : 'MISSING');
 
     if (!apiKey) {
-      console.error('[AI] ❌ VITE_GEMINI_API_KEY not found in import.meta.env');
-      alert('ERROR: API Key no encontrada. Asegúrate de que VITE_GEMINI_API_KEY esté correctamente configurada en las Variables de Entorno de tu hosting (Cloudflare/Vercel).');
+      console.error('[AI Agent] ❌ No API key available');
+      alert('ERROR CRÍTICO: La API Key no está disponible. Contacta con soporte.');
       setIsConnecting(false);
       return;
     }
@@ -171,38 +182,21 @@ export const usePlanAILive = () => {
       console.log('[AI] Connecting with voice:', voiceName);
       console.log('[AI] Calendar tool configured:', calendarTool.name);
 
-      console.log('[AI] 📡 Connecting to Gemini Live API with origin:', window.location.origin);
+      console.log('[AI Agent] 📡 Connecting to Multimodal Live API...');
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.0-flash-exp', // Use a stable and common multimodal live model identifier
+        model: GEMINI_CONFIG.MODEL,
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
-          systemInstruction: `Eres ${assistantName}, el asistente inteligente de ${userName} en PlanifAI.
-
-## Personalidad y Tono
-- **Natural y Humano**: Habla de forma fluida, como un amigo eficiente. Evita sonar como un robot.
-- **Brevedad Extrema**: Nunca des explicaciones largas. Si puedes decir algo en 5 palabras, no uses 10.
-- **Sin Repeticiones**: Si ya has confirmado algo o el usuario lo sabe, no lo repitas. 
-
-## Protocolo de Acción (CRÍTICO)
-1. **Ejecución Directa**: Cuando el usuario pida algo, llama a la herramienta manageCalendar INMEDIATAMENTE. No pidas permiso ni digas "vale, lo hago".
-2. **Confirmación Única**: Tras una acción EXITOSA, di SOLO: "${confirmationPhrase}". NADA MÁS.
-3. **Manejo de Errores**: Si algo falla, explica brevemente por qué y pregunta qué quieres hacer.
-
-## Capacidades de Optimización
-Puedes y DEBES modificar tareas existentes si el usuario lo pide. Trata las tareas como objetos editables. Puedes:
-- Cambiar hora de inicio/fin o duración.
-- Repriorizar o mover de día.
-- Añadir detalles, subtareas o recordatorios.
-- Dividir una tarea en varias.
-NO crees una tarea nueva si el usuario solo quiere editar una existente. Usa \`actionType: 'update'\`.
-
-## Contexto Temporal y Amigos
-- Fecha actual: ${localTimeFull} (Llevamos cuenta de la zona horaria UTC${tzOffset >= 0 ? '+' : ''}${-tzOffset / 60}).
-- Amigos disponibles: ${friendsSummary}
-- Eventos hoy: ${eventsSummary || "No hay eventos hoy."}
-
-Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática perfecta.`,
+          systemInstruction: GEMINI_CONFIG.SYSTEM_INSTRUCTION(
+            userName,
+            assistantName,
+            language as 'es' | 'en',
+            eventsSummary,
+            friendsSummary,
+            localTimeFull,
+            tzOffset
+          ),
           inputAudioTranscription: {},
           outputAudioTranscription: {},
           speechConfig: {
@@ -328,16 +322,25 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             }
           },
           onclose: (e: any) => {
-            console.log('[AI] 🔌 WebSocket connection closed:', e.code, e.reason);
+            console.log('[PlanifAI Agent] 🔌 WebSocket connection closed:', e.code, e.reason);
             setConnected(false);
             setIsTalking(false);
             setIsConnecting(false);
+
+            // Auto-reconnect logic if it was unintentional
+            if (userIntentConnected.current && reconnectAttempts.current < maxReconnectAttempts) {
+              const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 10000);
+              console.log(`[PlanifAI Agent] 🔄 Reconnecting in ${delay}ms... (Attempt ${reconnectAttempts.current + 1})`);
+              setTimeout(() => {
+                reconnectAttempts.current++;
+                connect(voiceName, false);
+              }, delay);
+            }
           },
           onerror: (e: any) => {
-            console.error('[AI] ⚠️ WebSocket error event:', e);
+            console.error('[PlanifAI Agent] ⚠️ WebSocket error:', e);
             setConnected(false);
             setIsConnecting(false);
-            disconnect();
           }
         }
       });

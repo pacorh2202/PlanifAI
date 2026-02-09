@@ -6,19 +6,19 @@ import { Flame, TrendingUp, ChevronDown, Calendar, Lightbulb, CheckCircle, Shiel
 export const StatsScreen: React.FC = () => {
   const { stats, t, language, accentColor } = useCalendar();
 
-  // Real Data: Activity Chart (Weekly activity from stats)
-  // Real Data: Activity Chart (Weekly activity from local events)
+ // Real Data: Activity Chart (Weekly activity from stats)
+ // Real Data: Activity Chart (Weekly activity from local events)
   const ACTIVITY_DATA = useMemo(() => {
     const days = language === 'es'
       ? ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM']
       : ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
-    // Initialize with 0
+   // Initialize with 0
     const counts = [0, 0, 0, 0, 0, 0, 0];
 
-    // Get start of current week (Monday)
+   // Get start of current week (Monday)
     const now = new Date();
-    const day = now.getDay(); // 0=Sun, 1=Mon
+    const day = now.getDay();// 0=Sun, 1=Mon
     const diff = now.getDate() - day + (day === 0 ? -6 : 1);
     const startOfWeek = new Date(now);
     startOfWeek.setDate(diff);
@@ -27,13 +27,13 @@ export const StatsScreen: React.FC = () => {
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 7);
 
-    // Provide default empty events if undefined
+   // Provide default empty events if undefined
     const validEvents = stats && stats.total_tasks > 0 ? (useCalendar().events || []) : [];
 
     validEvents.forEach(event => {
       const eventDate = new Date(event.start);
       if (eventDate >= startOfWeek && eventDate < endOfWeek && event.status === 'completed') {
-        // Map Sunday (0) to 6, Mon (1) to 0...
+       // Map Sunday (0) to 6, Mon (1) to 0...
         const dayIndex = eventDate.getDay() === 0 ? 6 : eventDate.getDay() - 1;
         if (dayIndex >= 0 && dayIndex < 7) {
           counts[dayIndex]++;
@@ -41,18 +41,18 @@ export const StatsScreen: React.FC = () => {
       }
     });
 
-    // If no data, show some small random values for vitality or 0
-    // But better to show true data. 
-    // If all 0, maybe user thinks it's broken? 
-    // Let's stick to real data. Max value could be small.
+   // If no data, show some small random values for vitality or 0
+   // But better to show true data. 
+   // If all 0, maybe user thinks it's broken? 
+   // Let's stick to real data. Max value could be small.
 
     return days.map((name, index) => ({
       name,
       value: counts[index]
     }));
-  }, [language, stats]); // Depend on stats to trigger re-calc if fetched
+  }, [language, stats]);// Depend on stats to trigger re-calc if fetched
 
-  // Real Data: Distribution Chart (Categories from stats)
+ // Real Data: Distribution Chart (Categories from stats)
   const DISTRIBUTION_DATA = useMemo(() => {
     if (!stats || !stats.distribution || Object.keys(stats.distribution).length === 0) {
       return language === 'es'
@@ -72,7 +72,7 @@ export const StatsScreen: React.FC = () => {
 
   const { activeTemplate } = useCalendar();
 
-  // Mock data for premium sections (kept as mock for now but could be dynamic)
+ // Mock data for premium sections (kept as mock for now but could be dynamic)
   const comparisonData = {
     deporte: [
       { day: 'L', you: 4, friend: 3 },
@@ -94,17 +94,17 @@ export const StatsScreen: React.FC = () => {
     ]
   };
 
-  // Calculate specific colors for habits
+ // Calculate specific colors for habits
   const healthColor = activeTemplate.categories.find(c => c.type === 'health')?.color || accentColor;
   const leisureColor = activeTemplate.categories.find(c => c.type === 'leisure')?.color || accentColor;
   const foodColor = activeTemplate.categories.find(c => c.type === 'other' || c.label.includes('Comida'))?.color || accentColor;
 
-  // Dynamic Stress Level
+ // Dynamic Stress Level
   const stressLevel = useMemo(() => {
     const pending = stats?.pending_tasks || 0;
-    // Max stress at 15 pending tasks
-    const val = Math.min((pending / 15) * 100, 100);
-    return Math.max(val, 5); // Min 5% to show something
+   // Max stress at 15 pending tasks
+    const val = Math.min((pending/ 15) * 100, 100);
+    return Math.max(val, 5);// Min 5% to show something
   }, [stats]);
 
   const streakProgress = stats?.current_streak || 0;
@@ -115,7 +115,7 @@ export const StatsScreen: React.FC = () => {
       className="flex flex-col h-full bg-[#F8FAFC]  overflow-y-auto no-scrollbar pb-40 transition-opacity duration-300"
       style={{ willChange: 'opacity', contain: 'content' }}
     >
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 /80 backdrop-blur-md z-20">
+      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80/80 backdrop-blur-md z-20">
         <div className="w-10"></div>
         <h1 className="text-xl font-bold text-gray-900  tracking-tight">Estadísticas</h1>
         <div className="w-10"></div>
@@ -133,7 +133,7 @@ export const StatsScreen: React.FC = () => {
                 {streakProgress} <span className="text-2xl font-bold ml-1">días</span>
               </h2>
               <div className="flex items-center gap-1 mt-2 text-[#078809] font-bold text-xs">
-                <TrendingUp size={14} />
+                <TrendingUp size={14}/>
                 <span>+{(stats?.current_streak || 0) > 0 ? '5' : '0'}% vs. mes anterior</span>
               </div>
             </div>
@@ -148,13 +148,13 @@ export const StatsScreen: React.FC = () => {
                   stroke={accentColor}
                   strokeWidth="10"
                   strokeDasharray="263.89"
-                  strokeDashoffset={263.89 - (263.89 * Math.min(streakProgress / streakGoal, 1))}
+                  strokeDashoffset={263.89 - (263.89 * Math.min(streakProgress/ streakGoal, 1))}
                   strokeLinecap="round"
                   className="transition-all duration-1000"
                 ></circle>
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <Flame size={32} style={{ color: accentColor }} className="fill-current" />
+                <Flame size={32} style={{ color: accentColor }} className="fill-current"/>
               </div>
             </div>
           </div>
@@ -167,7 +167,7 @@ export const StatsScreen: React.FC = () => {
               <div
                 className="h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(0,0,0,0.1)]"
                 style={{
-                  width: `${Math.min((streakProgress / streakGoal) * 100, 100)}%`,
+                  width: `${Math.min((streakProgress/ streakGoal) * 100, 100)}%`,
                   backgroundColor: accentColor
                 }}
               ></div>
@@ -179,8 +179,8 @@ export const StatsScreen: React.FC = () => {
         <section className="bg-white  rounded-[2.5rem] p-8 shadow-sm border border-gray-100  flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-teal-50 /20 flex items-center justify-center text-teal-600">
-                <CheckCircle size={18} />
+              <div className="w-8 h-8 rounded-lg bg-teal-50/20 flex items-center justify-center text-teal-600">
+                <CheckCircle size={18}/>
               </div>
               <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em]">TASA DE COMPLETITUD</p>
             </div>
@@ -190,7 +190,7 @@ export const StatsScreen: React.FC = () => {
             <p className="text-[10px] text-gray-400 font-medium mt-1">Últimos 7 días</p>
           </div>
           <div className="flex items-center text-[#078809] bg-[#078809]/10 px-2.5 py-1 rounded-lg">
-            <ArrowUpRight size={14} className="mr-1" />
+            <ArrowUpRight size={14} className="mr-1"/>
             <span className="text-xs font-black">{(stats?.completion_rate || 0) > 50 ? '+5%' : '0%'}</span>
           </div>
         </section>
@@ -220,10 +220,10 @@ export const StatsScreen: React.FC = () => {
                       key={`cell-${index}`}
                       fill={index === 4 ? accentColor : '#F1F5F9'}
                       className=""
-                    />
+                   />
                   ))}
                 </Bar>
-                <XAxis dataKey="name" hide />
+                <XAxis dataKey="name" hide/>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -247,7 +247,7 @@ export const StatsScreen: React.FC = () => {
                     isAnimationActive={false}
                   >
                     {DISTRIBUTION_DATA.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={10} />
+                      <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={10}/>
                     ))}
                   </Pie>
                 </RPieChart>
@@ -276,8 +276,8 @@ export const StatsScreen: React.FC = () => {
         {/* Grid: KPIs Rápidos (Real) */}
         <div className="grid grid-cols-2 gap-4">
           <section className="bg-white  rounded-[2rem] p-5 shadow-sm border border-gray-100  flex flex-col justify-between aspect-square">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 /20 flex items-center justify-center text-indigo-600 mb-2">
-              <ShieldCheck size={22} />
+            <div className="w-10 h-10 rounded-xl bg-indigo-50/20 flex items-center justify-center text-indigo-600 mb-2">
+              <ShieldCheck size={22}/>
             </div>
             <div>
               <p className="text-[#94A3B8] text-[9px] font-black mb-1 uppercase tracking-[0.2em] leading-tight">EFICIENCIA</p>
@@ -288,8 +288,8 @@ export const StatsScreen: React.FC = () => {
             </div>
           </section>
           <section className="bg-white  rounded-[2rem] p-5 shadow-sm border border-gray-100  flex flex-col justify-between aspect-square">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 /20 flex items-center justify-center text-orange-600 mb-2">
-              <Rocket size={22} />
+            <div className="w-10 h-10 rounded-xl bg-orange-50/20 flex items-center justify-center text-orange-600 mb-2">
+              <Rocket size={22}/>
             </div>
             <div>
               <p className="text-[#94A3B8] text-[9px] font-black mb-1 uppercase tracking-[0.2em] leading-tight">PENDIENTES</p>
@@ -309,21 +309,21 @@ export const StatsScreen: React.FC = () => {
             title="Deporte"
             data={comparisonData.deporte}
             accentColor={accentColor}
-          />
+         />
           <CategoryComparisonCard
             title="Social"
             data={comparisonData.social}
             accentColor={accentColor}
-          />
+         />
         </div>
 
         {/* Mejorar Hábitos (Mock) */}
         <section className="mt-2">
           <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-4 ml-2">MEJORAR HÁBITOS</p>
           <div className="space-y-3">
-            <HabitIndicator label="Hacer más ejercicio" current={12} total={30} accentColor={healthColor} />
-            <HabitIndicator label="Levantarse pronto" current={22} total={30} accentColor={leisureColor} />
-            <HabitIndicator label="Comer sano" current={28} total={30} accentColor={foodColor} />
+            <HabitIndicator label="Hacer más ejercicio" current={12} total={30} accentColor={healthColor}/>
+            <HabitIndicator label="Levantarse pronto" current={22} total={30} accentColor={leisureColor}/>
+            <HabitIndicator label="Comer sano" current={28} total={30} accentColor={foodColor}/>
           </div>
         </section>
 
@@ -331,7 +331,7 @@ export const StatsScreen: React.FC = () => {
         <section className="bg-white  rounded-[2.5rem] p-8 shadow-sm border border-gray-100  mt-4">
           <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-center">STRESS LOAD</p>
           <div className="relative flex justify-center mb-6">
-            <StressGauge value={stressLevel} />
+            <StressGauge value={stressLevel}/>
           </div>
           <div className="text-center">
             <p className="text-xs text-gray-500  font-medium">Tu nivel de estrés ha bajado un 15% esta semana</p>
@@ -347,20 +347,20 @@ export const StatsScreen: React.FC = () => {
               title={t.article1_title || "Optimiza tu flujo de trabajo con la técnica Pomodoro"}
               desc={t.article1_desc || "Descubre cómo pequeños descansos pueden aumentar tu productividad diaria."}
               gradient="from-rose-400/80 to-rose-200/80"
-            />
+           />
             <ArticleCard
               image="https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=400&auto=format&fit=crop"
               title={t.article2_title || "Superalimentos para mantener el cerebro activo"}
               desc={t.article2_desc || "La nutrición es clave para mantener un enfoque sostenido durante el día."}
               gradient="from-emerald-400/80 to-emerald-200/80"
-            />
+           />
           </div>
         </section>
 
         {/* PlanifAI Tip (Semi-Dynamic) */}
-        <section className="bg-rose-50/50 /20 rounded-[2.5rem] p-6 border border-rose-100 /30 flex items-start gap-5 mt-4">
+        <section className="bg-rose-50/50/20 rounded-[2.5rem] p-6 border border-rose-100/30 flex items-start gap-5 mt-4">
           <div className="w-14 h-14 shrink-0 rounded-[1.2rem] bg-rose-400 flex items-center justify-center text-white shadow-lg shadow-rose-400/20">
-            <Lightbulb size={28} className="fill-white/20" />
+            <Lightbulb size={28} className="fill-white/20"/>
           </div>
           <div>
             <h4 className="font-bold text-gray-900  text-base">Tip de PlanifAI</h4>
@@ -401,8 +401,8 @@ const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor
         <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id={`gradient-you-${title}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={accentColor} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
+              <stop offset="5%" stopColor={accentColor} stopOpacity={0.3}/>
+              <stop offset="95%" stopColor={accentColor} stopOpacity={0}/>
             </linearGradient>
           </defs>
           <Area
@@ -413,7 +413,7 @@ const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor
             fillOpacity={1}
             fill={`url(#gradient-you-${title})`}
             isAnimationActive={false}
-          />
+         />
           <Area
             type="monotone"
             dataKey="friend"
@@ -421,7 +421,7 @@ const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor
             strokeWidth={2}
             fill="transparent"
             isAnimationActive={false}
-          />
+         />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -432,13 +432,13 @@ const HabitIndicator: React.FC<{ label: string; current: number; total: number; 
   <div className="bg-white  rounded-[1.5rem] p-5 shadow-sm border border-gray-100  flex flex-col gap-3">
     <div className="flex justify-between items-center">
       <span className="text-sm font-bold text-gray-900 ">{label}</span>
-      <ChevronDown size={18} className="text-gray-300" />
+      <ChevronDown size={18} className="text-gray-300"/>
     </div>
     <div className="flex items-center gap-4">
       <div className="flex-1 h-2 bg-gray-50  rounded-full overflow-hidden">
         <div
           className="h-full rounded-full"
-          style={{ width: `${(current / total) * 100}%`, backgroundColor: accentColor }}
+          style={{ width: `${(current/ total) * 100}%`, backgroundColor: accentColor }}
         ></div>
       </div>
       <span className="text-[10px] font-black text-rose-400 whitespace-nowrap">{current}/{total} días</span>
@@ -449,17 +449,17 @@ const HabitIndicator: React.FC<{ label: string; current: number; total: number; 
 const StressGauge: React.FC<{ value: number }> = ({ value }) => (
   <div className="relative w-64 h-32 overflow-hidden">
     <svg viewBox="0 0 200 100" className="w-full h-full">
-      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#F1F5F9" strokeWidth="12" strokeLinecap="round" />
+      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#F1F5F9" strokeWidth="12" strokeLinecap="round"/>
       <path
         d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#stressGradient)" strokeWidth="12" strokeLinecap="round"
-        strokeDasharray="251.32" strokeDashoffset={251.32 - (251.32 * (value / 100))}
+        strokeDasharray="251.32" strokeDashoffset={251.32 - (251.32 * (value/ 100))}
         className="transition-all duration-1000"
-      />
+     />
       <defs>
         <linearGradient id="stressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#10B981" />
-          <stop offset="50%" stopColor="#F59E0B" />
-          <stop offset="100%" stopColor="#EF4444" />
+          <stop offset="0%" stopColor="#10B981"/>
+          <stop offset="50%" stopColor="#F59E0B"/>
+          <stop offset="100%" stopColor="#EF4444"/>
         </linearGradient>
       </defs>
     </svg>
@@ -477,11 +477,11 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => (
 const ArticleCard: React.FC<{ image: string; title: string; desc: string; gradient: string }> = ({ image, title, desc, gradient }) => (
   <div className="bg-white  rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 ">
     <div className="relative h-44 flex items-center justify-center">
-      <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover opacity-80" />
+      <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover opacity-80"/>
       <div className={`absolute inset-0 bg-gradient-to-b ${gradient}`}></div>
       <div className="relative text-center px-4">
         <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-3">
-          <Calendar className="text-white" size={24} />
+          <Calendar className="text-white" size={24}/>
         </div>
         <p className="text-white font-black text-xs uppercase tracking-widest opacity-80 mb-1">PRODUCTIVITY</p>
         <div className="h-[1px] w-20 bg-white/40 mx-auto"></div>

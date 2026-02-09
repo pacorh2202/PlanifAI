@@ -12,37 +12,37 @@ export const PrivacyScreen: React.FC<PrivacyScreenProps> = ({ onBack }) => {
 
   const sections = [
     {
-      icon: <Database size={20} />,
+      icon: <Database size={20}/>,
       title: t.privacy_q1,
       content: (
         <ul className="space-y-3 mt-3 text-sm text-gray-600 ">
           <li className="flex gap-2">
-            <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
+            <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}/>
             <p>{t.privacy_q1_p1}</p>
           </li>
           <li className="flex gap-2">
-            <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
+            <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}/>
             <p>{t.privacy_q1_p2}</p>
           </li>
           <li className="flex gap-2">
-            <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
+            <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}/>
             <p>{t.privacy_q1_p3}</p>
           </li>
         </ul>
       )
     },
-    { icon: <Activity size={20} />, title: t.privacy_q2, description: t.privacy_q2_desc },
-    { icon: <Cpu size={20} />, title: t.privacy_q3, description: t.privacy_q3_desc },
-    { icon: <Cloud size={20} />, title: t.privacy_q4, description: t.privacy_q4_desc },
-    { icon: <Lock size={20} />, title: t.privacy_q5, description: t.privacy_q5_desc },
-    { icon: <UserRoundPen size={20} />, title: t.privacy_q6, description: t.privacy_q6_desc }
+    { icon: <Activity size={20}/>, title: t.privacy_q2, description: t.privacy_q2_desc },
+    { icon: <Cpu size={20}/>, title: t.privacy_q3, description: t.privacy_q3_desc },
+    { icon: <Cloud size={20}/>, title: t.privacy_q4, description: t.privacy_q4_desc },
+    { icon: <Lock size={20}/>, title: t.privacy_q5, description: t.privacy_q5_desc },
+    { icon: <UserRoundPen size={20}/>, title: t.privacy_q6, description: t.privacy_q6_desc }
   ];
 
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC]  overflow-y-auto no-scrollbar pb-10 transition-colors duration-300">
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 /80 backdrop-blur-md z-20">
+      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80/80 backdrop-blur-md z-20">
         <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 :bg-gray-800 transition-colors">
-          <ChevronLeft className="text-gray-900 " size={28} />
+          <ChevronLeft className="text-gray-900 " size={28}/>
         </button>
         <h1 className="text-xl font-bold text-gray-900  tracking-tight">{t.privacy_title}</h1>
         <div className="w-10"></div>

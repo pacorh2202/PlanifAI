@@ -42,9 +42,9 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
 
     return (
         <div className="flex flex-col h-full bg-[#F8FAFC]  overflow-y-auto no-scrollbar pb-20 transition-colors duration-300">
-            <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 /80 backdrop-blur-md z-20">
+            <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80/80 backdrop-blur-md z-20">
                 <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 :bg-gray-800 transition-colors">
-                    <ChevronLeft className="text-gray-900 " size={28} />
+                    <ChevronLeft className="text-gray-900 " size={28}/>
                 </button>
                 <h1 className="text-xl font-bold text-gray-900  tracking-tight text-center flex-1 pr-6">{t.sub_title}</h1>
             </header>
@@ -100,7 +100,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                                             {billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
                                         </span>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                                            / {billingPeriod === 'monthly' ? (t.sub_monthly === 'Mensual' ? 'mes' : 'month') : (t.sub_yearly === 'Anual' ? 'año' : 'year')}
+                                           / {billingPeriod === 'monthly' ? (t.sub_monthly === 'Mensual' ? 'mes' : 'month') : (t.sub_yearly === 'Anual' ? 'año' : 'year')}
                                         </p>
                                     </div>
                                 </div>
@@ -112,7 +112,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                                                 className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-300`}
                                                 style={{ backgroundColor: isActive ? `${accentColor}20` : '#F1F5F9' }}
                                             >
-                                                <Check size={12} style={{ color: isActive ? accentColor : '#94A3B8' }} strokeWidth={4} />
+                                                <Check size={12} style={{ color: isActive ? accentColor : '#94A3B8' }} strokeWidth={4}/>
                                             </div>
                                             <span className={`text-sm font-medium leading-tight transition-colors ${isActive ? 'text-gray-900 ' : 'text-gray-500 '}`}>
                                                 {feature}

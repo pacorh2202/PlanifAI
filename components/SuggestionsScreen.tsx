@@ -43,7 +43,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
 
             setMessage('');
             setShowThankYou(true);
-            setTimeout(() => setShowThankYou(false), 3000); // Hide after 3s
+            setTimeout(() => setShowThankYou(false), 3000);// Hide after 3s
         } catch (error) {
 
             console.error('Error sending suggestion:', error);
@@ -61,9 +61,9 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                 <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 w-[140%] h-[40%] rounded-full blur-[120px] transition-all duration-[1500ms] opacity-[0.08] [0.15]`} style={{ backgroundColor: accentColor }}></div>
             </div>
 
-            <header className="px-6 pt-14 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 /80 backdrop-blur-xl z-30">
-                <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/50 /50 backdrop-blur-xl border border-white/20  active:scale-90 transition-all">
-                    <ChevronLeft className="text-gray-900 " size={20} />
+            <header className="px-6 pt-14 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80/80 backdrop-blur-xl z-30">
+                <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/50/50 backdrop-blur-xl border border-white/20  active:scale-90 transition-all">
+                    <ChevronLeft className="text-gray-900 " size={20}/>
                 </button>
                 <h1 className="text-sm font-black text-gray-400  uppercase tracking-[0.2em]">Sugerencias</h1>
                 <div className="w-10"></div>
@@ -74,7 +74,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                     <div className="w-full max-w-lg space-y-6 animate-fade-in">
                         <div className="space-y-2 text-center mb-8">
                             <div className="w-20 h-20 bg-white  rounded-[2rem] flex items-center justify-center shadow-xl border border-white  mx-auto mb-6 text-gray-900  transform rotate-3 hover:rotate-6 transition-transform duration-300">
-                                <MessageSquare size={32} style={{ color: accentColor }} />
+                                <MessageSquare size={32} style={{ color: accentColor }}/>
                             </div>
                             <h2 className="text-2xl font-black text-gray-900  tracking-tight uppercase">Tu opinión importa</h2>
                             <p className="text-sm font-medium text-gray-400  leading-relaxed max-w-xs mx-auto">
@@ -90,7 +90,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                                 placeholder="Escribe tu sugerencia aquí..."
                                 rows={6}
                                 className="w-full bg-white  border-2 border-transparent focus:border-gray-200 :border-gray-700 rounded-[2rem] p-6 text-sm font-bold text-gray-900  shadow-xl placeholder:text-gray-300 :text-gray-600 resize-none outline-none transition-all relative z-10"
-                            />
+                           />
                         </div>
 
                         <button
@@ -102,18 +102,18 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                                 boxShadow: `0 20px 40px -10px ${accentColor}55`
                             }}
                         >
-                            {loading ? <Loader2 size={18} className="animate-spin" /> : (
+                            {loading ? <Loader2 size={18} className="animate-spin"/> : (
                                 <>
                                     Enviar Sugerencia
-                                    <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                    <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"/>
                                 </>
                             )}
                         </button>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center text-center animate-bounce-in max-w-xs mx-auto">
-                        <div className="w-24 h-24 rounded-full bg-green-500 text-white flex items-center justify-center shadow-2xl mb-8 border-4 border-green-100 /30">
-                            <CheckCircle2 size={40} strokeWidth={3} />
+                        <div className="w-24 h-24 rounded-full bg-green-500 text-white flex items-center justify-center shadow-2xl mb-8 border-4 border-green-100/30">
+                            <CheckCircle2 size={40} strokeWidth={3}/>
                         </div>
                         <h3 className="text-2xl font-black text-gray-900  mb-2 tracking-tight">¡Enviado!</h3>
                         <p className="text-gray-400 font-medium text-sm leading-relaxed mb-8">

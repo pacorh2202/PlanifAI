@@ -17,9 +17,9 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onBack }) => {
 
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC]  overflow-y-auto no-scrollbar pb-10 transition-colors duration-300">
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 /80 backdrop-blur-md z-20">
+      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80/80 backdrop-blur-md z-20">
         <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 :bg-gray-800 transition-colors">
-          <ChevronLeft className="text-gray-900 " size={28} />
+          <ChevronLeft className="text-gray-900 " size={28}/>
         </button>
         <h1 className="text-xl font-bold text-gray-900  tracking-tight">{t.language}</h1>
         <div className="w-10"></div>
@@ -38,11 +38,11 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onBack }) => {
               >
                 <div className="flex items-center gap-5">
                   <div
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors shadow-inner ${isSelected ? 'bg-indigo-50 /20' : 'bg-gray-50 '
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors shadow-inner ${isSelected ? 'bg-indigo-50/20' : 'bg-gray-50 '
                       }`}
                     style={{ color: isSelected ? accentColor : '#94A3B8' }}
                   >
-                    <Globe size={24} />
+                    <Globe size={24}/>
                   </div>
                   <div className="text-left">
                     <p className={`font-black text-[17px] tracking-tight ${isSelected ? 'text-gray-900 ' : 'text-gray-400'}`}>
@@ -59,7 +59,7 @@ export const LanguageScreen: React.FC<LanguageScreenProps> = ({ onBack }) => {
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg animate-fade-in"
                     style={{ backgroundColor: accentColor }}
                   >
-                    <Check size={16} strokeWidth={4} />
+                    <Check size={16} strokeWidth={4}/>
                   </div>
                 )}
               </button>

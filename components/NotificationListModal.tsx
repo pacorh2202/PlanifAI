@@ -18,9 +18,9 @@ const getRelativeTime = (date: string, t: any): string => {
     const now = new Date();
     const notifDate = new Date(date);
     const diffMs = now.getTime() - notifDate.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    const diffMins = Math.floor(diffMs/ 60000);
+    const diffHours = Math.floor(diffMs/ 3600000);
+    const diffDays = Math.floor(diffMs/ 86400000);
 
     if (diffMins < 1) return t.notif_time_now || 'Ahora';
     if (diffMins < 60) return `${diffMins}m`;
@@ -37,7 +37,7 @@ const getDisplayConfig = (notif: any, activeTemplate: any, t: any) => {
     const categoryLabel = metadata?.categoryLabel;
     const categoryType = metadata?.categoryType;
 
-    // Configuración base por tipo de notificación
+   // Configuración base por tipo de notificación
     let config = {
         tag: t.notif_tag_general,
         icon: Calendar,
@@ -76,7 +76,7 @@ const getDisplayConfig = (notif: any, activeTemplate: any, t: any) => {
         };
     }
 
-    // PRIORIDAD: Icono y color de la categoría de la tarea
+   // PRIORIDAD: Icono y color de la categoría de la tarea
     if (activeTemplate && (categoryType || categoryLabel)) {
         const category = activeTemplate.categories.find((c: any) =>
             (categoryType && c.type === categoryType) ||
@@ -87,7 +87,7 @@ const getDisplayConfig = (notif: any, activeTemplate: any, t: any) => {
             const IconComponent = ICON_MAP[category.icon] || Calendar;
             config.icon = IconComponent;
             config.iconColor = 'text-white';
-            config.iconBg = ''; // Se usará el color de la categoría directamente
+            config.iconBg = '';// Se usará el color de la categoría directamente
             (config as any).categoryColor = category.color;
         }
     }
@@ -135,7 +135,7 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
     const handleClearAll = async () => {
         if (!user) return;
         try {
-            // Eliminar solo las notificaciones que ya están leídas
+           // Eliminar solo las notificaciones que ya están leídas
             await supabase
                 .from('notifications')
                 .delete()
@@ -159,7 +159,7 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
             if (e.id === notif.metadata.eventId) return false;
             const eStart = new Date(e.start).getTime();
             const eEnd = new Date(e.end).getTime();
-            // Solapamiento: (start < eEnd) && (end > eStart)
+           // Solapamiento: (start < eEnd) && (end > eStart)
             return (start < eEnd) && (end > eStart);
         });
     };
@@ -168,7 +168,7 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
         if (!user || !notification.metadata?.eventId) return;
 
         try {
-            // Si hay conflicto y el usuario decidió priorizar, eliminamos la tarea anterior
+           // Si hay conflicto y el usuario decidió priorizar, eliminamos la tarea anterior
             if (conflictEventId) {
                 await supabase
                     .from('calendar_events')
@@ -217,17 +217,17 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
             <div
                 className="absolute inset-0 bg-black/30 backdrop-blur-xl transition-opacity pointer-events-auto"
                 onClick={onClose}
-            />
-            <div className="w-full sm:w-[450px] max-h-[90vh] sm:max-h-[85vh] bg-white/95 /95 backdrop-blur-2xl rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col pointer-events-auto transform transition-all duration-300 ease-out">
+           />
+            <div className="w-full sm:w-[450px] max-h-[90vh] sm:max-h-[85vh] bg-white/95/95 backdrop-blur-2xl rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col pointer-events-auto transform transition-all duration-300 ease-out">
 
                 {/* Header */}
-                <div className="px-8 py-6 flex items-center justify-between border-b border-gray-100/50 /50 shrink-0">
+                <div className="px-8 py-6 flex items-center justify-between border-b border-gray-100/50/50 shrink-0">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onClose}
                             className="p-2 -ml-2 rounded-full hover:bg-gray-100 :bg-gray-800 text-gray-400  transition-colors"
                         >
-                            <X size={24} />
+                            <X size={24}/>
                         </button>
                         <h2 className="text-2xl font-bold text-gray-900  tracking-tight" style={{ letterSpacing: '-0.02em' }}>{t.notifications}</h2>
                     </div>
@@ -249,7 +249,7 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
                     ) : notifications.length === 0 ? (
                         <div className="text-center py-12 flex flex-col items-center">
                             <div className="w-16 h-16 bg-gray-50  rounded-full flex items-center justify-center mb-4 text-gray-300 ">
-                                <Calendar size={28} />
+                                <Calendar size={28}/>
                             </div>
                             <p className="text-gray-500  font-medium tracking-tight">{t.notif_empty}</p>
                         </div>
@@ -267,7 +267,7 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
                                         key={notif.id}
                                         className={`p-6 rounded-[2.5rem] border transition-all duration-200 ${isUnread
                                             ? 'bg-white  border-gray-100  shadow-sm'
-                                            : 'bg-gray-50/80 /50 border-gray-50  opacity-80'
+                                            : 'bg-gray-50/80/50 border-gray-50  opacity-80'
                                             }`}
                                     >
                                         {/* Header con tag y timestamp */}
@@ -287,13 +287,13 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
                                                     src={notif.metadata.profileImage}
                                                     alt="Avatar"
                                                     className="w-14 h-14 rounded-full object-cover shrink-0"
-                                                />
+                                               />
                                             ) : (
                                                 <div
                                                     className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 shadow-sm ${(config as any).categoryColor ? '' : config.iconBg + ' ' + config.iconColor}`}
                                                     style={(config as any).categoryColor ? { backgroundColor: (config as any).categoryColor } : {}}
                                                 >
-                                                    <Icon size={26} strokeWidth={2.5} />
+                                                    <Icon size={26} strokeWidth={2.5}/>
                                                 </div>
                                             )}
 
@@ -307,8 +307,8 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
 
                                                 {/* Detalle de Horario */}
                                                 {eventTime && (
-                                                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#94A3B8] uppercase tracking-wide bg-gray-50 /50 px-3 py-1.5 rounded-xl w-fit">
-                                                        <Clock size={12} strokeWidth={3} className="text-[#6A99A8]" />
+                                                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#94A3B8] uppercase tracking-wide bg-gray-50/50 px-3 py-1.5 rounded-xl w-fit">
+                                                        <Clock size={12} strokeWidth={3} className="text-[#6A99A8]"/>
                                                         {eventTime}
                                                     </div>
                                                 )}
@@ -318,13 +318,13 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
                                                     const conflict = findConflict(notif);
                                                     if (!conflict) return null;
                                                     return (
-                                                        <div className="mt-4 p-3 bg-amber-50 /20 border border-amber-100 /50 rounded-2xl flex items-start gap-3">
-                                                            <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+                                                        <div className="mt-4 p-3 bg-amber-50/20 border border-amber-100/50 rounded-2xl flex items-start gap-3">
+                                                            <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5"/>
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-[12px] font-bold text-amber-700  uppercase tracking-wider mb-0.5">
                                                                     {t.notif_conflict_title}
                                                                 </p>
-                                                                <p className="text-[13px] text-amber-600 /80 font-medium leading-tight">
+                                                                <p className="text-[13px] text-amber-600/80 font-medium leading-tight">
                                                                     {t.notif_conflict_desc} "{conflict.title}". {t.notif_conflict_suffix}
                                                                 </p>
                                                             </div>

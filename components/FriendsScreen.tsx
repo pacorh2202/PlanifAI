@@ -29,7 +29,7 @@ export const FriendsScreen: React.FC = () => {
   const [hasUnread, setHasUnread] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Check for notifications
+ // Check for notifications
   useEffect(() => {
     if (!user) return;
     const checkNotifs = async () => {
@@ -40,7 +40,7 @@ export const FriendsScreen: React.FC = () => {
     };
     checkNotifs();
 
-    // Subscribe to realtime notifications
+   // Subscribe to realtime notifications
     const unsubscribe = subscribeToNotifications(user.id, {
       onInsert: () => {
         setHasUnread(true);
@@ -50,7 +50,7 @@ export const FriendsScreen: React.FC = () => {
     return () => unsubscribe();
   }, [user]);
 
-  // Search users when search term changes
+ // Search users when search term changes
   useEffect(() => {
     if (!search || search.length < 2 || !user) {
       setSearchResults([]);
@@ -77,7 +77,7 @@ export const FriendsScreen: React.FC = () => {
     if (!user) return;
     try {
       await friendsApi.sendFriendRequest(user.id, userId);
-      // Optimistically update search results
+     // Optimistically update search results
       setSearchResults(prev => prev.filter(u => u.id !== userId));
       await refreshFriends();
     } catch (error) {
@@ -120,24 +120,24 @@ export const FriendsScreen: React.FC = () => {
     }
   };
 
-  const incomingRequests = friends.filter(f => f.status === 'suggested'); // From our API logic
+  const incomingRequests = friends.filter(f => f.status === 'suggested');// From our API logic
 
-  const myNetwork = friends.filter(f => f.status === 'friend'); // Only show accepted friends
+  const myNetwork = friends.filter(f => f.status === 'friend');// Only show accepted friends
 
-  // Show search results if searching, otherwise show friends
+ // Show search results if searching, otherwise show friends
   const displayList = search.length >= 2 ? searchResults : [];
 
   return (
     <>
       <div className="flex flex-col h-full bg-[#F8FAFC]  transition-colors duration-300" onClick={() => setActiveMenuId(null)}>
-        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 /80 backdrop-blur-md z-30">
+        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80/80 backdrop-blur-md z-30">
           <div className="w-10"></div>
           <h1 className="text-xl font-black text-gray-900  tracking-tight">{t.friends_tab}</h1>
           <button
             onClick={() => setShowNotifications(true)}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-white  shadow-sm active:scale-95 transition-all relative"
           >
-            <Bell size={20} className="text-gray-900 " />
+            <Bell size={20} className="text-gray-900 "/>
             {unreadCount > 0 && (
               <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white ">
                 <span className="text-[10px] font-bold text-white leading-none">
@@ -151,14 +151,14 @@ export const FriendsScreen: React.FC = () => {
         <main className="flex-1 overflow-y-auto no-scrollbar pb-40">
           <div className="px-6 mb-8">
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18}/>
               <input
                 type="text" value={search} onChange={(e) => setSearch(e.target.value)}
                 placeholder={t.friends_search}
                 className="w-full bg-white  border border-gray-100  rounded-3xl py-4 pl-12 pr-4 shadow-sm text-sm focus:ring-0  outline-none placeholder:text-gray-400"
-              />
+             />
               {searchLoading && (
-                <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={18} />
+                <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={18}/>
               )}
             </div>
           </div>
@@ -177,7 +177,7 @@ export const FriendsScreen: React.FC = () => {
                       src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=FF7566&color=fff`}
                       alt={user.name}
                       className="w-14 h-14 rounded-2xl object-cover bg-gray-50 "
-                    />
+                   />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-black text-gray-900  text-[15px] leading-tight truncate">{user.name || 'Usuario'}</h3>
                       <p className="text-[11px] text-gray-400 font-medium mt-0.5 truncate">{user.handle || `@${user.id.slice(0, 8)}`}</p>
@@ -193,7 +193,7 @@ export const FriendsScreen: React.FC = () => {
                       onClick={() => handleSendRequest(user.id)}
                       className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest bg-[#FF7566] text-white shadow-lg active:scale-95 transition-all flex items-center gap-2"
                     >
-                      <UserPlus size={14} />
+                      <UserPlus size={14}/>
                       Añadir
                     </button>
                   </div>
@@ -217,7 +217,7 @@ export const FriendsScreen: React.FC = () => {
                         src={request.avatar_url || request.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(request.name)}&background=FF7566&color=fff`}
                         alt={request.name}
                         className="w-14 h-14 rounded-2xl object-cover"
-                      />
+                     />
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
                           <h3 className="font-black text-gray-900  text-base leading-tight">{request.name}</h3>
@@ -247,12 +247,12 @@ export const FriendsScreen: React.FC = () => {
 
               {loading ? (
                 <div className="flex items-center justify-center py-20">
-                  <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-gray-400 animate-spin"/>
                 </div>
               ) : myNetwork.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                   <div className="w-20 h-20 bg-gray-50  rounded-full flex items-center justify-center text-gray-200  mb-6 border border-gray-100 ">
-                    <Users size={40} />
+                    <Users size={40}/>
                   </div>
                   <p className="text-gray-400 text-sm font-black uppercase tracking-widest">{t.friends_empty}</p>
                   <p className="text-gray-300  text-[11px] mt-2 px-12 leading-relaxed">{t.friends_empty_desc}</p>
@@ -265,24 +265,24 @@ export const FriendsScreen: React.FC = () => {
                         src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.name)}&background=FF7566&color=fff`}
                         alt={friend.name}
                         className="w-14 h-14 rounded-2xl object-cover bg-gray-50 "
-                      />
+                     />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="font-black text-gray-900  text-[15px] leading-tight truncate">{friend.name}</h3>
                           {friend.status === 'pending' && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-orange-100 /30 text-orange-600  text-[8px] font-black uppercase tracking-widest">{t.friends_pending || 'Pendiente'}</span>
+                            <span className="px-1.5 py-0.5 rounded-md bg-orange-100/30 text-orange-600  text-[8px] font-black uppercase tracking-widest">{t.friends_pending || 'Pendiente'}</span>
                           )}
                         </div>
                         <p className="text-[11px] text-gray-400 font-medium mt-0.5 truncate">{friend.handle}</p>
                       </div>
                       <div className="relative">
-                        <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === friend.id ? null : friend.id); }} className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 /50 text-gray-400 active:scale-95">
-                          <MoreHorizontal size={18} />
+                        <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === friend.id ? null : friend.id); }} className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50/50 text-gray-400 active:scale-95">
+                          <MoreHorizontal size={18}/>
                         </button>
                         {activeMenuId === friend.id && (
                           <div className="absolute right-0 top-12 z-[110]" onClick={(e) => e.stopPropagation()}>
                             <button onClick={() => handleUnfriend(friend.friendshipId || friend.id)} className="bg-white  border border-gray-100  shadow-2xl rounded-2xl py-3.5 px-6 flex items-center gap-3 whitespace-nowrap active:scale-95 transition-transform">
-                              <UserMinus size={18} className="text-rose-500" />
+                              <UserMinus size={18} className="text-rose-500"/>
                               <span className="text-xs font-black text-rose-500 uppercase tracking-widest">{t.friends_remove}</span>
                             </button>
                           </div>
@@ -305,7 +305,7 @@ export const FriendsScreen: React.FC = () => {
             setUnreadCount(unread);
             setHasUnread(unread > 0);
           }}
-        />
+       />
       )}
     </>
   );

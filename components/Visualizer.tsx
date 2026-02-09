@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 interface VisualizerProps {
   active: boolean;
-  volume: number; // 0 to 1
+  volume: number;// 0 to 1
   isTalking: boolean;
   isThinking: boolean;
 }
@@ -12,33 +12,33 @@ export const Visualizer: React.FC<VisualizerProps> = ({ active, volume, isTalkin
   const [internalState, setInternalState] = useState<'thinking' | 'listening' | 'talking'>('thinking');
   const lastUserVoiceRef = useRef<number>(0);
 
-  // CONFIGURACIÓN DE PACIENCIA HUMANA
-  const threshold = 0.008; // Más sensible para mejor feedback visual
-  const silenceGracePeriod = 1200; // 1.2 segundos para ser más reactivo
+ // CONFIGURACIÓN DE PACIENCIA HUMANA
+  const threshold = 0.008;// Más sensible para mejor feedback visual
+  const silenceGracePeriod = 1200;// 1.2 segundos para ser más reactivo
 
   useEffect(() => {
     if (!active) return;
 
     const now = Date.now();
 
-    // Prioridad 1: Si la IA está hablando, el estado es 'talking' (AZUL)
+   // Prioridad 1: Si la IA está hablando, el estado es 'talking' (AZUL)
     if (isTalking) {
       setInternalState('talking');
       return;
     }
 
-    // Prioridad 2: Si la IA dice explícitamente que está pensando (naranja/amarillo o el verde actual)
+   // Prioridad 2: Si la IA dice explícitamente que está pensando (naranja/amarillo o el verde actual)
     if (isThinking) {
       setInternalState('thinking');
       return;
     }
 
-    // Prioridad 3: Si detectamos voz del usuario, actualizamos y mantenemos 'listening' (ROSA)
+   // Prioridad 3: Si detectamos voz del usuario, actualizamos y mantenemos 'listening' (ROSA)
     if (volume > threshold) {
       lastUserVoiceRef.current = now;
       setInternalState('listening');
     } else {
-      // Si hay silencio, esperamos el búfer de gracia antes de pasar a 'thinking' (VERDE)
+     // Si hay silencio, esperamos el búfer de gracia antes de pasar a 'thinking' (VERDE)
       const timeSinceLastVoice = now - lastUserVoiceRef.current;
       if (timeSinceLastVoice >= silenceGracePeriod) {
         setInternalState('thinking');
@@ -54,25 +54,25 @@ export const Visualizer: React.FC<VisualizerProps> = ({ active, volume, isTalkin
     );
   }
 
-  // Animaciones y Escalas según estado
+ // Animaciones y Escalas según estado
   const auroraOpacity = active ? (internalState !== 'thinking' ? 0.95 : 0.8) : 0;
   const auroraScale = active ? (internalState !== 'thinking' ? 1.2 : 1.0) : 0.8;
 
-  // PALETA DE COLORES REFORZADA
-  // Verde Pensando: Ahora es un verde neón muy fuerte y vibrante
+ // PALETA DE COLORES REFORZADA
+ // Verde Pensando: Ahora es un verde neón muy fuerte y vibrante
   let gradientClasses = 'bg-gradient-to-tr from-[#00FF87] via-[#01D16B] to-[#74FF00]';
   let blob1Color = 'bg-[#00FF87]';
   let blob2Color = 'bg-[#00FF41]';
   let ringColor = 'border-[#00FF87]/30';
 
   if (internalState === 'talking') {
-    // IA Hablando: Azul/Cian elegante
+   // IA Hablando: Azul/Cian elegante
     gradientClasses = 'bg-gradient-to-tr from-[#00F2FE] via-[#4FACFE] to-[#0076FF]';
     blob1Color = 'bg-[#4FACFE]';
     blob2Color = 'bg-[#00F2FE]';
     ringColor = 'border-cyan-300/40';
   } else if (internalState === 'listening') {
-    // Usuario Hablando: Rosa/Púrpura vibrante
+   // Usuario Hablando: Rosa/Púrpura vibrante
     gradientClasses = 'bg-gradient-to-tr from-[#FF0080] via-[#7928CA] to-[#FF0080]';
     blob1Color = 'bg-[#FF0080]';
     blob2Color = 'bg-[#7928CA]';

@@ -55,16 +55,16 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
   const [now, setNow] = useState(new Date());
   const [hasManuallySelectedCategory, setHasManuallySelectedCategory] = useState(!isCreating);
 
-  // Recurrence State
+ // Recurrence State
   const [isRecurrenceEnabled, setIsRecurrenceEnabled] = useState(false);
-  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]); // 0=Sun, 1=Mon...
+  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);// 0=Sun, 1=Mon...
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  /* Desactivado por petición del usuario - Detección automática de categorías
+ /* Desactivado por petición del usuario - Detección automática de categorías
   useEffect(() => {
     if (!isEditing || hasManuallySelectedCategory || !editedEvent.title) return;
 
@@ -106,7 +106,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     if (now >= start && now <= end) return t.in_progress;
     if (now < start) {
       const diffMs = start.getTime() - now.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
+      const diffMins = Math.floor(diffMs/ 60000);
       if (diffMins < 60) return `${t.starts_in} ${diffMins}m`;
       return t.pending;
     }
@@ -121,7 +121,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     }
 
     if (isCreating && isRecurrenceEnabled && recurrenceDays.length > 0) {
-      // BATCH CREATION logic
+     // BATCH CREATION logic
       const eventsToCreate: Promise<any>[] = [];
       const currentMonth = new Date(editedEvent.start).getMonth();
       const currentYear = new Date(editedEvent.start).getFullYear();
@@ -129,19 +129,19 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
       const baseEndDate = new Date(editedEvent.end);
       const duration = baseEndDate.getTime() - baseStartDate.getTime();
 
-      // Start iterating from tomorrow (or today?) - Let's iterate from baseStartDate
-      // If baseStartDate is today, we check today and future days in month.
+     // Start iterating from tomorrow (or today?) - Let's iterate from baseStartDate
+     // If baseStartDate is today, we check today and future days in month.
       let iterDate = new Date(baseStartDate);
 
-      // We limit to current month as per requirements
+     // We limit to current month as per requirements
       while (iterDate.getMonth() === currentMonth) {
         if (recurrenceDays.includes(iterDate.getDay())) {
-          // Create event for this day
+         // Create event for this day
           const newStart = new Date(iterDate);
           const newEnd = new Date(iterDate.getTime() + duration);
 
-          // Only add if it's not in the past relative to baseStartDate (or maybe allow it? Requirement says "automate manual task")
-          // Let's assume we create for all matching days from start date onwards in this month.
+         // Only add if it's not in the past relative to baseStartDate (or maybe allow it? Requirement says "automate manual task")
+         // Let's assume we create for all matching days from start date onwards in this month.
 
           const eventPayload = {
             ...editedEvent,
@@ -156,12 +156,12 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
       if (eventsToCreate.length > 0) {
         await Promise.all(eventsToCreate);
       } else {
-        // Fallback if no days matched in remaining month, allow creating just the single one?
-        // Maybe alert user? For now just create the single one.
+       // Fallback if no days matched in remaining month, allow creating just the single one?
+       // Maybe alert user? For now just create the single one.
         addEvent(editedEvent);
       }
     } else {
-      // Normal single creation/update
+     // Normal single creation/update
       if (isCreating) addEvent(editedEvent);
       else if (event) updateEvent(event.id, editedEvent);
     }
@@ -223,15 +223,15 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
           {!isEditing ? (
             <>
               <button onClick={handleStartEditing} className="w-10 h-10 rounded-full bg-white  flex items-center justify-center text-gray-500 shadow-md border border-gray-100  active:scale-90 transition-transform">
-                <MoreHorizontal size={20} />
+                <MoreHorizontal size={20}/>
               </button>
               <button onClick={onClose} className="w-10 h-10 rounded-full bg-white  flex items-center justify-center text-gray-500 shadow-md border border-gray-100  active:scale-90 transition-transform">
-                <X size={20} />
+                <X size={20}/>
               </button>
             </>
           ) : (
             <button onClick={handleSave} className="w-11 h-11 rounded-full text-white  flex items-center justify-center shadow-xl active:scale-90 transition-transform font-bold" style={{ backgroundColor: accentColor }}>
-              <Check size={22} strokeWidth={3} />
+              <Check size={22} strokeWidth={3}/>
             </button>
           )}
         </div>
@@ -239,7 +239,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
         <div ref={scrollRef} className="h-full overflow-y-auto no-scrollbar px-8 pt-16 pb-32">
           <div className="flex items-start gap-4 mb-10">
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all duration-500`} style={{ backgroundColor: dynamicColor }}>
-              <Icon size={28} className="text-white" strokeWidth={2.5} />
+              <Icon size={28} className="text-white" strokeWidth={2.5}/>
             </div>
             <div className="flex-1 min-w-0">
               <p className={`text-[10px] font-black uppercase tracking-[0.25em] mb-2`} style={{ color: dynamicColor }}>
@@ -255,7 +255,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                   onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
                   className="text-[30px] font-black text-gray-900  tracking-tighter leading-tight bg-transparent border-none p-0 focus:ring-0 w-full mt-1"
                   placeholder={t.placeholder_title}
-                />
+               />
               )}
             </div>
           </div>
@@ -287,7 +287,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                           boxShadow: isSelected ? `0 0 0 2px ${accentColor}` : 'none'
                         }}
                       >
-                        <CatIcon size={22} className="text-white" />
+                        <CatIcon size={22} className="text-white"/>
                       </div>
                       <span className={`text-[9px] font-black uppercase tracking-wider text-gray-500 truncate w-full px-1 text-center ${isSelected ? 'text-gray-900 ' : ''}`}>
                         {cat.label}
@@ -304,8 +304,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             {!isEditing ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 /20 flex items-center justify-center text-blue-500">
-                    <CalendarIcon size={18} />
+                  <div className="w-10 h-10 rounded-xl bg-blue-50/20 flex items-center justify-center text-blue-500">
+                    <CalendarIcon size={18}/>
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.view_day}</p>
@@ -315,8 +315,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 /20 flex items-center justify-center text-blue-500">
-                    <Clock size={18} />
+                  <div className="w-10 h-10 rounded-xl bg-blue-50/20 flex items-center justify-center text-blue-500">
+                    <Clock size={18}/>
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.agenda_tab}</p>
@@ -336,12 +336,12 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                       value={formatForInput(editedEvent.start)}
                       onChange={(e) => handleTimeChange('start', e.target.value)}
                       className="absolute inset-0 opacity-0 cursor-pointer z-20 w-full h-full"
-                    />
+                   />
                     <div className="w-full bg-gray-50  border border-gray-100  rounded-3xl p-5 flex items-center justify-between shadow-sm group-active:bg-gray-100 :bg-gray-700 transition-colors">
                       <span className="text-sm font-bold text-gray-900 ">
                         {new Date(editedEvent.start).toLocaleDateString(localeStr, { day: 'numeric', month: 'short' })} • {new Date(editedEvent.start).toLocaleTimeString(localeStr, { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <ChevronRight size={18} className="text-gray-300 " />
+                      <ChevronRight size={18} className="text-gray-300 "/>
                     </div>
                   </div>
                 </div>
@@ -353,12 +353,12 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                       value={formatForInput(editedEvent.end)}
                       onChange={(e) => handleTimeChange('end', e.target.value)}
                       className="absolute inset-0 opacity-0 cursor-pointer z-20 w-full h-full"
-                    />
+                   />
                     <div className="w-full bg-gray-50  border border-gray-100  rounded-3xl p-5 flex items-center justify-between shadow-sm group-active:bg-gray-100 :bg-gray-700 transition-colors">
                       <span className="text-sm font-bold text-gray-900 ">
                         {new Date(editedEvent.end).toLocaleDateString(localeStr, { day: 'numeric', month: 'short' })} • {new Date(editedEvent.end).toLocaleTimeString(localeStr, { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <ChevronRight size={18} className="text-gray-300 " />
+                      <ChevronRight size={18} className="text-gray-300 "/>
                     </div>
                   </div>
                 </div>
@@ -372,7 +372,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
               <div className="flex justify-between items-center mb-5">
                 <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em]">{t.recurrence_title}</h2>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" checked={isRecurrenceEnabled} onChange={(e) => setIsRecurrenceEnabled(e.target.checked)} />
+                  <input type="checkbox" className="sr-only peer" checked={isRecurrenceEnabled} onChange={(e) => setIsRecurrenceEnabled(e.target.checked)}/>
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 :ring-blue-800 rounded-full peer  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-blue-600"></div>
                 </label>
               </div>
@@ -382,7 +382,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                   <p className="text-xs text-gray-500 font-medium">{t.recurrence_desc}</p>
                   <div className="flex justify-between gap-1">
                     {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day, idx) => {
-                      // idx 0 = Sunday, 1 = Monday... matches getDay()
+                     // idx 0 = Sunday, 1 = Monday... matches getDay()
                       const isSelected = recurrenceDays.includes(idx);
                       return (
                         <button
@@ -408,7 +408,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
           <section className="bg-white  rounded-[2.5rem] p-6 mb-8 border border-gray-100  shadow-sm">
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em]">{t.notes_tasks}</h2>
-              {isEditing && <button onClick={addPoint} className="text-blue-500 active:scale-90 transition-transform"><Plus size={18} /></button>}
+              {isEditing && <button onClick={addPoint} className="text-blue-500 active:scale-90 transition-transform"><Plus size={18}/></button>}
             </div>
             <div className="space-y-4">
               {(editedEvent.descriptionPoints || []).length === 0 && !isEditing ? (
@@ -419,8 +419,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dynamicColor }}></div>
                     {isEditing ? (
                       <div className="flex-1 flex items-center gap-2">
-                        <input value={point} onChange={(e) => updatePoint(idx, e.target.value)} className="flex-1 bg-transparent border-none p-0 text-sm font-bold focus:ring-0 " placeholder={t.placeholder_notes} />
-                        <button onClick={() => removePoint(idx)} className="text-gray-300"><X size={14} /></button>
+                        <input value={point} onChange={(e) => updatePoint(idx, e.target.value)} className="flex-1 bg-transparent border-none p-0 text-sm font-bold focus:ring-0 " placeholder={t.placeholder_notes}/>
+                        <button onClick={() => removePoint(idx)} className="text-gray-300"><X size={14}/></button>
                       </div>
                     ) : (
                       <span className="text-sm font-bold text-gray-700 ">{point}</span>
@@ -440,7 +440,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                 return (
                   <div key={friend.id} className="relative">
                     <button onClick={() => isEditing && toggleAttendee(friend.name)} className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all ${isAttendee ? 'border-gray-900  shadow-lg scale-105' : 'border-transparent opacity-40 grayscale'}`}>
-                      <img src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.name)}&background=FF7566&color=fff`} alt={friend.name} className="w-12 h-12 rounded-full object-cover" />
+                      <img src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.name)}&background=FF7566&color=fff`} alt={friend.name} className="w-12 h-12 rounded-full object-cover"/>
                     </button>
                     <p className="text-[8px] font-black text-center mt-1 uppercase text-gray-400 truncate w-14">{friend.name.split(' ')[0]}</p>
                   </div>
@@ -458,25 +458,25 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
               editedEvent.location ? (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-rose-50 /20 flex items-center justify-center text-rose-500"><MapPin size={18} /></div>
+                    <div className="w-10 h-10 rounded-xl bg-rose-50/20 flex items-center justify-center text-rose-500"><MapPin size={18}/></div>
                     <span className="text-sm font-bold text-gray-900 ">{editedEvent.location}</span>
                   </div>
-                  <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(editedEvent.location || '')}`, '_blank')} className="p-3 bg-gray-50  rounded-xl text-gray-400"><Navigation size={18} /></button>
+                  <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(editedEvent.location || '')}`, '_blank')} className="p-3 bg-gray-50  rounded-xl text-gray-400"><Navigation size={18}/></button>
                 </div>
               ) : (
                 <p className="text-sm text-gray-400 italic">{t.no_events}.</p>
               )
             ) : (
               <div className="relative group">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input type="text" value={editedEvent.location} onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })} placeholder={t.placeholder_location} className="w-full bg-gray-50  border-none rounded-3xl py-4 pl-12 pr-4 text-sm font-bold focus:ring-0 " />
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18}/>
+                <input type="text" value={editedEvent.location} onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })} placeholder={t.placeholder_location} className="w-full bg-gray-50  border-none rounded-3xl py-4 pl-12 pr-4 text-sm font-bold focus:ring-0 "/>
               </div>
             )}
           </section>
 
           {!isCreating && (
             <div className="pt-8 flex gap-4">
-              <button onClick={handleDelete} className="flex-1 py-5 rounded-[2rem] bg-rose-50 /10 text-rose-500 font-black text-[10px] uppercase tracking-[0.3em] border border-rose-100 /20 active:scale-95 transition-all">{t.delete_task}</button>
+              <button onClick={handleDelete} className="flex-1 py-5 rounded-[2rem] bg-rose-50/10 text-rose-500 font-black text-[10px] uppercase tracking-[0.3em] border border-rose-100/20 active:scale-95 transition-all">{t.delete_task}</button>
             </div>
           )}
         </div>

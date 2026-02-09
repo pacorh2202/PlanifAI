@@ -14,7 +14,36 @@
     // Force light mode
     document.documentElement.classList.remove('dark');
     document.documentElement.style.colorScheme = 'light';
+  </script>
+  <style>
+    /* Absolute Force Light Mode */
+    :root,
+    html,
+    body {
+      background-color: #F8FAFC !important;
+      color: #0F172A !important;
+      color-scheme: light !important;
+    }
 
+    .dark body,
+    .dark html,
+    [data-theme='dark'] body {
+      background-color: #F8FAFC !important;
+      color: #0F172A !important;
+    }
+
+    /* Counteract any dark: utility classes if they somehow stay */
+    .dark\:bg-gray-900,
+    .dark\:bg-black,
+    .dark\:bg-gray-800 {
+      background-color: #F8FAFC !important;
+    }
+
+    .dark\:text-white {
+      color: #0F172A !important;
+    }
+  </style>
+  <script>
     window.onerror = function (msg, url, line, col, error) {
       document.body.innerHTML = '<div style="background:white;color:red;padding:20px;font-family:sans-serif;">' +
         '<h1>Fatal Load Error</h1>' +
