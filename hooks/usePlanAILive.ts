@@ -20,7 +20,7 @@ export const usePlanAILive = () => {
   const playbackNodeRef = useRef<AudioWorkletNode | null>(null);
   const outputContextRef = useRef<AudioContext | null>(null);
   const nextStartTimeRef = useRef<number>(0);
-  const sessionRef = useRef<Promise<any> | null>(null);
+  const sessionRef = useRef<any>(null);
   const activeSourceCountRef = useRef<number>(0);
 
   const categoryLabels = activeTemplate.categories.map(c => c.label);
@@ -173,7 +173,7 @@ export const usePlanAILive = () => {
 
       console.log('[AI] 📡 Connecting to Gemini Live API with origin:', window.location.origin);
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025', // User requested exact model
+        model: 'gemini-2.0-flash-exp', // Use a stable and common multimodal live model identifier
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
@@ -215,6 +215,8 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             await audioContextRef.current?.resume();
             await outputContextRef.current?.resume();
 
+            const session = await sessionPromise;
+            sessionRef.current = session;
             setConnected(true);
             setIsConnecting(false);
             if (audioContextRef.current && mediaStreamRef.current && outputContextRef.current) {
@@ -231,20 +233,20 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
 
                 setVolume(rms);
 
-                sessionPromise.then(session => {
-                  try {
-                    // Correct conversion: Uint8Array(pcm) -> base64
-                    const uint8 = new Uint8Array(pcm);
-                    let binary = '';
-                    for (let i = 0; i < uint8.length; i++) {
-                      binary += String.fromCharCode(uint8[i]);
-                    }
-                    const base64 = btoa(binary);
-                    session.sendRealtimeInput({ media: { data: base64, mimeType: 'audio/pcm;rate=16000' } });
-                  } catch (err) {
-                    // Silently warn, don't flood console
+                const session = sessionRef.current;
+                if (!session) return;
+
+                try {
+                  const uint8 = new Uint8Array(pcm);
+                  let binary = '';
+                  for (let i = 0; i < uint8.length; i++) {
+                    binary += String.fromCharCode(uint8[i]);
                   }
-                });
+                  const base64 = btoa(binary);
+                  session.sendRealtimeInput({ media: { data: base64, mimeType: 'audio/pcm;rate=16000' } });
+                } catch (err) {
+                  // Ignore transmission errors
+                }
               };
 
               // 2. Playback Processor
@@ -267,55 +269,61 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             }
           },
           onmessage: async (msg: LiveServerMessage) => {
-            if (!connected) return; // Ignore messages if disconnected
+            if (!connected) return;
 
-            if (msg.serverContent?.modelTurn?.parts?.[0]?.text) {
-              console.log('[AI] 💬 Text message:', msg.serverContent.modelTurn.parts[0].text);
+            // 1. Handle Model Turn (Audio/Text)
+            if (msg.serverContent?.modelTurn?.parts) {
+              for (const part of msg.serverContent.modelTurn.parts) {
+                if (part.text) {
+                  console.log('[AI] 💬 Text message:', part.text);
+                }
+                const audioData = part.inlineData?.data;
+                if (audioData && playbackNodeRef.current) {
+                  console.log('[AI] 🔊 Audio data received, length:', audioData.length);
+                  setIsTalking(true);
+                  setIsThinking(false);
+                  const buffer = base64ToArrayBuffer(audioData);
+                  const pcmData = new Int16Array(buffer);
+                  playbackNodeRef.current.port.postMessage(pcmData);
+                }
+              }
             }
-            const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (audioData && playbackNodeRef.current) {
-              setIsTalking(true);
-              setIsThinking(false);
-              const buffer = base64ToArrayBuffer(audioData);
-              const pcmData = new Int16Array(buffer);
-              playbackNodeRef.current.port.postMessage(pcmData);
-            }
+
+            // 2. Handle Tool Calls
             if (msg.toolCall) {
-              // Fix: Prevent duplicate processing
               if (isProcessing) {
-                console.log('[AI] ⚠️ Ignoring duplicate tool call while processing.');
+                console.warn('[AI] ⚠️ Ignoring duplicate tool call while processing.');
                 return;
               }
 
-              console.log('[AI] 🔧 Tool call received:', JSON.stringify(msg.toolCall, null, 2));
+              console.log('[AI] 🔧 Tool call received:', msg.toolCall.functionCalls.map(f => f.name).join(', '));
               setIsThinking(true);
-              setIsProcessing(true); // Set processing flag
+              setIsProcessing(true);
 
               const functionResponses = [];
-              for (const fc of msg.toolCall.functionCalls) {
-                console.log('[AI] 📞 Function:', fc.name, '| Args:', JSON.stringify(fc.args, null, 2));
-                if (fc.name === 'manageCalendar') {
-                  console.log('[AI] 📅 Executing manageCalendar...');
-                  try {
-                    console.log('[AI] 📅 Executing manageCalendar with args:', fc.args);
+              try {
+                for (const fc of msg.toolCall.functionCalls) {
+                  if (fc.name === 'manageCalendar') {
+                    console.log('[AI] 📅 Executing manageCalendar:', fc.args);
                     const result = await executeAction(fc.args as any);
-                    console.log('[AI] ✅ Result:', result);
+                    console.log('[AI] ✅ Tool result:', result);
                     functionResponses.push({ id: fc.id, name: fc.name, response: { result: result } });
-                  } catch (error) {
-                    console.error('[AI] ❌ Error:', error);
-                    functionResponses.push({ id: fc.id, name: fc.name, response: { error: String(error) } });
+                  } else {
+                    console.warn('[AI] ⚠️ Unknown function:', fc.name);
+                    functionResponses.push({ id: fc.id, name: fc.name, response: { error: "Unknown function" } });
                   }
-                } else {
-                  console.warn('[AI] ⚠️ Unknown function:', fc.name);
                 }
-              }
-
-              setIsProcessing(false); // Clear processing flag
-
-              if (functionResponses.length > 0) {
-                console.log('[AI] 📤 Sending responses:', functionResponses);
-                const session = await sessionPromise;
-                session.sendToolResponse({ functionResponses });
+              } catch (error) {
+                console.error('[AI] ❌ Error during tool execution:', error);
+              } finally {
+                setIsProcessing(false);
+                if (functionResponses.length > 0) {
+                  const session = sessionRef.current;
+                  if (session) {
+                    console.log('[AI] 📤 Sending tool responses...');
+                    session.sendToolResponse({ functionResponses });
+                  }
+                }
               }
             }
           },
@@ -333,7 +341,7 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
           }
         }
       });
-      sessionRef.current = sessionPromise;
+      // Promise is handled in onopen
     } catch (err: any) {
       console.error('[AI] ❌ Critical connect error:', err);
 

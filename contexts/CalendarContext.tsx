@@ -119,7 +119,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     if (profile) {
       setLanguageState(profile.language as Language || 'en');
-      setIsDarkMode(profile.is_dark_mode || false);
+      setIsDarkMode(false); // Force light mode as requested by user
       setAccentColorState(profile.accent_color || '#B2D3A1');
       setUserNameState(profile.user_name || '');
       setUserHandleState(profile.handle || '');
@@ -240,12 +240,9 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [events]);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
+    // Force light mode
+    document.documentElement.classList.remove('dark');
+  }, []);
 
   const toggleDarkMode = () => {
     const newVal = !isDarkMode;

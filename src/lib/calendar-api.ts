@@ -33,7 +33,7 @@ function dbEventToFrontend(dbEvent: DBCalendarEvent): any {
 function frontendEventToDB(
     event: any,
     userId: string
-): NewCalendarEvent | UpdateCalendarEvent {
+): any {
     return {
         user_id: userId,
         title: event.title,

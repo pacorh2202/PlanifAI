@@ -44,7 +44,7 @@ export async function fetchUserStats(userId: string): Promise<UserStats> {
             completion_rate: Number(stats.completion_rate) || 0,
             avg_daily: Number(stats.avg_daily) || 0,
             favorite_category: stats.favorite_category || 'N/A',
-            distribution: stats.distribution || {},
+            distribution: (stats.distribution as Record<string, number>) || {},
             total_tasks: Number(stats.total_tasks) || 0,
             pending_tasks: Number(stats.pending_tasks) || 0
         };
