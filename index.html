@@ -11,6 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
   <script>
+    // Force light mode
+    document.documentElement.classList.remove('dark');
+    document.documentElement.style.colorScheme = 'light';
+
     window.onerror = function (msg, url, line, col, error) {
       document.body.innerHTML = '<div style="background:white;color:red;padding:20px;font-family:sans-serif;">' +
         '<h1>Fatal Load Error</h1>' +
