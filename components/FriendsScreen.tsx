@@ -129,17 +129,17 @@ export const FriendsScreen: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black transition-colors duration-300" onClick={() => setActiveMenuId(null)}>
-        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-30">
+      <div className="flex flex-col h-full bg-[#F8FAFC]  transition-colors duration-300" onClick={() => setActiveMenuId(null)}>
+        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 /80 backdrop-blur-md z-30">
           <div className="w-10"></div>
-          <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{t.friends_tab}</h1>
+          <h1 className="text-xl font-black text-gray-900  tracking-tight">{t.friends_tab}</h1>
           <button
             onClick={() => setShowNotifications(true)}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 shadow-sm active:scale-95 transition-all relative"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white  shadow-sm active:scale-95 transition-all relative"
           >
-            <Bell size={20} className="text-gray-900 dark:text-white" />
+            <Bell size={20} className="text-gray-900 " />
             {unreadCount > 0 && (
-              <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-black">
+              <div className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white ">
                 <span className="text-[10px] font-bold text-white leading-none">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
@@ -155,7 +155,7 @@ export const FriendsScreen: React.FC = () => {
               <input
                 type="text" value={search} onChange={(e) => setSearch(e.target.value)}
                 placeholder={t.friends_search}
-                className="w-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl py-4 pl-12 pr-4 shadow-sm text-sm focus:ring-0 dark:text-white outline-none placeholder:text-gray-400"
+                className="w-full bg-white  border border-gray-100  rounded-3xl py-4 pl-12 pr-4 shadow-sm text-sm focus:ring-0  outline-none placeholder:text-gray-400"
               />
               {searchLoading && (
                 <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={18} />
@@ -167,19 +167,19 @@ export const FriendsScreen: React.FC = () => {
           {search.length >= 2 && displayList.length > 0 && (
             <section className="px-6 mb-10">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-[17px] font-black text-gray-900 dark:text-white uppercase tracking-tight">Resultados</h2>
+                <h2 className="text-[17px] font-black text-gray-900  uppercase tracking-tight">Resultados</h2>
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{displayList.length}</span>
               </div>
               <div className="space-y-3">
                 {displayList.map(user => (
-                  <div key={user.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800">
+                  <div key={user.id} className="flex items-center gap-4 bg-white  p-4 rounded-[2rem] shadow-sm border border-gray-100 ">
                     <img
                       src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=FF7566&color=fff`}
                       alt={user.name}
-                      className="w-14 h-14 rounded-2xl object-cover bg-gray-50 dark:bg-gray-800"
+                      className="w-14 h-14 rounded-2xl object-cover bg-gray-50 "
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{user.name || 'Usuario'}</h3>
+                      <h3 className="font-black text-gray-900  text-[15px] leading-tight truncate">{user.name || 'Usuario'}</h3>
                       <p className="text-[11px] text-gray-400 font-medium mt-0.5 truncate">{user.handle || `@${user.id.slice(0, 8)}`}</p>
                       <div className="flex items-center gap-1.5 mt-1 opacity-60">
                         <div className="flex -space-x-1.5">
@@ -206,12 +206,12 @@ export const FriendsScreen: React.FC = () => {
           {search.length < 2 && incomingRequests.length > 0 && (
             <section className="px-6 mb-10">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-[17px] font-black text-gray-900 dark:text-white uppercase tracking-tight">{t.friends_requests}</h2>
+                <h2 className="text-[17px] font-black text-gray-900  uppercase tracking-tight">{t.friends_requests}</h2>
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{incomingRequests.length} {t.friends_received}</span>
               </div>
               <div className="space-y-4">
                 {incomingRequests.map(request => (
-                  <div key={request.id} className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+                  <div key={request.id} className="bg-white  rounded-[2.5rem] p-6 shadow-sm border border-gray-100 ">
                     <div className="flex gap-4 mb-6">
                       <img
                         src={request.avatar_url || request.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(request.name)}&background=FF7566&color=fff`}
@@ -220,7 +220,7 @@ export const FriendsScreen: React.FC = () => {
                       />
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
-                          <h3 className="font-black text-gray-900 dark:text-white text-base leading-tight">{request.name}</h3>
+                          <h3 className="font-black text-gray-900  text-base leading-tight">{request.name}</h3>
                         </div>
                         <p className="text-[11px] text-gray-400 font-medium mt-1">
                           {request.handle}
@@ -229,7 +229,7 @@ export const FriendsScreen: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <button onClick={() => handleAcceptRequest(request.friendshipId || request.id)} className="py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest bg-[#FF7566] text-white shadow-lg active:scale-95 transition-all">{t.friends_accept}</button>
-                      <button onClick={() => handleDeclineRequest(request.friendshipId || request.id)} className="py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest bg-gray-50 dark:bg-gray-800 text-gray-400 active:scale-95 transition-all">{t.friends_ignore}</button>
+                      <button onClick={() => handleDeclineRequest(request.friendshipId || request.id)} className="py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest bg-gray-50  text-gray-400 active:scale-95 transition-all">{t.friends_ignore}</button>
                     </div>
                   </div>
                 ))}
@@ -241,7 +241,7 @@ export const FriendsScreen: React.FC = () => {
           {search.length < 2 && (
             <section className="px-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-[17px] font-black text-gray-900 dark:text-white uppercase tracking-tight">{t.friends_network}</h2>
+                <h2 className="text-[17px] font-black text-gray-900  uppercase tracking-tight">{t.friends_network}</h2>
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{myNetwork.length} {t.friends_tab.toUpperCase()}</span>
               </div>
 
@@ -251,37 +251,37 @@ export const FriendsScreen: React.FC = () => {
                 </div>
               ) : myNetwork.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <div className="w-20 h-20 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center text-gray-200 dark:text-gray-800 mb-6 border border-gray-100 dark:border-gray-800">
+                  <div className="w-20 h-20 bg-gray-50  rounded-full flex items-center justify-center text-gray-200  mb-6 border border-gray-100 ">
                     <Users size={40} />
                   </div>
                   <p className="text-gray-400 text-sm font-black uppercase tracking-widest">{t.friends_empty}</p>
-                  <p className="text-gray-300 dark:text-gray-600 text-[11px] mt-2 px-12 leading-relaxed">{t.friends_empty_desc}</p>
+                  <p className="text-gray-300  text-[11px] mt-2 px-12 leading-relaxed">{t.friends_empty_desc}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {myNetwork.map(friend => (
-                    <div key={friend.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800 relative">
+                    <div key={friend.id} className="flex items-center gap-4 bg-white  p-4 rounded-[2rem] shadow-sm border border-gray-100  relative">
                       <img
                         src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.name)}&background=FF7566&color=fff`}
                         alt={friend.name}
-                        className="w-14 h-14 rounded-2xl object-cover bg-gray-50 dark:bg-gray-800"
+                        className="w-14 h-14 rounded-2xl object-cover bg-gray-50 "
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{friend.name}</h3>
+                          <h3 className="font-black text-gray-900  text-[15px] leading-tight truncate">{friend.name}</h3>
                           {friend.status === 'pending' && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[8px] font-black uppercase tracking-widest">{t.friends_pending || 'Pendiente'}</span>
+                            <span className="px-1.5 py-0.5 rounded-md bg-orange-100 /30 text-orange-600  text-[8px] font-black uppercase tracking-widest">{t.friends_pending || 'Pendiente'}</span>
                           )}
                         </div>
                         <p className="text-[11px] text-gray-400 font-medium mt-0.5 truncate">{friend.handle}</p>
                       </div>
                       <div className="relative">
-                        <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === friend.id ? null : friend.id); }} className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 dark:bg-gray-800/50 text-gray-400 active:scale-95">
+                        <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === friend.id ? null : friend.id); }} className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 /50 text-gray-400 active:scale-95">
                           <MoreHorizontal size={18} />
                         </button>
                         {activeMenuId === friend.id && (
                           <div className="absolute right-0 top-12 z-[110]" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => handleUnfriend(friend.friendshipId || friend.id)} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-2xl rounded-2xl py-3.5 px-6 flex items-center gap-3 whitespace-nowrap active:scale-95 transition-transform">
+                            <button onClick={() => handleUnfriend(friend.friendshipId || friend.id)} className="bg-white  border border-gray-100  shadow-2xl rounded-2xl py-3.5 px-6 flex items-center gap-3 whitespace-nowrap active:scale-95 transition-transform">
                               <UserMinus size={18} className="text-rose-500" />
                               <span className="text-xs font-black text-rose-500 uppercase tracking-widest">{t.friends_remove}</span>
                             </button>

@@ -214,23 +214,23 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     <div className="fixed inset-0 z-[110] flex flex-col justify-end">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] animate-fade-in transition-opacity duration-300 cursor-pointer" onClick={onClose}></div>
 
-      <div className="relative bg-[#F8FAFC] dark:bg-gray-950 w-full h-[85vh] rounded-t-[3.5rem] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.4)] border-t border-white/20 overflow-hidden animate-slide-up">
+      <div className="relative bg-[#F8FAFC]  w-full h-[85vh] rounded-t-[3.5rem] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.4)] border-t border-white/20 overflow-hidden animate-slide-up">
         <div className="absolute top-0 left-0 right-0 h-10 flex items-center justify-center z-50 pointer-events-none">
-          <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full"></div>
+          <div className="w-16 h-1.5 bg-gray-200  rounded-full"></div>
         </div>
 
         <div className="absolute top-6 right-6 flex items-center gap-2.5 z-[120]">
           {!isEditing ? (
             <>
-              <button onClick={handleStartEditing} className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-500 shadow-md border border-gray-100 dark:border-gray-700 active:scale-90 transition-transform">
+              <button onClick={handleStartEditing} className="w-10 h-10 rounded-full bg-white  flex items-center justify-center text-gray-500 shadow-md border border-gray-100  active:scale-90 transition-transform">
                 <MoreHorizontal size={20} />
               </button>
-              <button onClick={onClose} className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-500 shadow-md border border-gray-100 dark:border-gray-700 active:scale-90 transition-transform">
+              <button onClick={onClose} className="w-10 h-10 rounded-full bg-white  flex items-center justify-center text-gray-500 shadow-md border border-gray-100  active:scale-90 transition-transform">
                 <X size={20} />
               </button>
             </>
           ) : (
-            <button onClick={handleSave} className="w-11 h-11 rounded-full text-white dark:text-black flex items-center justify-center shadow-xl active:scale-90 transition-transform font-bold" style={{ backgroundColor: accentColor }}>
+            <button onClick={handleSave} className="w-11 h-11 rounded-full text-white  flex items-center justify-center shadow-xl active:scale-90 transition-transform font-bold" style={{ backgroundColor: accentColor }}>
               <Check size={22} strokeWidth={3} />
             </button>
           )}
@@ -246,14 +246,14 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                 {statusLabel}
               </p>
               {!isEditing ? (
-                <h1 className="text-[30px] font-black text-gray-900 dark:text-white tracking-tighter leading-tight">
+                <h1 className="text-[30px] font-black text-gray-900  tracking-tighter leading-tight">
                   {editedEvent.title || t.no_events}
                 </h1>
               ) : (
                 <input
                   type="text" autoFocus value={editedEvent.title}
                   onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
-                  className="text-[30px] font-black text-gray-900 dark:text-white tracking-tighter leading-tight bg-transparent border-none p-0 focus:ring-0 w-full mt-1"
+                  className="text-[30px] font-black text-gray-900  tracking-tighter leading-tight bg-transparent border-none p-0 focus:ring-0 w-full mt-1"
                   placeholder={t.placeholder_title}
                 />
               )}
@@ -280,7 +280,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                         }`}
                     >
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-1.5 transition-all duration-300 ${isSelected ? 'ring-4 ring-white dark:ring-gray-950' : ''
+                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-1.5 transition-all duration-300 ${isSelected ? 'ring-4 ring-white ' : ''
                           }`}
                         style={{
                           backgroundColor: cat.color,
@@ -289,7 +289,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                       >
                         <CatIcon size={22} className="text-white" />
                       </div>
-                      <span className={`text-[9px] font-black uppercase tracking-wider text-gray-500 truncate w-full px-1 text-center ${isSelected ? 'text-gray-900 dark:text-gray-100' : ''}`}>
+                      <span className={`text-[9px] font-black uppercase tracking-wider text-gray-500 truncate w-full px-1 text-center ${isSelected ? 'text-gray-900 ' : ''}`}>
                         {cat.label}
                       </span>
                     </button>
@@ -299,28 +299,28 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             </section>
           )}
 
-          <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 mb-8 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300">
+          <section className="bg-white  rounded-[2.5rem] p-6 mb-8 border border-gray-100  shadow-sm transition-colors duration-300">
             <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em] mb-5">{t.agenda_tab}</h2>
             {!isEditing ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 /20 flex items-center justify-center text-blue-500">
                     <CalendarIcon size={18} />
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.view_day}</p>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm font-bold text-gray-900 ">
                       {new Date(editedEvent.start).toLocaleDateString(localeStr, { weekday: 'long', day: 'numeric', month: 'long' })}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 /20 flex items-center justify-center text-blue-500">
                     <Clock size={18} />
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.agenda_tab}</p>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm font-bold text-gray-900 ">
                       {new Date(editedEvent.start).toLocaleTimeString(localeStr, { hour: '2-digit', minute: '2-digit' })} — {new Date(editedEvent.end).toLocaleTimeString(localeStr, { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -337,11 +337,11 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                       onChange={(e) => handleTimeChange('start', e.target.value)}
                       className="absolute inset-0 opacity-0 cursor-pointer z-20 w-full h-full"
                     />
-                    <div className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 flex items-center justify-between shadow-sm group-active:bg-gray-100 dark:group-active:bg-gray-700 transition-colors">
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">
+                    <div className="w-full bg-gray-50  border border-gray-100  rounded-3xl p-5 flex items-center justify-between shadow-sm group-active:bg-gray-100 :bg-gray-700 transition-colors">
+                      <span className="text-sm font-bold text-gray-900 ">
                         {new Date(editedEvent.start).toLocaleDateString(localeStr, { day: 'numeric', month: 'short' })} • {new Date(editedEvent.start).toLocaleTimeString(localeStr, { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <ChevronRight size={18} className="text-gray-300 dark:text-gray-600" />
+                      <ChevronRight size={18} className="text-gray-300 " />
                     </div>
                   </div>
                 </div>
@@ -354,11 +354,11 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                       onChange={(e) => handleTimeChange('end', e.target.value)}
                       className="absolute inset-0 opacity-0 cursor-pointer z-20 w-full h-full"
                     />
-                    <div className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 flex items-center justify-between shadow-sm group-active:bg-gray-100 dark:group-active:bg-gray-700 transition-colors">
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">
+                    <div className="w-full bg-gray-50  border border-gray-100  rounded-3xl p-5 flex items-center justify-between shadow-sm group-active:bg-gray-100 :bg-gray-700 transition-colors">
+                      <span className="text-sm font-bold text-gray-900 ">
                         {new Date(editedEvent.end).toLocaleDateString(localeStr, { day: 'numeric', month: 'short' })} • {new Date(editedEvent.end).toLocaleTimeString(localeStr, { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <ChevronRight size={18} className="text-gray-300 dark:text-gray-600" />
+                      <ChevronRight size={18} className="text-gray-300 " />
                     </div>
                   </div>
                 </div>
@@ -368,12 +368,12 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
 
           {/* New Automation Section */}
           {isCreating && isEditing && (
-            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 mb-8 border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in">
+            <section className="bg-white  rounded-[2.5rem] p-6 mb-8 border border-gray-100  shadow-sm animate-fade-in">
               <div className="flex justify-between items-center mb-5">
                 <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em]">{t.recurrence_title}</h2>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={isRecurrenceEnabled} onChange={(e) => setIsRecurrenceEnabled(e.target.checked)} />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 :ring-blue-800 rounded-full peer  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-blue-600"></div>
                 </label>
               </div>
 
@@ -392,7 +392,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                           }}
                           className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all ${isSelected
                             ? 'bg-blue-500 text-white shadow-md scale-105'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                            : 'bg-gray-100  text-gray-400'
                             }`}
                         >
                           {day}
@@ -405,7 +405,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             </section>
           )}
 
-          <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 mb-8 border border-gray-100 dark:border-gray-800 shadow-sm">
+          <section className="bg-white  rounded-[2.5rem] p-6 mb-8 border border-gray-100  shadow-sm">
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em]">{t.notes_tasks}</h2>
               {isEditing && <button onClick={addPoint} className="text-blue-500 active:scale-90 transition-transform"><Plus size={18} /></button>}
@@ -419,11 +419,11 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dynamicColor }}></div>
                     {isEditing ? (
                       <div className="flex-1 flex items-center gap-2">
-                        <input value={point} onChange={(e) => updatePoint(idx, e.target.value)} className="flex-1 bg-transparent border-none p-0 text-sm font-bold focus:ring-0 dark:text-white" placeholder={t.placeholder_notes} />
+                        <input value={point} onChange={(e) => updatePoint(idx, e.target.value)} className="flex-1 bg-transparent border-none p-0 text-sm font-bold focus:ring-0 " placeholder={t.placeholder_notes} />
                         <button onClick={() => removePoint(idx)} className="text-gray-300"><X size={14} /></button>
                       </div>
                     ) : (
-                      <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{point}</span>
+                      <span className="text-sm font-bold text-gray-700 ">{point}</span>
                     )}
                   </div>
                 ))
@@ -431,7 +431,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             </div>
           </section>
 
-          <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 mb-8 border border-gray-100 dark:border-gray-800 shadow-sm">
+          <section className="bg-white  rounded-[2.5rem] p-6 mb-8 border border-gray-100  shadow-sm">
             <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em] mb-5">{t.participants}</h2>
             <div className="flex flex-wrap gap-3">
               {friends.filter(f => f.status === 'friend').map(friend => {
@@ -439,7 +439,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                 if (!isEditing && !isAttendee) return null;
                 return (
                   <div key={friend.id} className="relative">
-                    <button onClick={() => isEditing && toggleAttendee(friend.name)} className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all ${isAttendee ? 'border-gray-900 dark:border-white shadow-lg scale-105' : 'border-transparent opacity-40 grayscale'}`}>
+                    <button onClick={() => isEditing && toggleAttendee(friend.name)} className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all ${isAttendee ? 'border-gray-900  shadow-lg scale-105' : 'border-transparent opacity-40 grayscale'}`}>
                       <img src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.name)}&background=FF7566&color=fff`} alt={friend.name} className="w-12 h-12 rounded-full object-cover" />
                     </button>
                     <p className="text-[8px] font-black text-center mt-1 uppercase text-gray-400 truncate w-14">{friend.name.split(' ')[0]}</p>
@@ -452,16 +452,16 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             </div>
           </section>
 
-          <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 mb-8 border border-gray-100 dark:border-gray-800 shadow-sm">
+          <section className="bg-white  rounded-[2.5rem] p-6 mb-8 border border-gray-100  shadow-sm">
             <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em] mb-5">{t.location}</h2>
             {!isEditing ? (
               editedEvent.location ? (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-500"><MapPin size={18} /></div>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{editedEvent.location}</span>
+                    <div className="w-10 h-10 rounded-xl bg-rose-50 /20 flex items-center justify-center text-rose-500"><MapPin size={18} /></div>
+                    <span className="text-sm font-bold text-gray-900 ">{editedEvent.location}</span>
                   </div>
-                  <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(editedEvent.location || '')}`, '_blank')} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-400"><Navigation size={18} /></button>
+                  <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(editedEvent.location || '')}`, '_blank')} className="p-3 bg-gray-50  rounded-xl text-gray-400"><Navigation size={18} /></button>
                 </div>
               ) : (
                 <p className="text-sm text-gray-400 italic">{t.no_events}.</p>
@@ -469,14 +469,14 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             ) : (
               <div className="relative group">
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input type="text" value={editedEvent.location} onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })} placeholder={t.placeholder_location} className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-3xl py-4 pl-12 pr-4 text-sm font-bold focus:ring-0 dark:text-white" />
+                <input type="text" value={editedEvent.location} onChange={(e) => setEditedEvent({ ...editedEvent, location: e.target.value })} placeholder={t.placeholder_location} className="w-full bg-gray-50  border-none rounded-3xl py-4 pl-12 pr-4 text-sm font-bold focus:ring-0 " />
               </div>
             )}
           </section>
 
           {!isCreating && (
             <div className="pt-8 flex gap-4">
-              <button onClick={handleDelete} className="flex-1 py-5 rounded-[2rem] bg-rose-50 dark:bg-rose-900/10 text-rose-500 font-black text-[10px] uppercase tracking-[0.3em] border border-rose-100 dark:border-rose-900/20 active:scale-95 transition-all">{t.delete_task}</button>
+              <button onClick={handleDelete} className="flex-1 py-5 rounded-[2rem] bg-rose-50 /10 text-rose-500 font-black text-[10px] uppercase tracking-[0.3em] border border-rose-100 /20 active:scale-95 transition-all">{t.delete_task}</button>
             </div>
           )}
         </div>

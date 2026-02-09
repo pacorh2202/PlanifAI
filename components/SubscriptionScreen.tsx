@@ -41,28 +41,28 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
     ];
 
     return (
-        <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar pb-20 transition-colors duration-300">
-            <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20">
-                <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
-                    <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
+        <div className="flex flex-col h-full bg-[#F8FAFC]  overflow-y-auto no-scrollbar pb-20 transition-colors duration-300">
+            <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 /80 backdrop-blur-md z-20">
+                <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 :bg-gray-800 transition-colors">
+                    <ChevronLeft className="text-gray-900 " size={28} />
                 </button>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight text-center flex-1 pr-6">{t.sub_title}</h1>
+                <h1 className="text-xl font-bold text-gray-900  tracking-tight text-center flex-1 pr-6">{t.sub_title}</h1>
             </header>
 
             <main className="px-6 pt-4 space-y-8">
                 {/* Toggle Mensual/Anual */}
                 <div className="flex justify-center">
-                    <div className="bg-gray-100 dark:bg-gray-900 p-1.5 rounded-full flex items-center gap-1 w-full max-w-[300px] border border-gray-200/30 dark:border-gray-800">
+                    <div className="bg-gray-100  p-1.5 rounded-full flex items-center gap-1 w-full max-w-[300px] border border-gray-200/30 ">
                         <button
                             onClick={() => setBillingPeriod('monthly')}
-                            className={`flex-1 py-3 rounded-full text-xs font-bold transition-all ${billingPeriod === 'monthly' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-400'}`}
+                            className={`flex-1 py-3 rounded-full text-xs font-bold transition-all ${billingPeriod === 'monthly' ? 'bg-white  shadow-sm' : 'text-gray-400'}`}
                             style={{ color: billingPeriod === 'monthly' ? accentColor : undefined }}
                         >
                             {t.sub_monthly}
                         </button>
                         <button
                             onClick={() => setBillingPeriod('yearly')}
-                            className={`flex-1 py-3 rounded-full text-xs font-bold transition-all ${billingPeriod === 'yearly' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-400'}`}
+                            className={`flex-1 py-3 rounded-full text-xs font-bold transition-all ${billingPeriod === 'yearly' ? 'bg-white  shadow-sm' : 'text-gray-400'}`}
                             style={{ color: billingPeriod === 'yearly' ? accentColor : undefined }}
                         >
                             {t.sub_yearly}
@@ -79,7 +79,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                                 key={plan.id}
                                 onMouseEnter={() => setActivePlanId(plan.id)}
                                 onClick={() => setActivePlanId(plan.id)}
-                                className={`relative bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border-2 transition-all duration-500 transform ${isActive ? 'scale-[1.02] shadow-xl' : 'scale-100 opacity-90'}`}
+                                className={`relative bg-white  rounded-[2.5rem] p-8 shadow-sm border-2 transition-all duration-500 transform ${isActive ? 'scale-[1.02] shadow-xl' : 'scale-100 opacity-90'}`}
                                 style={{
                                     borderColor: isActive ? accentColor : 'transparent',
                                     boxShadow: isActive ? `0 20px 40px -15px ${accentColor}33` : undefined
@@ -93,10 +93,10 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
 
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
-                                        <h3 className="font-bold text-gray-900 dark:text-white text-2xl tracking-tight transition-colors" style={{ color: isActive ? accentColor : undefined }}>{plan.name}</h3>
+                                        <h3 className="font-bold text-gray-900  text-2xl tracking-tight transition-colors" style={{ color: isActive ? accentColor : undefined }}>{plan.name}</h3>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter transition-all" style={{ color: isActive ? accentColor : undefined }}>
+                                        <span className="text-3xl font-black text-gray-900  tracking-tighter transition-all" style={{ color: isActive ? accentColor : undefined }}>
                                             {billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
                                         </span>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
@@ -114,7 +114,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                                             >
                                                 <Check size={12} style={{ color: isActive ? accentColor : '#94A3B8' }} strokeWidth={4} />
                                             </div>
-                                            <span className={`text-sm font-medium leading-tight transition-colors ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                            <span className={`text-sm font-medium leading-tight transition-colors ${isActive ? 'text-gray-900 ' : 'text-gray-500 '}`}>
                                                 {feature}
                                             </span>
                                         </div>

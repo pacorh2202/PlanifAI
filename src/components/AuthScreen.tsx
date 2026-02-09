@@ -67,7 +67,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     };
 
     return (
-        <div className="h-[100dvh] w-full flex items-center justify-center bg-white dark:bg-gray-950 p-6">
+        <div className="h-[100dvh] w-full flex items-center justify-center bg-white  p-6">
             <div className="w-full max-w-md">
                 {/* Header with Logo */}
                 <div className="text-center mb-10">
@@ -89,19 +89,19 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                     </div>
 
                     {/* Title */}
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">
+                    <h1 className="text-4xl font-black text-gray-900  mb-2 tracking-tight">
                         PlanifAI
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 text-base">
+                    <p className="text-gray-500  text-base">
                         Tu asistente inteligente personal.
                     </p>
                 </div>
 
                 {/* Error Alert */}
                 {error && (
-                    <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/30 rounded-2xl flex items-start gap-3 animate-fade-in">
+                    <div className="mb-6 p-4 bg-rose-50 /20 border border-rose-200 /30 rounded-2xl flex items-start gap-3 animate-fade-in">
                         <AlertCircle size={20} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-rose-700 dark:text-rose-300">{error}</p>
+                        <p className="text-sm text-rose-700 ">{error}</p>
                     </div>
                 )}
 
@@ -115,7 +115,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                                 value={userName}
                                 onChange={(e) => setUserName(e.target.value)}
                                 placeholder="Nombre"
-                                className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-gray-400 dark:focus:border-gray-600 transition-colors"
+                                className="w-full pl-12 pr-4 py-4 bg-white  border border-gray-200  rounded-2xl text-gray-900  placeholder-gray-400 focus:outline-none focus:border-gray-400 :border-gray-600 transition-colors"
                                 required
                                 disabled={loading}
                             />
@@ -129,7 +129,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="Correo electrónico"
-                            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-gray-400 dark:focus:border-gray-600 transition-colors"
+                            className="w-full pl-12 pr-4 py-4 bg-white  border border-gray-200  rounded-2xl text-gray-900  placeholder-gray-400 focus:outline-none focus:border-gray-400 :border-gray-600 transition-colors"
                             required
                             disabled={loading}
                         />
@@ -142,7 +142,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Contraseña"
-                            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-gray-400 dark:focus:border-gray-600 transition-colors"
+                            className="w-full pl-12 pr-4 py-4 bg-white  border border-gray-200  rounded-2xl text-gray-900  placeholder-gray-400 focus:outline-none focus:border-gray-400 :border-gray-600 transition-colors"
                             required
                             disabled={loading}
                             minLength={6}
@@ -153,7 +153,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-bold text-base shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-6"
+                        className="w-full py-4 rounded-2xl bg-black  text-white  font-bold text-base shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-6"
                     >
                         {loading ? (
                             <>
@@ -171,9 +171,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
                 {/* Divider */}
                 <div className="flex items-center gap-4 my-8">
-                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800"></div>
+                    <div className="flex-1 h-px bg-gray-200 "></div>
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">O continúa con</span>
-                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800"></div>
+                    <div className="flex-1 h-px bg-gray-200 "></div>
                 </div>
 
                 {/* Google Sign In Button */}
@@ -181,7 +181,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
-                    className="w-full py-4 rounded-2xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold text-base transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                    className="w-full py-4 rounded-2xl bg-white  border-2 border-gray-200  text-gray-900  font-bold text-base transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                 >
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M19.8 10.2273C19.8 9.51819 19.7364 8.83637 19.6182 8.18182H10V12.05H15.4818C15.2273 13.3 14.5227 14.3591 13.4818 15.0682V17.5773H16.7727C18.7091 15.8364 19.8 13.2727 19.8 10.2273Z" fill="#4285F4" />
@@ -200,15 +200,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                             setError(null);
                         }}
                         disabled={loading}
-                        className="text-sm text-gray-600 dark:text-gray-400 disabled:opacity-50"
+                        className="text-sm text-gray-600  disabled:opacity-50"
                     >
                         {mode === 'signin' ? (
                             <>
-                                ¿No tienes cuenta? <span className="font-bold text-gray-900 dark:text-white">Regístrate</span>
+                                ¿No tienes cuenta? <span className="font-bold text-gray-900 ">Regístrate</span>
                             </>
                         ) : (
                             <>
-                                ¿Ya tienes cuenta? <span className="font-bold text-gray-900 dark:text-white">Inicia sesión</span>
+                                ¿Ya tienes cuenta? <span className="font-bold text-gray-900 ">Inicia sesión</span>
                             </>
                         )}
                     </button>

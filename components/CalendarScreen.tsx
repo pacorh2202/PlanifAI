@@ -126,7 +126,7 @@ export const CalendarScreen: React.FC = () => {
       {activeTemplate.categories.map((cat, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: cat.color }}></div>
-          <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{cat.label}</span>
+          <span className="text-[10px] font-black text-gray-400  uppercase tracking-widest">{cat.label}</span>
         </div>
       ))}
     </div>
@@ -135,14 +135,14 @@ export const CalendarScreen: React.FC = () => {
   const renderHeader = () => {
     const monthName = selectedDate.toLocaleDateString(localeStr, { month: 'long' }).toUpperCase();
     return (
-      <header className="px-6 pt-14 pb-2 flex flex-col gap-4 bg-[#F8FAFC] dark:bg-black transition-colors duration-300">
+      <header className="px-6 pt-14 pb-2 flex flex-col gap-4 bg-[#F8FAFC]  transition-colors duration-300">
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-[10px] font-black tracking-[0.2em] text-[#94A3B8] uppercase">
               {monthName} {selectedDate.getFullYear()}
             </h2>
             <div className="flex flex-col">
-              <h1 className={`font-black text-gray-900 dark:text-white tracking-tighter mt-1 ${view === 'day' ? 'text-6xl' : 'text-5xl'}`}>
+              <h1 className={`font-black text-gray-900  tracking-tighter mt-1 ${view === 'day' ? 'text-6xl' : 'text-5xl'}`}>
                 {selectedDate.getDate()}
               </h1>
               {view === 'day' && nextEventStatus && (
@@ -153,13 +153,13 @@ export const CalendarScreen: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-col items-end gap-3">
-            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 border border-gray-200/50 dark:border-gray-700">
+            <div className="flex bg-gray-100  rounded-xl p-1 border border-gray-200/50 ">
               {(['day', 'week', 'month'] as ViewMode[]).map((m) => (
                 <button
                   key={m}
                   onClick={() => setView(m)}
                   className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${view === m
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                      ? 'bg-white  text-gray-900  shadow-sm'
                       : 'text-[#94A3B8]'
                     }`}
                 >
@@ -172,7 +172,7 @@ export const CalendarScreen: React.FC = () => {
                 setIsAddingManually(true);
                 setIsDetailViewOpen(true);
               }}
-              className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-4 py-2.5 rounded-2xl shadow-sm active:scale-95 transition-all text-gray-900 dark:text-white"
+              className="flex items-center gap-2 bg-white  border border-gray-100  px-4 py-2.5 rounded-2xl shadow-sm active:scale-95 transition-all text-gray-900 "
             >
               <Plus size={16} strokeWidth={3} className="text-[#FF7566]" />
               <span className="text-[10px] font-black uppercase tracking-[0.1em]">{t.manual_task}</span>
@@ -214,14 +214,14 @@ export const CalendarScreen: React.FC = () => {
                     key={idx}
                     onClick={() => setSelectedDate(new Date(d))}
                     className={`flex flex-col items-center justify-center w-14 h-20 rounded-2xl transition-all duration-300 ${isSelected
-                        ? 'bg-[#EFF4FF] dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 shadow-sm'
+                        ? 'bg-[#EFF4FF] /30 border border-blue-100  shadow-sm'
                         : 'opacity-40'
                       }`}
                   >
-                    <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${isSelected ? 'text-blue-800 dark:text-blue-300' : 'text-gray-400'}`}>
+                    <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${isSelected ? 'text-blue-800 ' : 'text-gray-400'}`}>
                       {d.toLocaleDateString(localeStr, { weekday: 'short' }).slice(0, 3)}
                     </span>
-                    <span className={`text-2xl font-black ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>
+                    <span className={`text-2xl font-black ${isSelected ? 'text-blue-600 ' : 'text-gray-500'}`}>
                       {d.getDate()}
                     </span>
                   </button>
@@ -232,9 +232,9 @@ export const CalendarScreen: React.FC = () => {
           </div>
         </section>
 
-        <div className="mt-8 bg-white dark:bg-gray-950 rounded-t-[3.5rem] flex-1 border-t border-gray-100 dark:border-gray-900 overflow-y-auto no-scrollbar">
+        <div className="mt-8 bg-white  rounded-t-[3.5rem] flex-1 border-t border-gray-100  overflow-y-auto no-scrollbar">
           <div className="p-8 pb-80 relative">
-            <div className="absolute left-[5.4rem] top-10 bottom-0 w-px bg-gray-100 dark:bg-gray-800 opacity-50"></div>
+            <div className="absolute left-[5.4rem] top-10 bottom-0 w-px bg-gray-100  opacity-50"></div>
             <div className="space-y-6">
               {dayEvents.length === 0 ? (
                 <div className="text-center py-20 text-gray-300 font-bold uppercase tracking-widest text-[10px]">{t.no_events}</div>
@@ -250,7 +250,7 @@ export const CalendarScreen: React.FC = () => {
                 return (
                   <div key={event.id} className="flex gap-4 items-center group cursor-pointer" onClick={() => handleOpenEventDetail(event)}>
                     <div className="w-16 text-right pr-2">
-                      <span className="text-[11px] font-black text-gray-900 dark:text-white block leading-none">{timeStr}</span>
+                      <span className="text-[11px] font-black text-gray-900  block leading-none">{timeStr}</span>
                     </div>
                     <div className="flex-1 flex gap-4 items-center relative z-10">
                       <div
@@ -263,7 +263,7 @@ export const CalendarScreen: React.FC = () => {
                         <span className="text-[9px] font-black text-[#94A3B8] uppercase tracking-wider mb-0.5">
                           {timeStr} — {endTimeStr}
                         </span>
-                        <h3 className={`text-[17px] font-bold text-gray-900 dark:text-white leading-tight ${event.status === 'completed' ? 'line-through opacity-50' : ''}`}>
+                        <h3 className={`text-[17px] font-bold text-gray-900  leading-tight ${event.status === 'completed' ? 'line-through opacity-50' : ''}`}>
                           {event.title}
                         </h3>
                         {event.location && (
@@ -280,7 +280,7 @@ export const CalendarScreen: React.FC = () => {
                         }}
                         className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${event.status === 'completed'
                             ? 'bg-blue-600 border-blue-600 text-white'
-                            : 'border-gray-100 dark:border-gray-800'
+                            : 'border-gray-100 '
                           }`}
                       >
                         {event.status === 'completed' && <Check size={18} strokeWidth={4} />}
@@ -314,8 +314,8 @@ export const CalendarScreen: React.FC = () => {
     const dayLabels = language === 'es' ? ['L', 'M', 'X', 'J', 'V', 'S', 'D'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
     return (
-      <div className="flex flex-col h-full bg-white dark:bg-gray-950 transition-colors duration-300 overflow-y-auto no-scrollbar relative">
-        <div className="px-6 pt-4 flex sticky top-0 bg-white dark:bg-gray-950 z-20 border-b border-gray-100 dark:border-gray-900 pb-4">
+      <div className="flex flex-col h-full bg-white  transition-colors duration-300 overflow-y-auto no-scrollbar relative">
+        <div className="px-6 pt-4 flex sticky top-0 bg-white  z-20 border-b border-gray-100  pb-4">
           <div className="w-12 shrink-0"></div>
           <div className="flex-1 grid grid-cols-7 text-center gap-1">
             {dayLabels.map((label, i) => {
@@ -323,8 +323,8 @@ export const CalendarScreen: React.FC = () => {
               const isSelected = date.toDateString() === selectedDate.toDateString();
               return (
                 <div key={i} className="flex flex-col items-center">
-                  <span className={`text-[9px] font-bold uppercase mb-1 ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>{label}</span>
-                  <span className={`text-sm font-black ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>{date.getDate()}</span>
+                  <span className={`text-[9px] font-bold uppercase mb-1 ${isSelected ? 'text-blue-600 ' : 'text-gray-400'}`}>{label}</span>
+                  <span className={`text-sm font-black ${isSelected ? 'text-blue-600 ' : 'text-gray-600 '}`}>{date.getDate()}</span>
                 </div>
               );
             })}
@@ -333,7 +333,7 @@ export const CalendarScreen: React.FC = () => {
 
         <div className="flex-1 relative pt-2 pb-80">
           <div className="flex px-4 relative min-h-[1200px]">
-            <div className="w-12 shrink-0 flex flex-col text-[10px] font-black text-gray-300 dark:text-gray-600 pt-0">
+            <div className="w-12 shrink-0 flex flex-col text-[10px] font-black text-gray-300  pt-0">
               {hours.map(h => (
                 <div key={h} style={{ height: `${HOUR_HEIGHT}px` }} className="flex items-start">
                   <span>{h.toString().padStart(2, '0')}:00</span>
@@ -344,14 +344,14 @@ export const CalendarScreen: React.FC = () => {
               {hours.map(h => (
                 <div
                   key={`line-${h}`}
-                  className="absolute left-0 right-0 border-t border-gray-50 dark:border-gray-900/50 pointer-events-none"
+                  className="absolute left-0 right-0 border-t border-gray-50 /50 pointer-events-none"
                   style={{ top: `${(h - START_HOUR) * HOUR_HEIGHT}px` }}
                 ></div>
               ))}
               {weekDays.map((date, dayIdx) => {
                 const dayEvents = getDayEvents(date);
                 return (
-                  <div key={dayIdx} className="relative border-l border-gray-50 dark:border-gray-900/30 first:border-l-0">
+                  <div key={dayIdx} className="relative border-l border-gray-50 /30 first:border-l-0">
                     {dayEvents.map(event => {
                       const start = new Date(event.start);
                       const end = new Date(event.end);
@@ -406,13 +406,13 @@ export const CalendarScreen: React.FC = () => {
     const dayLabels = language === 'es' ? ['L', 'M', 'X', 'J', 'V', 'S', 'D'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
     return (
-      <div className="h-full overflow-y-auto no-scrollbar bg-white dark:bg-gray-950 transition-colors duration-300">
+      <div className="h-full overflow-y-auto no-scrollbar bg-white  transition-colors duration-300">
         <div className="px-6 pt-4 pb-80">
           <div className="flex justify-end gap-3 mb-6">
-            <button onClick={handlePrev} className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 active:scale-90 transition-transform">
+            <button onClick={handlePrev} className="w-10 h-10 rounded-full bg-gray-50  flex items-center justify-center text-gray-400 active:scale-90 transition-transform">
               <ChevronLeft size={20} />
             </button>
-            <button onClick={handleNext} className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 active:scale-90 transition-transform">
+            <button onClick={handleNext} className="w-10 h-10 rounded-full bg-gray-50  flex items-center justify-center text-gray-400 active:scale-90 transition-transform">
               <ChevronRight size={20} />
             </button>
           </div>
@@ -421,7 +421,7 @@ export const CalendarScreen: React.FC = () => {
               <span key={d} className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{d}</span>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-px bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-[2.5rem] overflow-hidden shadow-sm">
+          <div className="grid grid-cols-7 gap-px bg-gray-100  border border-gray-100  rounded-[2.5rem] overflow-hidden shadow-sm">
             {calendarDays.map((date, i) => {
               const isToday = date.toDateString() === new Date().toDateString();
               const isSelected = date.toDateString() === selectedDate.toDateString();
@@ -432,7 +432,7 @@ export const CalendarScreen: React.FC = () => {
                 <div
                   key={i}
                   onClick={() => setSelectedDate(new Date(date))}
-                  className={`aspect-square bg-white dark:bg-gray-950 flex flex-col items-center justify-center relative cursor-pointer transition-all border-none ${!isCurrentMonth ? 'bg-gray-50/50 dark:bg-gray-900/20' : ''
+                  className={`aspect-square bg-white  flex flex-col items-center justify-center relative cursor-pointer transition-all border-none ${!isCurrentMonth ? 'bg-gray-50/50 /20' : ''
                     }`}
                 >
                   <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
@@ -441,8 +441,8 @@ export const CalendarScreen: React.FC = () => {
                         : isToday
                           ? 'text-blue-500'
                           : isCurrentMonth
-                            ? 'text-gray-900 dark:text-gray-100'
-                            : 'text-gray-300 dark:text-gray-600'
+                            ? 'text-gray-900 '
+                            : 'text-gray-300 '
                       }`}>
                       {date.getDate()}
                     </span>
@@ -459,7 +459,7 @@ export const CalendarScreen: React.FC = () => {
                   </div>
 
                   {isSelected && (
-                    <div className="absolute inset-1 rounded-2xl bg-blue-50/40 dark:bg-blue-500/10 border-2 border-blue-500/20 z-0"></div>
+                    <div className="absolute inset-1 rounded-2xl bg-blue-50/40 /10 border-2 border-blue-500/20 z-0"></div>
                   )}
                 </div>
               );
@@ -472,7 +472,7 @@ export const CalendarScreen: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-hidden transition-colors duration-300">
+    <div className="flex flex-col h-full bg-[#F8FAFC]  overflow-hidden transition-colors duration-300">
       {renderHeader()}
       <main className="flex-1 overflow-hidden relative">
         {view === 'day' && renderDayView()}

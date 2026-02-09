@@ -81,13 +81,13 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#F8F9FA] dark:bg-[#0A0A0A] relative overflow-hidden transition-colors duration-300">
+    <div className="flex flex-col h-full bg-[#F8F9FA] [#0A0A0A] relative overflow-hidden transition-colors duration-300">
       <header className="px-6 pt-12 pb-4 flex items-center gap-4 relative">
-        <button onClick={onBack} className="p-2 -ml-2 rounded-full active:scale-90 transition-transform text-gray-900 dark:text-white">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full active:scale-90 transition-transform text-gray-900 ">
           <ArrowLeft size={24} />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight leading-none">{t.design_categories_label}</h1>
+          <h1 className="text-xl font-bold text-gray-900  tracking-tight leading-none">{t.design_categories_label}</h1>
           <p className="text-[13px] text-gray-400 font-medium mt-1">{t.unlimited_symbols_label}</p>
         </div>
       </header>
@@ -102,7 +102,7 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
             return (
               <div 
                 key={idx}
-                className={`bg-white dark:bg-[#121212] rounded-[2.5rem] p-6 transition-all duration-500 shadow-sm border ${isEditing ? 'ring-1 ring-opacity-20' : 'border-gray-50 dark:border-gray-900'}`}
+                className={`bg-white [#121212] rounded-[2.5rem] p-6 transition-all duration-500 shadow-sm border ${isEditing ? 'ring-1 ring-opacity-20' : 'border-gray-50 '}`}
                 style={{ borderColor: isEditing ? accentColor : 'transparent' }}
               >
                 <div className="flex items-center justify-between">
@@ -112,13 +112,13 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
                     </div>
                     {isEditing ? (
                         <input 
-                            className="text-lg font-bold text-gray-900 dark:text-white bg-transparent border-none p-0 focus:ring-0 w-40"
+                            className="text-lg font-bold text-gray-900  bg-transparent border-none p-0 focus:ring-0 w-40"
                             value={cat.label}
                             onChange={(e) => updateCategory(idx, { label: e.target.value })}
                             autoFocus
                         />
                     ) : (
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{cat.label}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 ">{cat.label}</h3>
                     )}
                   </div>
                   <button 
@@ -131,7 +131,7 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
                 </div>
 
                 {isEditing && (
-                  <div className="mt-8 space-y-10 animate-fade-in border-t border-gray-50 dark:border-gray-900 pt-8">
+                  <div className="mt-8 space-y-10 animate-fade-in border-t border-gray-50  pt-8">
                     <div>
                       <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-4">{t.symbol_label}</p>
                       <div className="grid grid-cols-6 gap-4 max-h-[180px] overflow-y-auto no-scrollbar p-2 -m-2">
@@ -140,7 +140,7 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
                             key={icon.name}
                             onClick={() => updateCategory(idx, { icon: icon.name })}
                             className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-                              cat.icon === icon.name ? 'text-white shadow-lg scale-110' : 'bg-gray-50 dark:bg-[#1A1A1A] text-gray-300 hover:text-gray-400'
+                              cat.icon === icon.name ? 'text-white shadow-lg scale-110' : 'bg-gray-50 [#1A1A1A] text-gray-300 hover:text-gray-400'
                             }`}
                             style={{ backgroundColor: cat.icon === icon.name ? cat.color : '' }}
                           >
@@ -186,7 +186,7 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
 
           <button 
             onClick={addCategory}
-            className="w-full border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-[2.5rem] p-6 flex items-center justify-center gap-3 text-gray-400 font-bold active:scale-95 transition-all mt-4"
+            className="w-full border-2 border-dashed border-gray-200  rounded-[2.5rem] p-6 flex items-center justify-center gap-3 text-gray-400 font-bold active:scale-95 transition-all mt-4"
           >
             <Plus size={22} />
             <span>{t.add_category_label}</span>

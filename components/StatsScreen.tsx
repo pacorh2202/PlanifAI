@@ -112,12 +112,12 @@ export const StatsScreen: React.FC = () => {
 
   return (
     <div
-      className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar pb-40 transition-opacity duration-300"
+      className="flex flex-col h-full bg-[#F8FAFC]  overflow-y-auto no-scrollbar pb-40 transition-opacity duration-300"
       style={{ willChange: 'opacity', contain: 'content' }}
     >
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20">
+      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 /80 backdrop-blur-md z-20">
         <div className="w-10"></div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Estadísticas</h1>
+        <h1 className="text-xl font-bold text-gray-900  tracking-tight">Estadísticas</h1>
         <div className="w-10"></div>
       </header>
 
@@ -125,11 +125,11 @@ export const StatsScreen: React.FC = () => {
         {/* --- SECTION 1: REAL DATA KPIs --- */}
 
         {/* Card: Racha Actual (Real) */}
-        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+        <section className="bg-white  rounded-[2.5rem] p-8 shadow-sm border border-gray-100 ">
           <div className="flex justify-between items-start mb-6">
             <div>
               <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-1">RACHA ACTUAL</p>
-              <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter">
+              <h2 className="text-5xl font-black text-gray-900  tracking-tighter">
                 {streakProgress} <span className="text-2xl font-bold ml-1">días</span>
               </h2>
               <div className="flex items-center gap-1 mt-2 text-[#078809] font-bold text-xs">
@@ -139,7 +139,7 @@ export const StatsScreen: React.FC = () => {
             </div>
             <div className="relative w-24 h-24 flex items-center justify-center">
               <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 overflow-visible">
-                <circle className="text-gray-50 dark:text-gray-800" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" strokeWidth="10"></circle>
+                <circle className="text-gray-50 " cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" strokeWidth="10"></circle>
                 <circle
                   cx="50"
                   cy="50"
@@ -161,9 +161,9 @@ export const StatsScreen: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
               <span className="text-gray-400">Progreso de racha</span>
-              <span className="text-gray-600 dark:text-gray-300">{streakProgress}/{streakGoal}</span>
+              <span className="text-gray-600 ">{streakProgress}/{streakGoal}</span>
             </div>
-            <div className="h-2.5 w-full bg-gray-50 dark:bg-gray-800 rounded-full overflow-hidden p-[1px]">
+            <div className="h-2.5 w-full bg-gray-50  rounded-full overflow-hidden p-[1px]">
               <div
                 className="h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(0,0,0,0.1)]"
                 style={{
@@ -176,15 +176,15 @@ export const StatsScreen: React.FC = () => {
         </section>
 
         {/* Card: Tasa de Completitud (Real) */}
-        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <section className="bg-white  rounded-[2.5rem] p-8 shadow-sm border border-gray-100  flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600">
+              <div className="w-8 h-8 rounded-lg bg-teal-50 /20 flex items-center justify-center text-teal-600">
                 <CheckCircle size={18} />
               </div>
               <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em]">TASA DE COMPLETITUD</p>
             </div>
-            <h3 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">
+            <h3 className="text-4xl font-black text-gray-900  tracking-tighter">
               {stats?.completion_rate || 0}%
             </h3>
             <p className="text-[10px] text-gray-400 font-medium mt-1">Últimos 7 días</p>
@@ -196,14 +196,14 @@ export const StatsScreen: React.FC = () => {
         </section>
 
         {/* Card: Actividades (Real) */}
-        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+        <section className="bg-white  rounded-[2.5rem] p-8 shadow-sm border border-gray-100 ">
           <div className="flex justify-between items-end mb-8">
             <div>
-              <h3 className="text-xl font-black text-gray-900 dark:text-white leading-none uppercase tracking-tighter">Actividad</h3>
+              <h3 className="text-xl font-black text-gray-900  leading-none uppercase tracking-tighter">Actividad</h3>
               <p className="text-gray-400 text-[10px] font-bold mt-1 uppercase tracking-widest">Última semana</p>
             </div>
             <div className="text-right">
-              <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">
+              <span className="text-3xl font-black text-gray-900  tracking-tighter">
                 {stats?.total_tasks || 0}
               </span>
               <p className="text-[#078809] text-[10px] font-black uppercase">
@@ -219,7 +219,7 @@ export const StatsScreen: React.FC = () => {
                     <Cell
                       key={`cell-${index}`}
                       fill={index === 4 ? accentColor : '#F1F5F9'}
-                      className="dark:fill-gray-800"
+                      className=""
                     />
                   ))}
                 </Bar>
@@ -230,7 +230,7 @@ export const StatsScreen: React.FC = () => {
         </section>
 
         {/* Card: Distribución (Real) */}
-        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+        <section className="bg-white  rounded-[2.5rem] p-8 shadow-sm border border-gray-100 ">
           <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-1">DISTRIBUCIÓN</p>
           <p className="text-[10px] text-gray-400 font-medium mb-6">Por categoría</p>
           <div className="flex items-center gap-6">
@@ -253,7 +253,7 @@ export const StatsScreen: React.FC = () => {
                 </RPieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-lg font-black text-gray-900 dark:text-white leading-none">
+                <span className="text-lg font-black text-gray-900  leading-none">
                   {stats?.total_tasks || 0}
                 </span>
                 <span className="text-[9px] text-gray-400 font-bold mt-1 uppercase">Tareas</span>
@@ -264,9 +264,9 @@ export const StatsScreen: React.FC = () => {
                 <div key={item.name} className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
-                    <span className="text-[10px] font-black text-gray-600 dark:text-gray-300 uppercase">{item.name}</span>
+                    <span className="text-[10px] font-black text-gray-600  uppercase">{item.name}</span>
                   </div>
-                  <span className="text-[10px] font-black text-gray-900 dark:text-white">{item.value}%</span>
+                  <span className="text-[10px] font-black text-gray-900 ">{item.value}%</span>
                 </div>
               ))}
             </div>
@@ -275,25 +275,25 @@ export const StatsScreen: React.FC = () => {
 
         {/* Grid: KPIs Rápidos (Real) */}
         <div className="grid grid-cols-2 gap-4">
-          <section className="bg-white dark:bg-gray-900 rounded-[2rem] p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between aspect-square">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 mb-2">
+          <section className="bg-white  rounded-[2rem] p-5 shadow-sm border border-gray-100  flex flex-col justify-between aspect-square">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 /20 flex items-center justify-center text-indigo-600 mb-2">
               <ShieldCheck size={22} />
             </div>
             <div>
               <p className="text-[#94A3B8] text-[9px] font-black mb-1 uppercase tracking-[0.2em] leading-tight">EFICIENCIA</p>
-              <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">
+              <h4 className="text-2xl font-black text-gray-900  tracking-tighter">
                 {stats?.avg_daily || 0}
               </h4>
               <p className="text-[10px] text-indigo-600 font-bold mt-1 uppercase tracking-tight">Tareas por día</p>
             </div>
           </section>
-          <section className="bg-white dark:bg-gray-900 rounded-[2rem] p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between aspect-square">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 mb-2">
+          <section className="bg-white  rounded-[2rem] p-5 shadow-sm border border-gray-100  flex flex-col justify-between aspect-square">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 /20 flex items-center justify-center text-orange-600 mb-2">
               <Rocket size={22} />
             </div>
             <div>
               <p className="text-[#94A3B8] text-[9px] font-black mb-1 uppercase tracking-[0.2em] leading-tight">PENDIENTES</p>
-              <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">
+              <h4 className="text-2xl font-black text-gray-900  tracking-tighter">
                 {stats?.pending_tasks || 0}
               </h4>
               <p className="text-[10px] text-orange-600 font-bold mt-1 uppercase tracking-tight">Por completar</p>
@@ -328,19 +328,19 @@ export const StatsScreen: React.FC = () => {
         </section>
 
         {/* Stress Load (Mock) */}
-        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 mt-4">
+        <section className="bg-white  rounded-[2.5rem] p-8 shadow-sm border border-gray-100  mt-4">
           <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-center">STRESS LOAD</p>
           <div className="relative flex justify-center mb-6">
             <StressGauge value={stressLevel} />
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Tu nivel de estrés ha bajado un 15% esta semana</p>
+            <p className="text-xs text-gray-500  font-medium">Tu nivel de estrés ha bajado un 15% esta semana</p>
           </div>
         </section>
 
         {/* Recommended Articles (Static Content) */}
         <section className="mt-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 ml-2">{t.articles_title || "Artículos recomendados"}</h3>
+          <h3 className="text-xl font-bold text-gray-900  mb-6 ml-2">{t.articles_title || "Artículos recomendados"}</h3>
           <div className="space-y-6">
             <ArticleCard
               image="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=400&auto=format&fit=crop"
@@ -358,13 +358,13 @@ export const StatsScreen: React.FC = () => {
         </section>
 
         {/* PlanifAI Tip (Semi-Dynamic) */}
-        <section className="bg-rose-50/50 dark:bg-rose-950/20 rounded-[2.5rem] p-6 border border-rose-100 dark:border-rose-900/30 flex items-start gap-5 mt-4">
+        <section className="bg-rose-50/50 /20 rounded-[2.5rem] p-6 border border-rose-100 /30 flex items-start gap-5 mt-4">
           <div className="w-14 h-14 shrink-0 rounded-[1.2rem] bg-rose-400 flex items-center justify-center text-white shadow-lg shadow-rose-400/20">
             <Lightbulb size={28} className="fill-white/20" />
           </div>
           <div>
-            <h4 className="font-bold text-gray-900 dark:text-white text-base">Tip de PlanifAI</h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+            <h4 className="font-bold text-gray-900  text-base">Tip de PlanifAI</h4>
+            <p className="text-xs text-gray-500  mt-1 leading-relaxed">
               {stats && stats.completed > 0
                 ? `¡Llevas ${stats.completed} tareas completadas! Sigue así para aumentar tu racha actual de ${stats.current_streak} días.`
                 : "Tu concentración es mayor los miércoles por la mañana. ¿Agendamos tus tareas críticas ahí?"}
@@ -379,11 +379,11 @@ export const StatsScreen: React.FC = () => {
 // --- SUBSIDIARY COMPONENTS ---
 
 const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor: string }> = ({ title, data, accentColor }) => (
-  <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+  <section className="bg-white  rounded-[2.5rem] p-8 shadow-sm border border-gray-100 ">
     <div className="flex justify-between items-center mb-6">
       <div>
         <p className="text-[#94A3B8] text-[9px] font-black uppercase tracking-[0.2em] mb-1">CATEGORÍA</p>
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{title}</h3>
+        <h3 className="text-2xl font-bold text-gray-900  tracking-tight">{title}</h3>
       </div>
       <div className="flex gap-4">
         <div className="flex items-center gap-1.5">
@@ -391,7 +391,7 @@ const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor
           <span className="text-[10px] font-bold text-gray-400 uppercase">Tú</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+          <div className="w-2 h-2 rounded-full bg-gray-200 "></div>
           <span className="text-[10px] font-bold text-gray-400 uppercase">Amigo</span>
         </div>
       </div>
@@ -429,13 +429,13 @@ const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor
 );
 
 const HabitIndicator: React.FC<{ label: string; current: number; total: number; accentColor: string }> = ({ label, current, total, accentColor }) => (
-  <div className="bg-white dark:bg-gray-900 rounded-[1.5rem] p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+  <div className="bg-white  rounded-[1.5rem] p-5 shadow-sm border border-gray-100  flex flex-col gap-3">
     <div className="flex justify-between items-center">
-      <span className="text-sm font-bold text-gray-900 dark:text-white">{label}</span>
+      <span className="text-sm font-bold text-gray-900 ">{label}</span>
       <ChevronDown size={18} className="text-gray-300" />
     </div>
     <div className="flex items-center gap-4">
-      <div className="flex-1 h-2 bg-gray-50 dark:bg-gray-800 rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-gray-50  rounded-full overflow-hidden">
         <div
           className="h-full rounded-full"
           style={{ width: `${(current / total) * 100}%`, backgroundColor: accentColor }}
@@ -475,7 +475,7 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => (
 );
 
 const ArticleCard: React.FC<{ image: string; title: string; desc: string; gradient: string }> = ({ image, title, desc, gradient }) => (
-  <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800">
+  <div className="bg-white  rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 ">
     <div className="relative h-44 flex items-center justify-center">
       <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover opacity-80" />
       <div className={`absolute inset-0 bg-gradient-to-b ${gradient}`}></div>
@@ -488,7 +488,7 @@ const ArticleCard: React.FC<{ image: string; title: string; desc: string; gradie
       </div>
     </div>
     <div className="p-8">
-      <h4 className="text-lg font-bold text-gray-900 dark:text-white leading-snug mb-3">{title}</h4>
+      <h4 className="text-lg font-bold text-gray-900  leading-snug mb-3">{title}</h4>
       <p className="text-[11px] text-gray-400 font-medium leading-relaxed">{desc}</p>
     </div>
   </div>

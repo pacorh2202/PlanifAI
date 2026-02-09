@@ -98,13 +98,13 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
   const initials = (formData.name || user?.email || 'U').charAt(0).toUpperCase();
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-black transition-colors duration-300">
+    <div className="flex flex-col h-full bg-white  transition-colors duration-300">
       {/* Header */}
-      <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-md z-20">
-        <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
-          <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
+      <header className="px-6 pt-10 pb-4 flex items-center justify-between sticky top-0 bg-white/80 /80 backdrop-blur-md z-20">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 :bg-gray-800 transition-colors">
+          <ChevronLeft className="text-gray-900 " size={28} />
         </button>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Configuración</h1>
+        <h1 className="text-xl font-bold text-gray-900  tracking-tight">Configuración</h1>
         <div className="w-10"></div>
       </header>
 
@@ -113,7 +113,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
         <div className="flex flex-col items-center">
           <div className="relative group">
             <div
-              className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-black text-white shadow-2xl overflow-hidden border-4 border-white dark:border-gray-800 transition-transform duration-500"
+              className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-black text-white shadow-2xl overflow-hidden border-4 border-white  transition-transform duration-500"
               style={{ backgroundColor: profileImage ? 'transparent' : accentColor }}
             >
               {profileImage ? (
@@ -124,9 +124,9 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
             </div>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 w-10 h-10 bg-gray-900 dark:bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-900 active:scale-90 transition-transform"
+              className="absolute bottom-0 right-0 w-10 h-10 bg-gray-900  rounded-full flex items-center justify-center shadow-lg border-2 border-white  active:scale-90 transition-transform"
             >
-              <Camera size={18} className="text-white dark:text-gray-900" />
+              <Camera size={18} className="text-white " />
             </button>
             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
           </div>
@@ -135,8 +135,8 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
         {/* Status Message */}
         {message && (
           <div className={`p-4 rounded-2xl flex items-center gap-3 animate-fade-in ${message.type === 'success'
-            ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-            : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+            ? 'bg-green-50 text-green-600 /20 '
+            : 'bg-red-50 text-red-600 /20 '
             }`}>
             {message.type === 'success' && <CheckCircle2 size={18} />}
             <p className="text-xs font-bold uppercase tracking-widest">{message.text}</p>
@@ -153,7 +153,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Tu nombre"
-                className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-gray-100 dark:focus:border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900 dark:text-white transition-all focus:ring-0"
+                className="w-full bg-gray-50  border-2 border-transparent focus:border-gray-100 :border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900  transition-all focus:ring-0"
               />
             </div>
           </div>
@@ -166,7 +166,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                 value={formData.handle}
                 onChange={e => setFormData({ ...formData, handle: e.target.value })}
                 placeholder="nombre_usuario"
-                className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-gray-100 dark:focus:border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900 dark:text-white transition-all focus:ring-0"
+                className="w-full bg-gray-50  border-2 border-transparent focus:border-gray-100 :border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900  transition-all focus:ring-0"
                 style={{ paddingLeft: formData.handle.length > 0 ? '2.8rem' : '1.5rem' }}
               />
               <span className="absolute left-7 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none font-bold">@</span>
@@ -180,7 +180,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
               value={formData.email}
               disabled={true}
               placeholder="correo@ejemplo.com"
-              className="w-full bg-gray-100 dark:bg-gray-800/50 border-2 border-transparent rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-500 dark:text-gray-500 cursor-not-allowed"
+              className="w-full bg-gray-100 /50 border-2 border-transparent rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-500  cursor-not-allowed"
             />
           </div>
 
@@ -192,7 +192,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                 value={formData.password}
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"
-                className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-gray-100 dark:focus:border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900 dark:text-white transition-all focus:ring-0"
+                className="w-full bg-gray-50  border-2 border-transparent focus:border-gray-100 :border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900  transition-all focus:ring-0"
               />
               <button
                 onClick={() => setShowPassword(!showPassword)}
@@ -222,14 +222,14 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
 
           <button
             onClick={onBack}
-            className="w-full py-4 text-gray-500 dark:text-gray-400 font-black text-xs uppercase tracking-widest active:scale-95 transition-all"
+            className="w-full py-4 text-gray-500  font-black text-xs uppercase tracking-widest active:scale-95 transition-all"
           >
             Cancelar
           </button>
 
           <button
             onClick={signOut}
-            className="w-full bg-red-500/10 dark:bg-red-500/5 rounded-[2rem] p-5 flex items-center justify-center gap-3 border border-red-500/20 dark:border-red-500/10 active:scale-[0.98] transition-all group"
+            className="w-full bg-red-500/10 /5 rounded-[2rem] p-5 flex items-center justify-center gap-3 border border-red-500/20 /10 active:scale-[0.98] transition-all group"
           >
             <LogOut size={18} className="text-red-500" />
             <span className="text-red-500 font-black text-xs uppercase tracking-[0.2em]">{t.logout || 'Cerrar sesión'}</span>

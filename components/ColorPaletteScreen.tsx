@@ -74,24 +74,24 @@ export const ColorPaletteScreen: React.FC<ColorPaletteScreenProps> = ({ onBack, 
     <div
       key={template.id}
       onClick={onClick}
-      className={`bg-white dark:bg-[#121212] rounded-[2.5rem] p-7 relative border-2 transition-all duration-500 cursor-pointer shadow-sm ${isSelected ? 'ring-1 ring-opacity-20' : 'border-transparent'
+      className={`bg-white [#121212] rounded-[2.5rem] p-7 relative border-2 transition-all duration-500 cursor-pointer shadow-sm ${isSelected ? 'ring-1 ring-opacity-20' : 'border-transparent'
         }`}
       style={{ borderColor: isSelected ? accentColor : 'transparent' }}
     >
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">{template.name}</h3>
+          <h3 className="text-lg font-black text-gray-900  uppercase tracking-tight">{template.name}</h3>
           {onEdit && (
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(); }}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 :text-gray-200 transition-colors"
             >
               <Pencil size={14} />
             </button>
           )}
         </div>
         <div
-          className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${isSelected ? 'shadow-lg' : 'bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700'
+          className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${isSelected ? 'shadow-lg' : 'bg-gray-50  border border-gray-100 '
             }`}
           style={{ backgroundColor: isSelected ? accentColor : 'transparent' }}
         >
@@ -115,12 +115,12 @@ export const ColorPaletteScreen: React.FC<ColorPaletteScreenProps> = ({ onBack, 
   );
 
   return (
-    <div className="flex flex-col h-full bg-[#F8F9FA] dark:bg-[#0A0A0A] relative overflow-hidden transition-colors duration-300">
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8F9FA]/80 dark:bg-[#0A0A0A]/80 backdrop-blur-md z-20">
-        <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
-          <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
+    <div className="flex flex-col h-full bg-[#F8F9FA] [#0A0A0A] relative overflow-hidden transition-colors duration-300">
+      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8F9FA]/80 [#0A0A0A]/80 backdrop-blur-md z-20">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 :bg-gray-800 transition-colors">
+          <ChevronLeft className="text-gray-900 " size={28} />
         </button>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.personalization}</h1>
+        <h1 className="text-xl font-bold text-gray-900  tracking-tight">{t.personalization}</h1>
         <div className="w-10"></div>
       </header>
 
@@ -131,13 +131,13 @@ export const ColorPaletteScreen: React.FC<ColorPaletteScreenProps> = ({ onBack, 
 
         <section className="mb-12">
           <h2 className="text-[11px] font-black text-[#CBD5E1] uppercase tracking-[0.3em] mb-6 ml-4">{t.accent_color_label}</h2>
-          <div className="bg-white dark:bg-[#121212] rounded-[3rem] p-8 shadow-sm border border-gray-100 dark:border-gray-900 transition-all duration-500">
+          <div className="bg-white [#121212] rounded-[3rem] p-8 shadow-sm border border-gray-100  transition-all duration-500">
             <div className="flex flex-wrap gap-4 mb-10 justify-center">
               {PRESET_ACCENTS.map((color) => (
                 <button
                   key={color}
                   onClick={() => selectPreset(color)}
-                  className={`w-12 h-12 rounded-full border-4 transition-all active:scale-90 ${accentColor === color ? 'border-gray-900 dark:border-white scale-110 shadow-lg' : 'border-transparent'
+                  className={`w-12 h-12 rounded-full border-4 transition-all active:scale-90 ${accentColor === color ? 'border-gray-900  scale-110 shadow-lg' : 'border-transparent'
                     }`}
                   style={{ backgroundColor: color }}
                 />
@@ -145,8 +145,8 @@ export const ColorPaletteScreen: React.FC<ColorPaletteScreenProps> = ({ onBack, 
               <button
                 onClick={() => setShowCustomPicker(!showCustomPicker)}
                 className={`w-12 h-12 rounded-full border-4 flex items-center justify-center transition-all active:scale-90 ${showCustomPicker || !PRESET_ACCENTS.includes(accentColor)
-                    ? 'border-gray-900 dark:border-white scale-110 shadow-lg'
-                    : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'
+                    ? 'border-gray-900  scale-110 shadow-lg'
+                    : 'bg-gray-50  border-gray-100  text-gray-400'
                   }`}
                 style={{ backgroundColor: (showCustomPicker || !PRESET_ACCENTS.includes(accentColor)) ? accentColor : '' }}
               >
@@ -155,12 +155,12 @@ export const ColorPaletteScreen: React.FC<ColorPaletteScreenProps> = ({ onBack, 
             </div>
 
             {showCustomPicker && (
-              <div className="space-y-10 animate-fade-in pt-8 border-t border-gray-50 dark:border-gray-800">
+              <div className="space-y-10 animate-fade-in pt-8 border-t border-gray-50 ">
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1 h-20 rounded-[2rem] shadow-inner border border-gray-100 dark:border-gray-800 transition-all duration-500 flex items-center justify-center" style={{ backgroundColor: accentColor }}>
+                  <div className="flex-1 h-20 rounded-[2rem] shadow-inner border border-gray-100  transition-all duration-500 flex items-center justify-center" style={{ backgroundColor: accentColor }}>
                     <Sparkles size={24} className={hsl.l > 60 ? 'text-black/20' : 'text-white/30'} />
                   </div>
-                  <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 rounded-[1.5rem] border border-gray-100 dark:border-gray-800">
+                  <div className="px-6 py-4 bg-gray-50  rounded-[1.5rem] border border-gray-100 ">
                     <span className="text-[14px] font-mono font-black text-gray-500 uppercase tracking-widest">{accentColor}</span>
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export const ColorPaletteScreen: React.FC<ColorPaletteScreenProps> = ({ onBack, 
                 <div className="space-y-3">
                   <div className="flex justify-between px-2">
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.hue_label}</span>
-                    <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase">{Math.round(hsl.h)}°</span>
+                    <span className="text-[10px] font-black text-gray-900  uppercase">{Math.round(hsl.h)}°</span>
                   </div>
                   <div className="relative w-full h-6 rounded-full">
                     <div className="absolute inset-0 rounded-full" style={{ background: 'linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)' }}></div>
@@ -193,7 +193,7 @@ export const ColorPaletteScreen: React.FC<ColorPaletteScreenProps> = ({ onBack, 
                       <Sun size={12} />
                       <span className="text-[10px] font-black uppercase tracking-widest">{t.intensity_label}</span>
                     </div>
-                    <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase">{Math.round(hsl.l)}%</span>
+                    <span className="text-[10px] font-black text-gray-900  uppercase">{Math.round(hsl.l)}%</span>
                   </div>
                   <div className="relative w-full h-6 rounded-full overflow-hidden">
                     <div className="absolute inset-0 rounded-full" style={{
