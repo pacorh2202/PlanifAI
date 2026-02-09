@@ -6,7 +6,7 @@
  */
 export const GEMINI_CONFIG = {
     API_KEY: 'AIzaSyC8PHpWKWXlqMI21DvZiSo26CX7fmMd-OI',
-    MODEL: 'gemini-2.0-flash',
+    MODEL: 'gemini-2.5-flash-native-audio-preview-12-2025',
     SYSTEM_INSTRUCTION: (userName: string, assistantName: string, lang: 'es' | 'en', eventsSummary: string, friendsSummary: string, localTimeFull: string, tzOffset: number) => {
         const context = lang === 'es'
             ? `Habla SIEMPRE en Español. Entiende formatos de hora españoles. Tu confirmación debe ser SIEMPRE: "La tarea ha sido confirmada".`

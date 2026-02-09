@@ -30,10 +30,6 @@ export const ChatScreen: React.FC = () => {
     }
   };
 
-  const getBarDelay = (index: number) => {
-    return [0, 0.2, 0.4, 0.1, 0.3][index] + 's';
-  };
-
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC] relative overflow-hidden transition-colors duration-300">
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -59,27 +55,17 @@ export const ChatScreen: React.FC = () => {
       <div className="pb-40 pt-4 px-4 flex justify-center z-20">
         <button
           onClick={handleToggleConnection}
-          className={`relative group rounded-full transition-all duration-500 focus:outline-none focus:ring-0 tap-highlight-transparent ${connected ? 'scale-110' : 'scale-100 hover:scale-105'}`}
+          className={`relative group rounded-full transition-all duration-500 focus:outline-none focus:ring-0 tap-highlight-transparent ${connected ? 'scale-110' : 'scale-100'}`}
         >
-          <div className={`absolute inset-0 bg-gradient-to-tr from-indigo-500 via-purple-500 to-rose-500 rounded-full blur-2xl opacity-40 transition-opacity duration-700 ${connected ? 'opacity-90 animate-pulse' : 'opacity-0'}`}></div>
+          <div className={`absolute inset-0 bg-gradient-to-tr from-rose-400 via-indigo-400 to-rose-400 rounded-full blur-2xl opacity-40 transition-opacity duration-700 ${connected ? 'opacity-90 animate-pulse' : 'opacity-0'}`}></div>
 
-          <div className={`relative w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 overflow-hidden border-2 ${connected ? 'bg-black border-white/30 shadow-indigo-500/30' : 'bg-white border-gray-100 shadow-lg hover:shadow-xl'}`}>
-            <div className={`absolute inset-0 bg-black transition-opacity duration-500 ${connected ? 'opacity-100' : 'opacity-0'}`}></div>
-            <div className="relative flex items-center justify-center gap-1.5 h-12 w-12 z-10">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className={`w-1.5 rounded-full animate-wave transition-colors duration-500 ${connected
-                      ? 'bg-gradient-to-t from-rose-400 to-indigo-400'
-                      : 'bg-indigo-500/40'
-                    }`}
-                  style={{
-                    animationDelay: getBarDelay(i),
-                    animationPlayState: connected ? 'running' : 'paused',
-                    height: connected ? 'auto' : '35%'
-                  }}
-                ></div>
-              ))}
+          <div className={`relative w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 overflow-hidden border-2 ${connected ? 'bg-black border-white/40 shadow-indigo-500/20' : 'bg-white border-gray-100 shadow-xl'}`}>
+            <div className="flex items-center justify-center gap-1.5 h-12 w-12">
+              <div className={`w-1.5 rounded-full animate-wave ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400' : 'bg-gray-600 dark:bg-gray-300'}`} style={{ animationDelay: '0s' }}></div>
+              <div className={`w-1.5 rounded-full animate-wave ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400' : 'bg-gray-600 dark:bg-gray-300'}`} style={{ animationDelay: '0.2s' }}></div>
+              <div className={`w-1.5 rounded-full animate-wave ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400' : 'bg-gray-600 dark:bg-gray-300'}`} style={{ animationDelay: '0.4s' }}></div>
+              <div className={`w-1.5 rounded-full animate-wave ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400' : 'bg-gray-600 dark:bg-gray-300'}`} style={{ animationDelay: '0.1s' }}></div>
+              <div className={`w-1.5 rounded-full animate-wave ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400' : 'bg-gray-600 dark:bg-gray-300'}`} style={{ animationDelay: '0.3s' }}></div>
             </div>
           </div>
         </button>
