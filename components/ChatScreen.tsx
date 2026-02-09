@@ -30,14 +30,8 @@ export const ChatScreen: React.FC = () => {
     }
   };
 
-  const getBarHeight = (baseHeight: number, delay: number) => {
-    if (!connected) return `${baseHeight}%`;
-    if (isTalking) {
-      // Scale volume (0-1) to a percentage, e.g., 20% to 100%
-      const dynamicHeight = Math.max(baseHeight, volume * 100);
-      return `${dynamicHeight}%`;
-    }
-    return `${baseHeight}%`;
+  const getBarDelay = (index: number) => {
+    return [0, 0.2, 0.4, 0.1, 0.3][index] + 's';
   };
 
   return (
@@ -69,13 +63,23 @@ export const ChatScreen: React.FC = () => {
         >
           <div className={`absolute inset-0 bg-gradient-to-tr from-indigo-500 via-purple-500 to-rose-500 rounded-full blur-2xl opacity-40 transition-opacity duration-700 ${connected ? 'opacity-90 animate-pulse' : 'opacity-0'}`}></div>
 
-          <div className={`relative w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 overflow-hidden border-2 ${connected ? 'bg-black border-white/40 shadow-indigo-500/20' : 'bg-black border-gray-800 shadow-xl'}`}>
-            <div className="flex items-center justify-center gap-1.5 h-12 w-12">
-              <div className={`w-1.5 rounded-full ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400 animate-wave' : 'bg-white/20'}`} style={{ animationDelay: '0s', height: connected && isTalking ? '60%' : '30%' }}></div>
-              <div className={`w-1.5 rounded-full ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400 animate-wave' : 'bg-white/20'}`} style={{ animationDelay: '0.2s', height: connected && isTalking ? '80%' : '35%' }}></div>
-              <div className={`w-1.5 rounded-full ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400 animate-wave' : 'bg-white/20'}`} style={{ animationDelay: '0.4s', height: connected && isTalking ? '100%' : '40%' }}></div>
-              <div className={`w-1.5 rounded-full ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400 animate-wave' : 'bg-white/20'}`} style={{ animationDelay: '0.1s', height: connected && isTalking ? '80%' : '35%' }}></div>
-              <div className={`w-1.5 rounded-full ${connected ? 'bg-gradient-to-t from-rose-400 to-indigo-400 animate-wave' : 'bg-white/20'}`} style={{ animationDelay: '0.3s', height: connected && isTalking ? '60%' : '30%' }}></div>
+          <div className={`relative w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 overflow-hidden border-2 ${connected ? 'bg-black border-white/30 shadow-indigo-500/30' : 'bg-white border-gray-100 shadow-lg hover:shadow-xl'}`}>
+            <div className={`absolute inset-0 bg-black transition-opacity duration-500 ${connected ? 'opacity-100' : 'opacity-0'}`}></div>
+            <div className="relative flex items-center justify-center gap-1.5 h-12 w-12 z-10">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className={`w-1.5 rounded-full animate-wave transition-colors duration-500 ${connected
+                      ? 'bg-gradient-to-t from-rose-400 to-indigo-400'
+                      : 'bg-indigo-500/40'
+                    }`}
+                  style={{
+                    animationDelay: getBarDelay(i),
+                    animationPlayState: connected ? 'running' : 'paused',
+                    height: connected ? 'auto' : '35%'
+                  }}
+                ></div>
+              ))}
             </div>
           </div>
         </button>

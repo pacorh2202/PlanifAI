@@ -73,7 +73,8 @@ export const usePlanAILive = () => {
     console.log('[PlanifAI Agent] 🛑 User requested disconnect.');
     userIntentConnected.current = false;
     reconnectAttempts.current = 0;
-    setIsProcessing(false); // Clear processing flag
+    setIsProcessing(false);
+    sessionRef.current = null;
     if (sessionRef.current) {
       try {
         const session = await sessionRef.current;
@@ -228,8 +229,9 @@ export const usePlanAILive = () => {
                 setVolume(rms);
 
                 const session = sessionRef.current;
-                if (!session) return;
+                if (!session || !connected) return;
 
+                // Robustness: only send if connected and session is active
                 try {
                   const uint8 = new Uint8Array(pcm);
                   let binary = '';
@@ -237,9 +239,14 @@ export const usePlanAILive = () => {
                     binary += String.fromCharCode(uint8[i]);
                   }
                   const base64 = btoa(binary);
-                  session.sendRealtimeInput({ media: { data: base64, mimeType: 'audio/pcm;rate=16000' } });
+
+                  // The SDK might not expose readyState easily, so we use the try-catch and our connected flag
+                  if (connected) {
+                    session.sendRealtimeInput({ media: { data: base64, mimeType: 'audio/pcm;rate=16000' } });
+                  }
                 } catch (err) {
-                  // Ignore transmission errors
+                  console.warn('[PlanifAI Agent] ⚠️ Transmission failed, disconnecting...');
+                  disconnect();
                 }
               };
 
@@ -326,6 +333,7 @@ export const usePlanAILive = () => {
             setConnected(false);
             setIsTalking(false);
             setIsConnecting(false);
+            sessionRef.current = null;
 
             // Auto-reconnect logic if it was unintentional
             if (userIntentConnected.current && reconnectAttempts.current < maxReconnectAttempts) {
