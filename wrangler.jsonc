@@ -1,6 +1,7 @@
 {
-    "name": "planif-ai",
+    "name": "planifai-bilingue",
     "compatibility_date": "2026-02-06",
-    "pages_build_output_dir": "./dist"
-    // Trigger redeploy: 2026-02-09T12:25:00+01:00
+    "assets": {
+        "directory": "./dist"
+    }
 }

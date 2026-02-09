@@ -167,26 +167,6 @@ export async function sendFriendRequest(
         throw error;
     }
 
-    // Trigger notification for the recipient
-    const { data: myProfile } = await supabase
-        .from('profiles')
-        .select('user_name, profile_image')
-        .eq('id', fromUserId)
-        .single();
-
-    if (myProfile) {
-        await createNotification(
-            toUserId,
-            'friend_request',
-            'Nueva solicitud de amistad',
-            `${myProfile.user_name} quiere ser tu amigo en PlanifAI.`,
-            {
-                profileImage: myProfile.profile_image,
-                senderId: fromUserId
-            }
-        );
-    }
-
     return dbFriendToFrontend(data as DBFriend, fromUserId);
 }
 

@@ -40,11 +40,6 @@ class PlaybackProcessor extends AudioWorkletProcessor {
             }
         }
 
-        // Diagnostic log: check if queue is unexpectedly growing
-        if (this.queue.length > 50 && Math.random() < 0.05) {
-            console.log(`[PlaybackWorklet] ⚠️ High buffer queue: ${this.queue.length}`);
-        }
-
         if (wasNotEmpty && this.queue.length === 0) {
             this.port.postMessage('playback-ended');
         }

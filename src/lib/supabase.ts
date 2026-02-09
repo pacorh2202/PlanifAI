@@ -2,18 +2,17 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 
 // Environment variables configured in .env.local
-const supabaseUrl = 'https://ftybizjyqoezsmiqfmun.supabase.co';
-const supabaseAnonKey = 'sb_publishable_E8MD06yHYlJzzvFwB5hsvQ_5MjQPkw2';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables. Please check your Cloudflare Pages settings.');
+    throw new Error(
+        'Missing Supabase environment variables. Please check your .env.local file.'
+    );
 }
 
-const validUrl = supabaseUrl;
-const validKey = supabaseAnonKey;
-
 // Create Supabase client with TypeScript types
-export const supabase = createClient<Database>(validUrl, validKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: true,
         autoRefreshToken: true,
