@@ -3,12 +3,15 @@ import React, { useMemo, useState } from 'react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 import { Flame, TrendingUp, ChevronDown, Lightbulb, X, BookOpen, Clock, ArrowRight } from 'lucide-react';
+import gradientGreen from '../src/assets/gradient-green.png';
+import gradientPink from '../src/assets/gradient-pink.png';
 
 // ─── Article content data ───────────────────────────────────────────────
 const ARTICLES = [
   {
     id: 'pomodoro',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    image: gradientGreen,
     icon: '🍅',
     tag: 'PRODUCTIVIDAD',
     title: 'Optimiza tu flujo de trabajo con la técnica Pomodoro',
@@ -36,6 +39,7 @@ const ARTICLES = [
   {
     id: 'superfoods',
     gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    image: gradientPink,
     icon: '🧠',
     tag: 'BIENESTAR',
     title: 'Superalimentos para mantener el cerebro activo',
@@ -413,7 +417,7 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
       {/* Center Value - Positioned absolutely below the pivot but 'inside' the layout flow via flex/margin if possible, or absolute centered */}
       <div className="absolute top-[60%] flex flex-col items-center pointer-events-none">
         {/* Value is now clearly separated from the arc text */}
-        <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">{clamped}</span>
+        {/* Value removed */}
         <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0 bg-white/50 dark:bg-black/50 px-2 rounded-full backdrop-blur-sm">
           {stressLabel}
         </span>
@@ -430,10 +434,13 @@ const ArticleCard: React.FC<{ article: typeof ARTICLES[0]; onOpen: () => void }>
   >
     {/* Gradient header with icon */}
     <div
-      className="relative h-40 flex flex-col items-center justify-center"
-      style={{ background: article.gradient }}
+      className="relative h-40 flex flex-col items-center justify-center overflow-hidden"
+      style={{
+        background: article.image ? `url(${article.image}) center/cover no-repeat` : article.gradient
+      }}
     >
-      <span className="text-5xl mb-3 drop-shadow-sm select-none transform transition-transform group-hover:scale-110">{article.icon}</span>
+      {article.image && <div className="absolute inset-0 bg-black/20" />}
+      <span className="relative z-10 text-5xl mb-3 drop-shadow-sm select-none transform transition-transform group-hover:scale-110">{article.icon}</span>
       <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em]">{article.tag}</p>
       {/* Read time badge */}
       <div className="absolute top-4 right-5 flex items-center gap-1.5 bg-white/25 backdrop-blur-md rounded-full px-3 py-1 border border-white/20">
@@ -463,9 +470,12 @@ const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void 
   >
     {/* Hero */}
     <div
-      className="relative shrink-0 h-64 flex flex-col items-center justify-center -mt-10 pt-10"
-      style={{ background: article.gradient }}
+      className="relative shrink-0 h-64 flex flex-col items-center justify-center -mt-10 pt-10 overflow-hidden"
+      style={{
+        background: article.image ? `url(${article.image}) center/cover no-repeat` : article.gradient
+      }}
     >
+      {article.image && <div className="absolute inset-0 bg-black/30" />}
       {/* Close button - Increased z-index and touch area */}
       <button
         onClick={onClose}
@@ -512,15 +522,7 @@ const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void 
       </div>
     </div>
 
-    {/* Bottom Floating Action Bar */}
-    <div className="absolute bottom-8 left-0 right-0 px-6 flex justify-center pointer-events-none">
-      <button
-        onClick={onClose}
-        className="pointer-events-auto bg-gray-900/90 dark:bg-white/90 backdrop-blur-xl text-white dark:text-gray-900 font-bold text-sm py-4 px-12 rounded-full shadow-2xl shadow-gray-900/20 active:scale-95 transition-transform border border-white/10 dark:border-black/5"
-      >
-        Cerrar artículo
-      </button>
-    </div>
+    {/* Bottom Floating Action Bar removed */}
 
     {/* Keyframes */}
     <style>{`
