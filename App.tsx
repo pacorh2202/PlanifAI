@@ -24,6 +24,7 @@ type TabType = 'chat' | 'calendar' | 'friends' | 'stats' | 'settings';
 
 const AppContent: React.FC = () => {
   const { accentColor, isDetailViewOpen, t } = useCalendar();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('chat');
   const [settingsView, setSettingsView] = useState<'main' | 'colors' | 'custom-palette' | 'privacy' | 'language' | 'account' | 'subscriptions' | 'voice-settings' | 'suggestions'>('main');
 
