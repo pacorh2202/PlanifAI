@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, MoreHorizontal, UserMinus, UserPlus, Plus, Users, Loader2, Bell } from 'lucide-react';
+import { Search, MoreHorizontal, UserMinus, UserPlus, Plus, Users, Loader2, Bell, X } from 'lucide-react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { useAuth } from '../src/contexts/AuthContext';
 import * as friendsApi from '../src/lib/friends-api';
@@ -163,15 +163,37 @@ export const FriendsScreen: React.FC = () => {
 
         <main className="flex-1 overflow-y-auto no-scrollbar pb-40">
           <div className="px-6 mb-8">
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-              <input
-                type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-                placeholder={t.friends_search}
-                className="w-full bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl py-4 pl-12 pr-4 shadow-sm text-sm focus:ring-0 dark:text-white outline-none placeholder:text-gray-400"
-              />
-              {searchLoading && (
-                <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={18} />
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors pointer-events-none" size={18} />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onFocus={() => setSearch(search)} // Trigger focus state
+                  placeholder={t.friends_search}
+                  className="w-full bg-gray-100 dark:bg-gray-800 border-0 rounded-xl py-3.5 pl-12 pr-10 text-sm text-gray-900 dark:text-white outline-none placeholder:text-gray-400 focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors caret-gray-900 dark:caret-white"
+                  style={{ caretColor: 'inherit' }}
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+                {searchLoading && !search && (
+                  <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={18} />
+                )}
+              </div>
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="text-gray-900 dark:text-white font-medium text-sm whitespace-nowrap"
+                >
+                  Cancelar
+                </button>
               )}
             </div>
           </div>
