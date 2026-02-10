@@ -187,11 +187,29 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     setEditedEvent({ ...editedEvent, descriptionPoints: (editedEvent.descriptionPoints || []).filter((_, i) => i !== idx) });
   };
 
-  const toggleAttendee = (name: string) => {
+  const toggleAttendee = (friend: any) => {
     const current = editedEvent.attendees || [];
-    const isAlreadySelected = current.includes(name);
-    const updated = isAlreadySelected ? current.filter(n => n !== name) : [...current, name];
-    setEditedEvent({ ...editedEvent, attendees: updated });
+    const handleWithAt = `@${friend.handle}`;
+
+    // Check if selected by any identifier (Name, Handle, or @Handle)
+    const isSelected = current.some(a =>
+      a === friend.name ||
+      a === friend.handle ||
+      a === handleWithAt
+    );
+
+    if (isSelected) {
+      // Remove all variations to ensure clean toggle off
+      const updated = current.filter(a =>
+        a !== friend.name &&
+        a !== friend.handle &&
+        a !== handleWithAt
+      );
+      setEditedEvent({ ...editedEvent, attendees: updated });
+    } else {
+      // Add using the new standard format (@handle)
+      setEditedEvent({ ...editedEvent, attendees: [...current, handleWithAt] });
+    }
   };
 
   const formatForInput = (isoString: string) => {
@@ -462,11 +480,16 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em] mb-5">{t.participants}</h2>
             <div className="flex flex-wrap gap-3">
               {friends.filter(f => f.status === 'friend').map(friend => {
-                const isAttendee = editedEvent.attendees?.includes(friend.name);
+                const isAttendee = editedEvent.attendees?.some(a =>
+                  a === friend.name ||
+                  a === friend.handle ||
+                  a === `@${friend.handle}`
+                );
+
                 if (!isEditing && !isAttendee) return null;
                 return (
                   <div key={friend.id} className="relative">
-                    <button onClick={() => isEditing && toggleAttendee(friend.name)} className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all ${isAttendee ? 'border-gray-900 dark:border-white shadow-lg scale-105' : 'border-transparent opacity-40 grayscale'}`}>
+                    <button onClick={() => isEditing && toggleAttendee(friend)} className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all ${isAttendee ? 'border-gray-900 dark:border-white shadow-lg scale-105' : 'border-transparent opacity-40 grayscale'}`}>
                       <img src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.name)}&background=FF7566&color=fff`} alt={friend.name} className="w-12 h-12 rounded-full object-cover" />
                     </button>
                     <div className="flex flex-col items-center w-14 overflow-hidden">

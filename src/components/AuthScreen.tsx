@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { Mail, Lock, User, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 
 interface AuthScreenProps {
@@ -11,9 +12,39 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     const [mode, setMode] = useState<'signin' | 'signup'>('signin');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [userName, setUserName] = useState('');
+    const [username, setUsername] = useState('');
+    const [usernameError, setUsernameError] = useState('');
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+
+    const checkUsernameAvailability = async (name: string) => {
+        if (!name || name.length < 3) return false;
+
+        setIsCheckingUsername(true);
+        try {
+            // Check against 'profiles' table for handle/user_name existence
+            const { count, error } = await supabase
+                .from('profiles')
+                .select('*', { count: 'exact', head: true })
+                .eq('handle', name);
+
+            if (error) throw error;
+
+            if (count && count > 0) {
+                setUsernameError('Este nombre de usuario ya está en uso.');
+                return false;
+            }
+
+            setUsernameError('');
+            return true;
+        } catch (err) {
+            console.error('Error checking username:', err);
+            return true; // Fail open if network error, let server handle it
+        } finally {
+            setIsCheckingUsername(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,12 +60,27 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                     onSuccess?.();
                 }
             } else {
-                if (!userName.trim()) {
-                    setError('Por favor ingresa tu nombre');
+                // Validation for Signup
+                if (!username || !email || !password) {
+                    setError('Por favor completa todos los campos');
                     setLoading(false);
                     return;
                 }
-                const { error } = await signUp(email, password, userName);
+
+                if (username.length < 3) {
+                    setError('El nombre de usuario debe tener al menos 3 caracteres');
+                    setLoading(false);
+                    return;
+                }
+
+                // Check availability one last time before submit
+                const isAvailable = await checkUsernameAvailability(username);
+                if (!isAvailable) {
+                    setLoading(false);
+                    return;
+                }
+
+                const { error } = await signUp(email, password, username);
                 if (error) {
                     setError(error.message);
                 } else {
@@ -112,13 +158,27 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                             <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                             <input
                                 type="text"
-                                value={userName}
-                                onChange={(e) => setUserName(e.target.value)}
-                                placeholder="Nombre"
-                                className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-gray-400 dark:focus:border-gray-600 transition-colors"
+                                value={username}
+                                onChange={(e) => {
+                                    // Force lowercase and no spaces for handle
+                                    const val = e.target.value.replace(/\s+/g, '').toLowerCase();
+                                    setUsername(val);
+                                    setUsernameError('');
+                                }}
+                                onBlur={() => checkUsernameAvailability(username)}
+                                placeholder="Nombre de usuario (ej. hector04)"
+                                className={`w-full pl-12 pr-10 py-4 bg-white dark:bg-gray-900 border ${usernameError ? 'border-red-500' : 'border-gray-200'} dark:border-gray-800 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-coral-500 dark:focus:border-coral-500 transition-colors`}
                                 required
                                 disabled={loading}
                             />
+                            {isCheckingUsername && (
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <Loader2 className="animate-spin text-coral-500" size={16} />
+                                </div>
+                            )}
+                            {usernameError && (
+                                <p className="absolute -bottom-5 left-1 text-xs text-red-500">{usernameError}</p>
+                            )}
                         </div>
                     )}
 
