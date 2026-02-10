@@ -414,14 +414,7 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
         <text x="180" y="125" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">Alto</text>
       </svg>
 
-      {/* Center Value - Positioned absolutely below the pivot but 'inside' the layout flow via flex/margin if possible, or absolute centered */}
-      <div className="absolute top-[60%] flex flex-col items-center pointer-events-none">
-        {/* Value is now clearly separated from the arc text */}
-        {/* Value removed */}
-        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0 bg-white/50 dark:bg-black/50 px-2 rounded-full backdrop-blur-sm">
-          {stressLabel}
-        </span>
-      </div>
+      {/* Center Value removed completely as requested */}
     </div>
   );
 };
