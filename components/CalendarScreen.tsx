@@ -371,11 +371,7 @@ export const CalendarScreen: React.FC = () => {
     };
     const dayLabels = language === 'es' ? ['L', 'M', 'X', 'J', 'V', 'S', 'D'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-    // Current time indicator position
-    const now = currentTime;
-    const nowHour = now.getHours() + now.getMinutes() / 60;
-    const isNowVisible = nowHour >= startHour && nowHour <= startHour + hours.length;
-    const nowTop = (nowHour - startHour) * HOUR_HEIGHT;
+    // Current time indicator position logic removed as per user request
 
     return (
       <div
@@ -390,10 +386,27 @@ export const CalendarScreen: React.FC = () => {
               const date = weekDays[i];
               const isToday = date.toDateString() === new Date().toDateString();
               const isSelected = date.toDateString() === selectedDate.toDateString();
+
+              // Use accent color from active template (usually first category color or main theme)
+              // Just using the first category color as a proxy for "accent" for now, or could use blue-600
+              const accentColor = activeTemplate.categories[0]?.color || '#3B82F6';
+
               return (
-                <div key={i} className="flex flex-col items-center">
-                  <span className={`text-[9px] font-bold uppercase mb-1 ${isToday ? 'text-red-500' : isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>{label}</span>
-                  <span className={`text-sm font-black ${isToday ? 'text-red-500' : isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>{date.getDate()}</span>
+                <div key={i} className="flex flex-col items-center justify-center p-1">
+                  <span className={`text-[9px] font-bold uppercase mb-1 ${isToday || isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>{label}</span>
+
+                  {isToday ? (
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm text-white text-sm font-black"
+                      style={{ backgroundColor: accentColor }}
+                    >
+                      {date.getDate()}
+                    </div>
+                  ) : (
+                    <span className={`text-sm font-black w-8 h-8 flex items-center justify-center rounded-full ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                      {date.getDate()}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -414,16 +427,7 @@ export const CalendarScreen: React.FC = () => {
 
             {/* Day columns — clean, no borders */}
             <div className="flex-1 grid grid-cols-7 relative">
-              {/* Current time indicator */}
-              {isNowVisible && (
-                <div
-                  className="absolute left-0 right-0 z-30 pointer-events-none flex items-center"
-                  style={{ top: `${nowTop}px` }}
-                >
-                  <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 shrink-0"></div>
-                  <div className="flex-1 h-[2px] bg-red-500 opacity-70"></div>
-                </div>
-              )}
+              {/* Current time indicator removed */}
 
               {weekDays.map((date, dayIdx) => {
                 const dayEvents = getDayEvents(date);
@@ -450,7 +454,7 @@ export const CalendarScreen: React.FC = () => {
                             zIndex: 10
                           }}
                           onClick={() => handleOpenEventDetail(event)}
-                          className="absolute left-1 right-1 rounded-2xl p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95 text-white"
+                          className="absolute left-1 right-1 rounded-[12px] p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95 text-white"
                         >
                           <Icon size={14} strokeWidth={2.5} />
                         </div>
