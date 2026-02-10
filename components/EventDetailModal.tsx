@@ -192,6 +192,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     const handleWithAt = `@${friend.handle}`;
 
     // Check if selected by any identifier (Name, Handle, or @Handle)
+    // We check all variations to ensure we can deselect old events that might have names
     const isSelected = current.some(a =>
       a === friend.name ||
       a === friend.handle ||
@@ -493,8 +494,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                       <img src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.name)}&background=FF7566&color=fff`} alt={friend.name} className="w-12 h-12 rounded-full object-cover" />
                     </button>
                     <div className="flex flex-col items-center w-14 overflow-hidden">
-                      <p className="text-[8px] font-black text-center mt-1 uppercase text-gray-500 truncate w-full leading-tight">{friend.name.split(' ')[0]}</p>
-                      <p className="text-[7px] font-bold text-center text-gray-400 truncate w-full leading-tight">@{friend.handle}</p>
+                      <p className="text-[9px] font-black text-center mt-1 text-gray-900 dark:text-white truncate w-full leading-tight">@{friend.handle}</p>
                     </div>
                   </div>
                 );

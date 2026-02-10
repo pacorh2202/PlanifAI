@@ -235,8 +235,7 @@ export const FriendsScreen: React.FC = () => {
                       className="w-14 h-14 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{user.name || 'Usuario'}</h3>
-                      <p className="text-[11px] text-gray-400 font-medium mt-0.5 truncate">{user.handle || `@${user.id.slice(0, 8)}`}</p>
+                      <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">@{user.handle}</h3>
                       {user.mutualFriends && user.mutualFriends > 0 && (
                         <p className="text-[10px] text-gray-500 font-bold mt-1.5 flex items-center gap-1">
                           <Users size={10} className="text-gray-400" />
@@ -275,10 +274,10 @@ export const FriendsScreen: React.FC = () => {
                       />
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
-                          <h3 className="font-black text-gray-900 dark:text-white text-base leading-tight">{request.name}</h3>
+                          <h3 className="font-black text-gray-900 dark:text-white text-base leading-tight">@{request.handle}</h3>
                         </div>
                         <p className="text-[11px] text-gray-400 font-medium mt-1">
-                          {request.handle}
+                          {request.name}
                         </p>
                       </div>
                     </div>

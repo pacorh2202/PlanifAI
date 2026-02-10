@@ -194,10 +194,11 @@ export const usePlanAILive = () => {
 - Eventos hoy: ${eventsSummary || "No hay eventos hoy."}
 
 ## Manejo de Amigos y Nombres Duplicados (IMPORTANTE)
-- Si el usuario menciona un nombre (ej: "Juan") y hay múltiples amigos con ese nombre:
-  1. NO asumas ninguno.
-  2. Pregunta: "¿A cuál te refieres? ¿A @handle1 o a @handle2?".
-- Si el usuario usa un @handle, identifica a la persona unívocamente.
+- Para referirte a otras personas: USA SIEMPRE SU @handle (nombre de usuario).
+- NUNCA uses el nombre real de otras personas, es información privada.
+- Solo usa el nombre real del usuario (${userName}) para dirigirte a él/ella con naturalidad.
+- Si el usuario dice "Invita a Juan", y el handle es @juan123, di: "Entendido, invito a @juan123".
+- Si hay ambigüedad, pregunta usando los @handles: "¿Te refieres a @juan123 o a @juan456?".
 
 Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática perfecta.`
             }]
