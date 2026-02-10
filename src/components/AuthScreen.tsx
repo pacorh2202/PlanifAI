@@ -177,7 +177,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                                 </div>
                             )}
                             {usernameError && (
-                                <p className="absolute -bottom-5 left-1 text-xs text-red-500">{usernameError}</p>
+                                <p className="mt-2 ml-1 text-xs text-rose-500 font-medium animate-pulse">{usernameError}</p>
                             )}
                         </div>
                     )}
