@@ -34,6 +34,10 @@ export const getEventColor = (event: CalendarEvent, template: PlannerTemplate): 
   return category ? category.color : template.categories[0].color;
 };
 
+export const isEventPast = (event: CalendarEvent, now: Date) => {
+  return new Date(event.end) < now;
+};
+
 export const CalendarScreen: React.FC = () => {
   const { events, updateEvent, activeTemplate, setIsDetailViewOpen, language, t, accentColor } = useCalendar();
   const [view, setView] = useState<ViewMode>('day');
@@ -239,6 +243,7 @@ export const CalendarScreen: React.FC = () => {
 
                 const Icon = getEventIcon(event, activeTemplate);
                 const dynamicColor = getEventColor(event, activeTemplate);
+                const isPast = isEventPast(event, currentTime);
 
                 return (
                   <div key={event.id} className="flex gap-4 items-center group cursor-pointer" onClick={() => handleOpenEventDetail(event)}>
@@ -247,10 +252,13 @@ export const CalendarScreen: React.FC = () => {
                     </div>
                     <div className="flex-1 flex gap-4 items-center relative z-10">
                       <div
-                        className="w-14 h-24 rounded-[2rem] flex items-center justify-center shadow-sm shrink-0 transition-colors duration-500"
-                        style={{ backgroundColor: dynamicColor }}
+                        className="w-14 h-24 rounded-[2rem] flex items-center justify-center shadow-sm shrink-0 transition-colors duration-500 box-border"
+                        style={{
+                          backgroundColor: isPast ? 'white' : dynamicColor,
+                          border: isPast ? `1px solid ${dynamicColor}` : 'none'
+                        }}
                       >
-                        <Icon className="text-white" size={24} strokeWidth={2.5} />
+                        <Icon size={24} strokeWidth={2.5} style={{ color: isPast ? dynamicColor : 'white' }} />
                       </div>
                       <div className="flex flex-col justify-center flex-1">
                         <span className="text-[9px] font-black text-[#94A3B8] uppercase tracking-wider mb-0.5">
@@ -443,20 +451,22 @@ export const CalendarScreen: React.FC = () => {
 
                       const Icon = getEventIcon(event, activeTemplate);
                       const dynamicColor = getEventColor(event, activeTemplate);
+                      const isPast = isEventPast(event, currentTime);
 
                       return (
                         <div
                           key={event.id}
                           style={{
                             top: `${top}px`,
-                            height: `${Math.max(30, height)}px`,
-                            backgroundColor: dynamicColor,
+                            height: `${height}px`,
+                            backgroundColor: isPast ? 'white' : dynamicColor,
+                            border: isPast ? `1px solid ${dynamicColor}` : 'none',
                             zIndex: 10
                           }}
                           onClick={() => handleOpenEventDetail(event)}
-                          className="absolute left-1 right-1 rounded-[50px] p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95 text-white"
+                          className="absolute left-1 right-1 rounded-[50px] p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95"
                         >
-                          <Icon size={14} strokeWidth={2.5} />
+                          <Icon size={14} strokeWidth={2.5} style={{ color: isPast ? dynamicColor : 'white' }} />
                         </div>
                       );
                     })}
