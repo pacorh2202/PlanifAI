@@ -341,7 +341,7 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
 
   return (
     <div className="relative w-full max-w-[18rem] aspect-[2/1] flex flex-col items-center mb-6">
-      <svg viewBox="0 0 200 110" className="w-full h-full overflow-visible">
+      <svg viewBox="0 0 200 130" className="w-full h-full overflow-visible">
         <defs>
           <linearGradient id="stressGradientNew" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#10B981" />
@@ -409,9 +409,9 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
         <circle cx="100" cy="90" r="8" fill="white" stroke="#E5E7EB" strokeWidth="2" />
         <circle cx="100" cy="90" r="4" fill="#1F2937" />
 
-        {/* Gauge ticks (optional apple polish) */}
-        <text x="20" y="108" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">Bajo</text>
-        <text x="180" y="108" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">Alto</text>
+        {/* Gauge ticks (adjusted downwards) */}
+        <text x="20" y="125" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">Bajo</text>
+        <text x="180" y="125" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">Alto</text>
       </svg>
 
       {/* Center Value - Positioned absolutely below the pivot but 'inside' the layout flow via flex/margin if possible, or absolute centered */}
@@ -440,13 +440,9 @@ const ArticleCard: React.FC<{ article: typeof ARTICLES[0]; onOpen: () => void }>
       }}
     >
       {article.image && <div className="absolute inset-0 bg-black/20" />}
-      <span className="relative z-10 text-5xl mb-3 drop-shadow-sm select-none transform transition-transform group-hover:scale-110">{article.icon}</span>
+      {!article.image && <span className="relative z-10 text-5xl mb-3 drop-shadow-sm select-none transform transition-transform group-hover:scale-110">{article.icon}</span>}
       <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em]">{article.tag}</p>
-      {/* Read time badge */}
-      <div className="absolute top-4 right-5 flex items-center gap-1.5 bg-white/25 backdrop-blur-md rounded-full px-3 py-1 border border-white/20">
-        <Clock className="text-white" size={12} />
-        <span className="text-white text-[10px] font-bold">{article.readTime}</span>
-      </div>
+      {/* Read time badge removed as requested */}
     </div>
     {/* Content */}
     <div className="p-7">
@@ -485,12 +481,9 @@ const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void 
       </button>
 
       <div className="flex flex-col items-center animate-[fadeIn_0.5s_ease-out_0.2s_both]">
-        <span className="text-7xl mb-4 drop-shadow-lg">{article.icon}</span>
+        {!article.image && <span className="text-7xl mb-4 drop-shadow-lg">{article.icon}</span>}
         <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em] mb-2">{article.tag}</p>
-        <div className="flex items-center gap-1.5 text-white/80 text-[11px] font-bold bg-black/10 px-3 py-1 rounded-full backdrop-blur-sm">
-          <Clock size={12} />
-          <span>{article.readTime} lectura</span>
-        </div>
+
       </div>
     </div>
 
