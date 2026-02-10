@@ -1,10 +1,29 @@
-
 import React, { useMemo, useState } from 'react';
 import { useCalendar } from '../contexts/CalendarContext';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
-import { Flame, TrendingUp, ChevronDown, Lightbulb, X, BookOpen, Clock, ArrowRight } from 'lucide-react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { Flame, TrendingUp, ChevronDown, Lightbulb, X, BookOpen, Clock, ArrowRight, CheckCircle2, Zap, Hourglass } from 'lucide-react';
 import gradientGreen from '../src/assets/gradient-green.png';
 import gradientPink from '../src/assets/gradient-pink.png';
+
+// ─── Date Helpers (Native JS to avoid dependencies) ─────────────────────
+const parseISO = (str: string) => new Date(str);
+const subDays = (date: Date, days: number) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() - days);
+  return result;
+};
+const isSameDay = (d1: Date, d2: Date) => d1.toDateString() === d2.toDateString();
+const differenceInMinutes = (d1: Date, d2: Date) => Math.floor((d1.getTime() - d2.getTime()) / 60000);
+const formatDayName = (date: Date) => date.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase().slice(0, 3).replace('.', '');
+const eachDayOfInterval = ({ start, end }: { start: Date, end: Date }) => {
+  const days = [];
+  let current = new Date(start);
+  while (current <= end) {
+    days.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+  return days;
+};
 
 // ─── Article content data ───────────────────────────────────────────────
 const ARTICLES = [
@@ -85,26 +104,76 @@ export const StatsScreen: React.FC = () => {
   }, [activeTemplate]);
 
   // Mock data for comparison charts
-  const categoryData = {
-    deporte: [
-      { day: 'L', you: 4, friend: 3 },
-      { day: 'M', you: 3, friend: 4 },
-      { day: 'X', you: 5, friend: 3 },
-      { day: 'J', you: 4, friend: 4 },
-      { day: 'V', you: 6, friend: 4 },
-      { day: 'S', you: 8, friend: 5 },
-      { day: 'D', you: 7, friend: 6 },
-    ],
-    social: [
-      { day: 'L', you: 2, friend: 4 },
-      { day: 'M', you: 3, friend: 3 },
-      { day: 'X', you: 2, friend: 5 },
-      { day: 'J', you: 4, friend: 4 },
-      { day: 'V', you: 6, friend: 6 },
-      { day: 'S', you: 8, friend: 7 },
-      { day: 'D', you: 9, friend: 8 },
-    ]
-  };
+  const { events } = useCalendar(); // Get real events
+
+  // ─── KPI Calculations ────────────────────────────────────────────────
+  const kpiStats = useMemo(() => {
+    const now = new Date();
+    const last7Days = eachDayOfInterval({ start: subDays(now, 6), end: now });
+
+    // 1. Completion Rate (Last 7 Days)
+    const recentEvents = events.filter(e => {
+      const d = parseISO(e.start);
+      return d >= subDays(now, 7) && d <= now;
+    });
+
+    const completed = recentEvents.filter(e => e.status === 'completed').length;
+    const total = recentEvents.length;
+    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    // 2. Activity Chart Data (Last 7 Days)
+    const activityData = last7Days.map(day => {
+      const dayEvents = recentEvents.filter(e => isSameDay(parseISO(e.start), day));
+      // Count completed tasks
+      const count = dayEvents.filter(e => e.status === 'completed').length;
+      return {
+        day: formatDayName(day), // LUN, MAR...
+        value: count,
+        fullDate: day
+      };
+    });
+
+    // 3. Weekly Distribution (By Category/Type)
+    const distributionMap: Record<string, number> = {};
+    let totalDurationMinutes = 0;
+
+    recentEvents.filter(e => e.status === 'completed').forEach(e => {
+      const start = parseISO(e.start);
+      const end = parseISO(e.end);
+      const output = differenceInMinutes(end, start);
+      const duration = output > 0 ? output : 30; // Min 30 mins just in case
+
+      distributionMap[e.type] = (distributionMap[e.type] || 0) + duration;
+      totalDurationMinutes += duration;
+    });
+
+    const distributionCharData = Object.entries(distributionMap).map(([type, minutes]) => ({
+      name: type, // You might want to map 'work' -> 'Trabajo' etc.
+      value: parseFloat((minutes / 60).toFixed(1)), // Hours
+      rawMinutes: minutes,
+      color:
+        type === 'health' ? '#FF7566' :
+          type === 'work' ? '#764ba2' :
+            type === 'study' ? '#C1B3E3' :
+              type === 'personal' ? '#FFF4E0' :
+                type === 'leisure' ? '#FFD2CC' : '#A7C7E7' // default
+    })).sort((a, b) => b.value - a.value); // Sort by biggest
+
+    // 4. Time Saved & Efficiency
+    // Estimate: You verify/complete tasks 15% faster using the app (mock logic or based on 'moved' vs 'completed')
+    const timeSavedHours = (totalDurationMinutes * 0.15 / 60).toFixed(1);
+    const efficiencyGain = 15; // static or calculated
+
+    return {
+      completionRate,
+      totalCompletedLast7: completed,
+      activityData,
+      distributionCharData,
+      timeSavedHours,
+      efficiencyGain
+    };
+
+  }, [events]);
 
   const streakProgress = stats?.current_streak || 0;
   const streakGoal = 20;
@@ -171,18 +240,137 @@ export const StatsScreen: React.FC = () => {
 
           {/* Comparison Cards – FIXED: proper chart margins */}
           <div className="space-y-4">
-            <CategoryComparisonCard
-              title="Deporte"
-              data={categoryData.deporte}
-              accentColor={categoryColors.exercise}
-              t={t}
-            />
-            <CategoryComparisonCard
-              title="Social"
-              data={categoryData.social}
-              accentColor={accentColor}
-              t={t}
-            />
+            {/* REAL DATA KPIS */}
+
+            {/* 1. Completion Rate */}
+            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 size={16} strokeWidth={3} />
+                </div>
+                <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em]">TASA DE FINALIZACIÓN</p>
+              </div>
+
+              <div className="flex items-end justify-between">
+                <div>
+                  <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">
+                    {kpiStats.completionRate}%
+                  </h2>
+                  <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-wide">
+                    Tareas completadas vs planificadas
+                  </p>
+                </div>
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-100 dark:border-emerald-800/30">
+                  <TrendingUp size={12} className="text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">+5%</span>
+                </div>
+              </div>
+            </section>
+
+            {/* 2. Activity Chart */}
+            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 h-80 flex flex-col">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Actividades</h3>
+                  <p className="text-xs text-gray-400 font-medium">Últimos 7 días</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-black text-gray-900 dark:text-white">{kpiStats.totalCompletedLast7}</p>
+                  <div /* Placeholder for trend */ className="text-[10px] text-emerald-500 font-black uppercase tracking-wider">+12%</div>
+                </div>
+              </div>
+
+              <div className="flex-1 w-full relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={kpiStats.activityData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <XAxis
+                      dataKey="day"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fill: '#94A3B8', fontWeight: 700 }}
+                      dy={10}
+                    />
+                    <Tooltip
+                      cursor={{ fill: '#F1F5F9', opacity: 0.4 }}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                    />
+                    <Bar dataKey="value" radius={[6, 6, 6, 6]} maxBarSize={40}>
+                      {kpiStats.activityData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.value > 5 ? '#FF7566' : '#FFD2CC'} /* Highlight high activity days */
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+
+            {/* 3. Distribution Donut */}
+            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+              <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6">DISTRIBUCIÓN SEMANAL</p>
+
+              <div className="flex items-center gap-6">
+                <div className="w-32 h-32 relative shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={kpiStats.distributionCharData}
+                        innerRadius={40}
+                        outerRadius={60}
+                        paddingAngle={5}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {kpiStats.distributionCharData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Center Text */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-xl font-black text-gray-900 dark:text-white">
+                      {kpiStats.distributionCharData.reduce((acc, curr) => acc + curr.value, 0).toFixed(1)}h
+                    </span>
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div className="flex-1 space-y-3">
+                  {kpiStats.distributionCharData.slice(0, 3).map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span className="font-bold text-gray-600 dark:text-gray-300 capitalize">
+                          {t[`cat_${item.name}`] || item.name}
+                        </span>
+                      </div>
+                      <span className="font-medium text-gray-400">{item.value}h</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* 4. Time Saved & Efficiency Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <StatSmallCard
+                icon={<Hourglass size={18} className="text-rose-500" />}
+                bgIcon="bg-rose-100"
+                label="TIEMPO AHORRADO"
+                value={`${kpiStats.timeSavedHours} h`}
+                subtext="Semanales"
+              />
+              <StatSmallCard
+                icon={<Zap size={18} className="text-sky-500" />}
+                bgIcon="bg-sky-100"
+                label="EFICIENCIA"
+                value={`+${kpiStats.efficiencyGain}%`}
+                subtext="Mejora total"
+              />
+            </div>
           </div>
 
           {/* Mejorar Hábitos – IMPROVED: category-specific colors */}
@@ -243,57 +431,18 @@ export const StatsScreen: React.FC = () => {
   );
 };
 
-// ─── Category Comparison Card (FIXED chart overflow) ────────────────────
-const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor: string; t: any }> = ({ title, data, accentColor, t }) => (
-  <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
-    <div className="flex justify-between items-center mb-6">
-      <div>
-        <p className="text-[#94A3B8] text-[9px] font-black uppercase tracking-[0.2em] mb-1">CATEGORÍA</p>
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{title}</h3>
-      </div>
-      <div className="flex gap-4">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor }}></div>
-          <span className="text-[10px] font-bold text-gray-400 uppercase">Tú</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-          <span className="text-[10px] font-bold text-gray-400 uppercase">Amigo</span>
-        </div>
-      </div>
+// ─── Small Stat Card Component ─────────────────────────────────────────
+const StatSmallCard: React.FC<{ icon: React.ReactNode; bgIcon: string; label: string; value: string; subtext: string }> = ({ icon, bgIcon, label, value, subtext }) => (
+  <div className="bg-white dark:bg-gray-900 rounded-[2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between h-40">
+    <div className={`w-10 h-10 rounded-full ${bgIcon} dark:bg-opacity-20 flex items-center justify-center mb-2`}>
+      {icon}
     </div>
-    {/* FIXED: removed -ml-4 and added proper margins so chart is not clipped */}
-    <div className="h-36 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id={`gradient-you-${title}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={accentColor} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area
-            type="monotone"
-            dataKey="you"
-            stroke={accentColor}
-            strokeWidth={3}
-            fillOpacity={1}
-            fill={`url(#gradient-you-${title})`}
-            isAnimationActive={false}
-          />
-          <Area
-            type="monotone"
-            dataKey="friend"
-            stroke="#E2E8F0"
-            strokeWidth={2}
-            fill="transparent"
-            isAnimationActive={false}
-          />
-          <XAxis dataKey="day" hide />
-        </AreaChart>
-      </ResponsiveContainer>
+    <div>
+      <p className="text-[#94A3B8] text-[9px] font-black uppercase tracking-[0.2em] mb-1">{label}</p>
+      <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter mb-0.5">{value}</h3>
+      <p className="text-[10px] text-gray-400 font-bold">{subtext}</p>
     </div>
-  </section>
+  </div>
 );
 
 // ─── Habit Indicator (NOW with per-category color) ──────────────────────
