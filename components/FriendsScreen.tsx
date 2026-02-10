@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, MoreHorizontal, UserMinus, UserPlus, Plus, Users, Loader2, Bell, X } from 'lucide-react';
+import { Search, MoreHorizontal, UserMinus, UserPlus, Plus, Users, Loader2, Bell, X, Check } from 'lucide-react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { useAuth } from '../src/contexts/AuthContext';
 import * as friendsApi from '../src/lib/friends-api';
@@ -254,31 +254,48 @@ export const FriendsScreen: React.FC = () => {
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{displayList.length}</span>
               </div>
               <div className="space-y-3">
-                {displayList.map(user => (
-                  <div key={user.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800">
-                    <img
-                      src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.handle || 'User')}&background=FF7566&color=fff`}
-                      alt={user.handle}
-                      className="w-14 h-14 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{(user.handle || '').replace(/^@/, '')}</h3>
-                      {user.mutualFriends > 0 && (
-                        <p className="text-[10px] text-gray-500 font-bold mt-1.5 flex items-center gap-1">
-                          <Users size={10} className="text-gray-400" />
-                          {user.mutualFriends} {user.mutualFriends === 1 ? 'amigo en común' : 'amigos en común'}
-                        </p>
+                {displayList.map(user => {
+                  const isFriend = friends.some(f => f.id === user.id && f.status === 'friend');
+                  const isPending = friends.some(f => f.id === user.id && f.status === 'pending');
+
+                  return (
+                    <div key={user.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800">
+                      <img
+                        src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.handle || 'User')}&background=FF7566&color=fff`}
+                        alt={user.handle}
+                        className="w-14 h-14 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{(user.handle || '').replace(/^@/, '')}</h3>
+                        {user.mutualFriends > 0 && (
+                          <p className="text-[10px] text-gray-500 font-bold mt-1.5 flex items-center gap-1">
+                            <Users size={10} className="text-gray-400" />
+                            {user.mutualFriends} {user.mutualFriends === 1 ? 'amigo en común' : 'amigos en común'}
+                          </p>
+                        )}
+                      </div>
+
+                      {isFriend ? (
+                        <div className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                          <Check size={14} strokeWidth={3} />
+                          Amigo
+                        </div>
+                      ) : isPending ? (
+                        <div className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest bg-orange-100/50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center gap-2">
+                          Pendiente
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleSendRequest(user.id)}
+                          className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest bg-[#FF7566] text-white shadow-lg active:scale-95 transition-all flex items-center gap-2"
+                        >
+                          <UserPlus size={14} />
+                          Añadir
+                        </button>
                       )}
                     </div>
-                    <button
-                      onClick={() => handleSendRequest(user.id)}
-                      className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest bg-[#FF7566] text-white shadow-lg active:scale-95 transition-all flex items-center gap-2"
-                    >
-                      <UserPlus size={14} />
-                      Añadir
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
           )}
