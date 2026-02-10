@@ -229,7 +229,7 @@ export const FriendsScreen: React.FC = () => {
                       </button>
                     </div>
 
-                    <h3 className="font-black text-gray-900 dark:text-white text-[13px] leading-tight text-center truncate w-full">{friend.handle || 'Usuario'}</h3>
+                    <h3 className="font-black text-gray-900 dark:text-white text-[13px] leading-tight text-center truncate w-full">{(friend.handle || 'Usuario').replace(/^@/, '')}</h3>
 
                     {friend.mutualFriends > 0 ? (
                       <p className="text-[9px] text-gray-400 font-bold text-center leading-tight mt-0.5">
@@ -262,8 +262,8 @@ export const FriendsScreen: React.FC = () => {
                       className="w-14 h-14 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{user.handle}</h3>
-                      {user.mutualFriends && user.mutualFriends > 0 && (
+                      <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{(user.handle || '').replace(/^@/, '')}</h3>
+                      {user.mutualFriends > 0 && (
                         <p className="text-[10px] text-gray-500 font-bold mt-1.5 flex items-center gap-1">
                           <Users size={10} className="text-gray-400" />
                           {user.mutualFriends} {user.mutualFriends === 1 ? 'amigo en común' : 'amigos en común'}
@@ -301,7 +301,7 @@ export const FriendsScreen: React.FC = () => {
                       />
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
-                          <h3 className="font-black text-gray-900 dark:text-white text-base leading-tight">{request.handle}</h3>
+                          <h3 className="font-black text-gray-900 dark:text-white text-base leading-tight">{(request.handle || '').replace(/^@/, '')}</h3>
                         </div>
                       </div>
                     </div>
@@ -346,7 +346,7 @@ export const FriendsScreen: React.FC = () => {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{friend.handle}</h3>
+                          <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{(friend.handle || '').replace(/^@/, '')}</h3>
                           {friend.status === 'pending' && (
                             <span className="px-1.5 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[8px] font-black uppercase tracking-widest">{t.friends_pending || 'Pendiente'}</span>
                           )}
