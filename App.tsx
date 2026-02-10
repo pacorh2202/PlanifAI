@@ -176,6 +176,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
               {t.hello}, {userName}!
             </h2>
             <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mt-1">{t.premium_plan}</p>
+            <p className="text-[10px] font-mono text-gray-300 mt-1">v2.1-fixed</p>
           </div>
         </section>
 
@@ -191,14 +192,13 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
           </button>
 
           <button onClick={() => onViewChange('voice-settings')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-2xl font-black text-gray-400">
-                {user?.user_metadata?.name?.[0] || 'U'}
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
+                <Mic size={18} />
               </div>
-              <div>
-                <h2 className="text-xl font-black text-gray-900 dark:text-white capitalize">{user?.user_metadata?.name || 'Usuario'}</h2>
-                <p className="text-sm font-bold text-gray-400">{user?.email}</p>
-                <p className="text-[10px] font-mono text-gray-300 mt-1">v2.0-clean</p>
+              <div className="flex flex-col items-start">
+                <span className="font-bold text-sm">{t.voice_assistant}</span>
+                <span className="text-[10px] text-gray-400 font-bold uppercase">{assistantName}</span>
               </div>
             </div>
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
