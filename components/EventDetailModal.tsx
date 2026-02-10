@@ -120,9 +120,17 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
       return;
     }
 
+    // Resolve attendee names → participant IDs for sharing
+    let participantIds: string[] = [];
+    if (editedEvent.attendees && editedEvent.attendees.length > 0) {
+      for (const name of editedEvent.attendees) {
+        const friend = friends.find(f => f.name === name && f.status === 'friend');
+        if (friend) participantIds.push(friend.id);
+      }
+    }
+
     if (isCreating && isRecurring && selectedDays.length > 0) {
       const start = new Date(editedEvent.start);
-      // Determine end of the *current month relative to the start date*
       const endOfMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0);
       endOfMonth.setHours(23, 59, 59, 999);
 
@@ -131,17 +139,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
 
       const promises: Promise<string>[] = [];
 
-      // Loop through days until end of month
       while (current <= endOfMonth) {
         if (selectedDays.includes(current.getDay())) {
-          // If it's the very first day (start day), we might want to include it or not logic? 
-          // Usually recurrence implies creating *additional* or *all* matches.
-          // Since we are creating a new event, we should create ALL matches including the first one if it matches the day.
-          // BUT: The user picked a specific start date. We should probably create the event on that start date regardless, 
-          // OR force the start date to be one of the recurring days.
-          // Simplified approach: Create the primary event as usual. Then create copies for other days.
-          // better approach: Generate ALL matches from start date onwards.
-
           const newStart = new Date(current);
           const newEnd = new Date(newStart.getTime() + eventDuration);
 
@@ -149,26 +148,21 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             ...editedEvent,
             start: newStart.toISOString(),
             end: newEnd.toISOString(),
+            participantIds, // Pass participant IDs for sharing
           };
           promises.push(addEvent(eventToCreate));
         }
         current.setDate(current.getDate() + 1);
       }
 
-      // If no days matched (e.g. start date is Monday, but user selected only Tuesdays and month ends before next Tuesday), 
-      // we should at least save the original event? 
-      // User intent: "Create this task and repeat it". 
-      // If we only selected days, we should probably ensure the 'main' event is created if it matches, or just create the specific instances.
-
       if (promises.length === 0) {
-        // Fallback: just create the single event if no recurrence matches generated (edge case)
-        addEvent(editedEvent);
+        addEvent({ ...editedEvent, participantIds });
       } else {
         await Promise.all(promises);
       }
 
     } else {
-      if (isCreating) addEvent(editedEvent);
+      if (isCreating) addEvent({ ...editedEvent, participantIds });
       else if (event) updateEvent(event.id, editedEvent);
     }
     onClose();
@@ -275,7 +269,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
 
           {isEditing && (
             <section className="mb-8 animate-fade-in">
-              <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em] mb-4">Categoría</h2>
+              <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em] mb-4">{t.category_label}</h2>
               <div className="flex overflow-x-auto no-scrollbar gap-3 pb-2">
                 {activeTemplate.categories.map((cat, idx) => {
                   const isSelected = editedEvent.categoryLabel === cat.label || (!editedEvent.categoryLabel && editedEvent.type === cat.type);
@@ -480,7 +474,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                 );
               })}
               {friends.filter(f => f.status === 'friend').length === 0 && (
-                <p className="text-sm text-gray-400 italic">No tienes amigos añadidos todavía.</p>
+                <p className="text-sm text-gray-400 italic">{t.no_friends_yet}</p>
               )}
             </div>
           </section>
