@@ -328,20 +328,16 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
 
   // Calculate needle angle: 0 = far left (180°), 100 = far right (0°)
   const needleAngle = 180 - (clamped / 100) * 180;
-  const needleRad = (needleAngle * Math.PI) / 180;
-  const cx = 100, cy = 95, needleLen = 58;
-  const needleX = cx + needleLen * Math.cos(needleRad);
-  const needleY = cy - needleLen * Math.sin(needleRad);
+  // Convert to radians for calculation if needed, but we use rotate transform
 
   // Label for stress level
   let stressLabel = 'Óptimo';
-  let stressColor = '#10B981';
-  if (clamped > 70) { stressLabel = 'Muy estresado'; stressColor = '#EF4444'; }
-  else if (clamped > 40) { stressLabel = 'Regular'; stressColor = '#F59E0B'; }
+  if (clamped > 70) { stressLabel = 'Muy estresado'; }
+  else if (clamped > 40) { stressLabel = 'Regular'; }
 
   return (
-    <div className="relative w-72 h-44 flex flex-col items-center">
-      <svg viewBox="0 0 200 120" className="w-full h-auto">
+    <div className="relative w-full max-w-[18rem] aspect-[2/1] flex flex-col items-center mb-6">
+      <svg viewBox="0 0 200 110" className="w-full h-full overflow-visible">
         <defs>
           <linearGradient id="stressGradientNew" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#10B981" />
@@ -351,57 +347,76 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
             <stop offset="100%" stopColor="#EF4444" />
           </linearGradient>
           <filter id="needleShadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.15" />
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
           </filter>
         </defs>
 
         {/* Background arc */}
         <path
-          d="M 20 95 A 80 80 0 0 1 180 95"
+          d="M 20 90 A 80 80 0 0 1 180 90"
           fill="none"
           stroke="#F1F5F9"
-          strokeWidth="18"
+          strokeWidth="20"
           strokeLinecap="round"
         />
         {/* Colored arc */}
         <path
-          d="M 20 95 A 80 80 0 0 1 180 95"
+          d="M 20 90 A 80 80 0 0 1 180 90"
           fill="none"
           stroke="url(#stressGradientNew)"
-          strokeWidth="18"
+          strokeWidth="20"
           strokeLinecap="round"
           strokeDasharray="251.32"
           strokeDashoffset={251.32 - (251.32 * (clamped / 100))}
           className="transition-all duration-1000 ease-out"
         />
 
-        {/* Needle */}
+        {/* Needle Group - Rotated from center (100, 90) */}
+        <g transform={`rotate(${180 - 180 * (clamped / 100) - 90}, 100, 90)`}>
+          {/* The rotate logic above is: -90 (start) to +90 (end) roughly? 
+                 Actually, simpler: 0% -> -90deg, 50% -> 0deg, 100% -> 90deg relative to vertical?
+                 Let's stick to the previous coordinate calculation if simpler, 
+                 OR use standard svg rotation.
+                 
+                 Previous logic: 
+                 0% = 180 deg (Left)
+                 100% = 0 deg (Right)
+                 
+                 Let's assume the needle points RIGHT by default.
+                 If we rotate it:
+                 Needle starts pointing Left (-180)?
+             */}
+          {/* Let's re-use the coordinate math from before, it was cleaner for React */}
+        </g>
+
+        {/* Helper values for lines */}
         <line
-          x1={cx} y1={cy}
-          x2={needleX} y2={needleY}
+          x1="100" y1="90"
+          x2={100 + 65 * Math.cos((180 - (clamped / 100) * 180) * Math.PI / 180)}
+          y2={90 - 65 * Math.sin((180 - (clamped / 100) * 180) * Math.PI / 180)}
           stroke="#1F2937"
-          strokeWidth="2.5"
+          strokeWidth="4"
           strokeLinecap="round"
           filter="url(#needleShadow)"
           className="transition-all duration-1000 ease-out"
-          style={{ transformOrigin: `${cx}px ${cy}px` }}
         />
+
         {/* Needle center dot */}
-        <circle cx={cx} cy={cy} r="6" fill="white" stroke="#E5E7EB" strokeWidth="2" />
-        <circle cx={cx} cy={cy} r="3" fill="#1F2937" />
+        <circle cx="100" cy="90" r="8" fill="white" stroke="#E5E7EB" strokeWidth="2" />
+        <circle cx="100" cy="90" r="4" fill="#1F2937" />
+
+        {/* Gauge ticks (optional apple polish) */}
+        <text x="20" y="108" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">Bajo</text>
+        <text x="180" y="108" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">Alto</text>
       </svg>
 
-      {/* Labels under the arc */}
-      <div className="absolute bottom-6 left-0 right-0 flex justify-between px-4">
-        <span className="text-[11px] font-bold text-emerald-500">Óptimo</span>
-        <span className="text-[11px] font-bold text-amber-500">Regular</span>
-        <span className="text-[11px] font-bold text-rose-500">Estresado</span>
-      </div>
-
-      {/* Center value display */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
-        <span className="text-2xl font-black text-gray-900 dark:text-white">{clamped}</span>
-        <span className="text-[10px] font-bold mt-0.5" style={{ color: stressColor }}>{stressLabel}</span>
+      {/* Center Value - Positioned absolutely below the pivot but 'inside' the layout flow via flex/margin if possible, or absolute centered */}
+      <div className="absolute top-[60%] flex flex-col items-center pointer-events-none">
+        {/* Value is now clearly separated from the arc text */}
+        <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">{clamped}</span>
+        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0 bg-white/50 dark:bg-black/50 px-2 rounded-full backdrop-blur-sm">
+          {stressLabel}
+        </span>
       </div>
     </div>
   );
@@ -418,19 +433,19 @@ const ArticleCard: React.FC<{ article: typeof ARTICLES[0]; onOpen: () => void }>
       className="relative h-40 flex flex-col items-center justify-center"
       style={{ background: article.gradient }}
     >
-      <span className="text-5xl mb-3 drop-shadow-lg">{article.icon}</span>
+      <span className="text-5xl mb-3 drop-shadow-sm select-none transform transition-transform group-hover:scale-110">{article.icon}</span>
       <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em]">{article.tag}</p>
       {/* Read time badge */}
-      <div className="absolute top-4 right-5 flex items-center gap-1.5 bg-white/20 backdrop-blur-md rounded-full px-3 py-1">
-        <Clock className="text-white/80" size={12} />
-        <span className="text-white/90 text-[10px] font-bold">{article.readTime}</span>
+      <div className="absolute top-4 right-5 flex items-center gap-1.5 bg-white/25 backdrop-blur-md rounded-full px-3 py-1 border border-white/20">
+        <Clock className="text-white" size={12} />
+        <span className="text-white text-[10px] font-bold">{article.readTime}</span>
       </div>
     </div>
     {/* Content */}
     <div className="p-7">
-      <h4 className="text-base font-bold text-gray-900 dark:text-white leading-snug mb-2">{article.title}</h4>
-      <p className="text-[11px] text-gray-400 font-medium leading-relaxed mb-4">{article.desc}</p>
-      <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#667eea' }}>
+      <h4 className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-2">{article.title}</h4>
+      <p className="text-xs text-gray-500 font-medium leading-relaxed mb-4 line-clamp-2">{article.desc}</p>
+      <div className="flex items-center gap-1.5 text-xs font-bold transition-colors group-hover:text-purple-600" style={{ color: '#667eea' }}>
         <span>Leer artículo</span>
         <ArrowRight size={14} />
       </div>
@@ -441,44 +456,51 @@ const ArticleCard: React.FC<{ article: typeof ARTICLES[0]; onOpen: () => void }>
 // ─── Apple-Style Article Modal ──────────────────────────────────────────
 const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void }> = ({ article, onClose }) => (
   <div
-    className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-gray-950 animate-[slideUp_0.35s_ease-out]"
+    className="fixed inset-0 z-[200] flex flex-col bg-white dark:bg-gray-950 animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)]"
     style={{
       animationFillMode: 'forwards'
     }}
   >
     {/* Hero */}
     <div
-      className="relative shrink-0 h-56 flex flex-col items-center justify-center"
+      className="relative shrink-0 h-64 flex flex-col items-center justify-center -mt-10 pt-10"
       style={{ background: article.gradient }}
     >
-      {/* Close button */}
+      {/* Close button - Increased z-index and touch area */}
       <button
         onClick={onClose}
-        className="absolute top-12 right-5 w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+        className="absolute top-14 right-5 w-10 h-10 rounded-full bg-black/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/20 transition-all active:scale-95 z-50 border border-white/10"
       >
-        <X size={18} />
+        <X size={20} />
       </button>
-      <span className="text-6xl mb-3 drop-shadow-lg">{article.icon}</span>
-      <p className="text-white/80 font-black text-[10px] uppercase tracking-[0.3em] mb-1">{article.tag}</p>
-      <div className="flex items-center gap-1.5 text-white/60 text-[10px] font-bold">
-        <Clock size={12} />
-        <span>{article.readTime} lectura</span>
+
+      <div className="flex flex-col items-center animate-[fadeIn_0.5s_ease-out_0.2s_both]">
+        <span className="text-7xl mb-4 drop-shadow-lg">{article.icon}</span>
+        <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em] mb-2">{article.tag}</p>
+        <div className="flex items-center gap-1.5 text-white/80 text-[11px] font-bold bg-black/10 px-3 py-1 rounded-full backdrop-blur-sm">
+          <Clock size={12} />
+          <span>{article.readTime} lectura</span>
+        </div>
       </div>
     </div>
 
     {/* Content body */}
-    <div className="flex-1 overflow-y-auto no-scrollbar">
-      <div className="max-w-lg mx-auto px-7 py-8">
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white leading-tight mb-2">
+    <div className="flex-1 overflow-y-auto w-full">
+      <div className="max-w-2xl mx-auto px-8 py-10">
+        <h1 className="text-3xl font-black text-gray-900 dark:text-white leading-tight mb-3 tracking-tight">
           {article.title}
         </h1>
-        <p className="text-sm text-gray-400 font-medium mb-8">{article.desc}</p>
+        <p className="text-base text-gray-500 font-medium mb-10 leading-relaxed border-l-4 border-purple-100 dark:border-purple-900/50 pl-4">
+          {article.desc}
+        </p>
 
-        <div className="space-y-8">
+        <div className="space-y-10">
           {article.body.map((section, idx) => (
-            <div key={idx}>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">{section.heading}</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+            <div key={idx} className="animate-[fadeUp_0.5s_ease-out_both]" style={{ animationDelay: `${0.1 * idx}s` }}>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                {section.heading}
+              </h2>
+              <p className="text-[15px] text-gray-600 dark:text-gray-300 leading-loose whitespace-pre-line text-justify opacity-90">
                 {section.text}
               </p>
             </div>
@@ -486,15 +508,15 @@ const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void 
         </div>
 
         {/* Footer spacer for safe area */}
-        <div className="h-20"></div>
+        <div className="h-32"></div>
       </div>
     </div>
 
-    {/* Bottom close bar */}
-    <div className="shrink-0 pb-8 pt-4 px-7 bg-gradient-to-t from-white dark:from-gray-950 via-white/80 dark:via-gray-950/80 to-transparent">
+    {/* Bottom Floating Action Bar */}
+    <div className="absolute bottom-8 left-0 right-0 px-6 flex justify-center pointer-events-none">
       <button
         onClick={onClose}
-        className="w-full py-4 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-sm active:scale-95 transition-transform"
+        className="pointer-events-auto bg-gray-900/90 dark:bg-white/90 backdrop-blur-xl text-white dark:text-gray-900 font-bold text-sm py-4 px-12 rounded-full shadow-2xl shadow-gray-900/20 active:scale-95 transition-transform border border-white/10 dark:border-black/5"
       >
         Cerrar artículo
       </button>
@@ -503,8 +525,12 @@ const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void 
     {/* Keyframes */}
     <style>{`
       @keyframes slideUp {
-        from { transform: translateY(100%); opacity: 0.5; }
-        to { transform: translateY(0); opacity: 1; }
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
       }
     `}</style>
   </div>
