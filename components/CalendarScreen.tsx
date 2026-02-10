@@ -35,7 +35,7 @@ export const getEventColor = (event: CalendarEvent, template: PlannerTemplate): 
 };
 
 export const CalendarScreen: React.FC = () => {
-  const { events, updateEvent, activeTemplate, setIsDetailViewOpen, language, t } = useCalendar();
+  const { events, updateEvent, activeTemplate, setIsDetailViewOpen, language, t, accentColor } = useCalendar();
   const [view, setView] = useState<ViewMode>('day');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentDisplayMonth, setCurrentDisplayMonth] = useState(new Date());
@@ -387,18 +387,18 @@ export const CalendarScreen: React.FC = () => {
               const isToday = date.toDateString() === new Date().toDateString();
               const isSelected = date.toDateString() === selectedDate.toDateString();
 
-              // Use accent color from active template (usually first category color or main theme)
-              // Just using the first category color as a proxy for "accent" for now, or could use blue-600
-              const accentColor = activeTemplate.categories[0]?.color || '#3B82F6';
+              // Use accent color from context
+              const accentColorValue = accentColor || '#B2D3A1';
 
               return (
                 <div key={i} className="flex flex-col items-center justify-center p-1">
-                  <span className={`text-[9px] font-bold uppercase mb-1 ${isToday || isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>{label}</span>
+                  {/* Day Label: "Quiero que la letra del día no sea coloreada por dentro" -> Always gray unless selected (not today) */}
+                  <span className={`text-[9px] font-bold uppercase mb-1 ${!isToday && isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>{label}</span>
 
                   {isToday ? (
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm text-white text-sm font-black"
-                      style={{ backgroundColor: accentColor }}
+                      style={{ backgroundColor: accentColorValue }}
                     >
                       {date.getDate()}
                     </div>
@@ -454,7 +454,7 @@ export const CalendarScreen: React.FC = () => {
                             zIndex: 10
                           }}
                           onClick={() => handleOpenEventDetail(event)}
-                          className="absolute left-1 right-1 rounded-[12px] p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95 text-white"
+                          className="absolute left-1 right-1 rounded-[50px] p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95 text-white"
                         >
                           <Icon size={14} strokeWidth={2.5} />
                         </div>
