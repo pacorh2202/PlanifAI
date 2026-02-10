@@ -1,13 +1,86 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
-import { Bell, Flame, TrendingUp, ChevronDown, Calendar, Lightbulb } from 'lucide-react';
+import { Flame, TrendingUp, ChevronDown, Lightbulb, X, BookOpen, Clock, ArrowRight } from 'lucide-react';
 
+// ─── Article content data ───────────────────────────────────────────────
+const ARTICLES = [
+  {
+    id: 'pomodoro',
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    icon: '🍅',
+    tag: 'PRODUCTIVIDAD',
+    title: 'Optimiza tu flujo de trabajo con la técnica Pomodoro',
+    desc: 'Descubre cómo pequeños descansos pueden aumentar tu productividad diaria.',
+    readTime: '5 min',
+    body: [
+      {
+        heading: '¿Qué es la técnica Pomodoro?',
+        text: 'La técnica Pomodoro es un método de gestión del tiempo desarrollado por Francesco Cirillo a finales de los años 80. Consiste en dividir el trabajo en intervalos de 25 minutos (llamados "pomodoros"), separados por descansos cortos de 5 minutos.'
+      },
+      {
+        heading: '¿Por qué funciona?',
+        text: 'Nuestro cerebro no está diseñado para mantener la concentración durante horas seguidas. Los intervalos cortos mantienen la mente fresca y reducen la fatiga mental. Estudios demuestran que esta técnica puede aumentar la productividad hasta un 25%.'
+      },
+      {
+        heading: 'Cómo implementarla',
+        text: '1. Elige una tarea específica.\n2. Configura un temporizador a 25 minutos.\n3. Trabaja sin interrupciones hasta que suene.\n4. Toma un descanso de 5 minutos.\n5. Cada 4 pomodoros, toma un descanso largo de 15-30 minutos.'
+      },
+      {
+        heading: 'Consejos avanzados',
+        text: 'Combina la técnica Pomodoro con la regla de las 2 tareas: durante cada pomodoro, enfócate en máximo 2 objetivos. Registra cuántos pomodoros dedicas a cada proyecto para identificar dónde inviertes más energía.'
+      }
+    ]
+  },
+  {
+    id: 'superfoods',
+    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    icon: '🧠',
+    tag: 'BIENESTAR',
+    title: 'Superalimentos para mantener el cerebro activo',
+    desc: 'La nutrición es clave para mantener un enfoque sostenido durante el día.',
+    readTime: '4 min',
+    body: [
+      {
+        heading: '¿Qué son los superalimentos?',
+        text: 'Los superalimentos son alimentos ricos en nutrientes que ofrecen beneficios significativos para la salud. Para el cerebro, ciertos alimentos pueden mejorar la memoria, la concentración y la claridad mental.'
+      },
+      {
+        heading: 'Top 5 para tu cerebro',
+        text: '• Arándanos: Ricos en antioxidantes que protegen las neuronas.\n• Nueces: Contienen ácidos grasos omega-3 esenciales.\n• Aguacate: Promueve el flujo sanguíneo cerebral.\n• Chocolate negro: Mejora la concentración y el estado de ánimo.\n• Salmón: Alto en DHA, crucial para la función cerebral.'
+      },
+      {
+        heading: 'Planifica tu alimentación',
+        text: 'Incluye al menos 2-3 superalimentos en tu dieta diaria. Un desayuno con arándanos y nueces, un snack de chocolate negro por la tarde, y salmón para cenar puede transformar tu rendimiento cognitivo.'
+      },
+      {
+        heading: 'Hidratación',
+        text: 'No olvides el agua. La deshidratación, incluso leve, puede reducir la concentración hasta un 30%. Bebe al menos 8 vasos de agua al día y considera infusiones de té verde para un extra de antioxidantes.'
+      }
+    ]
+  }
+];
+
+// ─── Main Component ─────────────────────────────────────────────────────
 export const StatsScreen: React.FC = () => {
-  const { stats, t, language, accentColor } = useCalendar();
+  const { stats, t, language, accentColor, activeTemplate } = useCalendar();
+  const [selectedArticle, setSelectedArticle] = useState<typeof ARTICLES[0] | null>(null);
 
-  // Mock data for comparison charts (You vs Friend)
+  // Map habits to their category colors from the active template
+  const categoryColors = useMemo(() => {
+    const cats = activeTemplate?.categories || [];
+    const healthCat = cats.find(c => c.type === 'health');
+    const personalCat = cats.find(c => c.type === 'personal');
+    const foodCat = cats.find(c => c.label?.toLowerCase().includes('aliment') || c.label?.toLowerCase().includes('food') || (c.type === 'other' && c.icon === 'Utensils'));
+    return {
+      exercise: healthCat?.color || '#FF7566',
+      wakeUp: personalCat?.color || '#FFF4E0',
+      eatHealthy: foodCat?.color || '#B2D3A1',
+    };
+  }, [activeTemplate]);
+
+  // Mock data for comparison charts
   const categoryData = {
     deporte: [
       { day: 'L', you: 4, friend: 3 },
@@ -33,141 +106,140 @@ export const StatsScreen: React.FC = () => {
   const streakGoal = 20;
 
   return (
-    <div
-      className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar pb-40 transition-opacity duration-300"
-      style={{ willChange: 'opacity', contain: 'content' }}
-    >
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20">
-        <div className="w-10"></div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Estadísticas</h1>
-        <div className="w-10"></div>
-      </header>
+    <>
+      <div
+        className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar pb-40 transition-opacity duration-300"
+        style={{ willChange: 'opacity', contain: 'content' }}
+      >
+        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20">
+          <div className="w-10"></div>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Estadísticas</h1>
+          <div className="w-10"></div>
+        </header>
 
-      <main className="flex flex-col gap-6 px-6 pt-2">
-        {/* Card: Racha Actual */}
-        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
-          <div className="flex justify-between items-start mb-6">
+        <main className="flex flex-col gap-6 px-6 pt-2">
+          {/* Card: Racha Actual */}
+          <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-1">RACHA ACTUAL</p>
+                <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter">
+                  {streakProgress} <span className="text-2xl font-bold ml-1">días</span>
+                </h2>
+                <div className="flex items-center gap-1 mt-2 text-[#078809] font-bold text-xs">
+                  <TrendingUp size={14} />
+                  <span>+2% vs. mes anterior</span>
+                </div>
+              </div>
+              <div className="relative w-24 h-24 flex items-center justify-center">
+                <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 overflow-visible">
+                  <circle className="text-gray-50 dark:text-gray-800" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" strokeWidth="10"></circle>
+                  <circle
+                    cx="50" cy="50" fill="transparent" r="42"
+                    stroke={accentColor} strokeWidth="10"
+                    strokeDasharray="263.89"
+                    strokeDashoffset={263.89 - (263.89 * Math.min(streakProgress / streakGoal, 1))}
+                    strokeLinecap="round"
+                    className="transition-all duration-1000"
+                  ></circle>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Flame size={32} style={{ color: accentColor }} className="fill-current" />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                <span className="text-gray-400">Progreso de racha</span>
+                <span className="text-gray-600 dark:text-gray-300">{streakProgress}/{streakGoal}</span>
+              </div>
+              <div className="h-2.5 w-full bg-gray-50 dark:bg-gray-800 rounded-full overflow-hidden p-[1px]">
+                <div
+                  className="h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(0,0,0,0.1)]"
+                  style={{
+                    width: `${Math.min((streakProgress / streakGoal) * 100, 100)}%`,
+                    backgroundColor: accentColor
+                  }}
+                ></div>
+              </div>
+            </div>
+          </section>
+
+          {/* Comparison Cards – FIXED: proper chart margins */}
+          <div className="space-y-4">
+            <CategoryComparisonCard
+              title="Deporte"
+              data={categoryData.deporte}
+              accentColor={categoryColors.exercise}
+              t={t}
+            />
+            <CategoryComparisonCard
+              title="Social"
+              data={categoryData.social}
+              accentColor={accentColor}
+              t={t}
+            />
+          </div>
+
+          {/* Mejorar Hábitos – IMPROVED: category-specific colors */}
+          <section className="mt-2">
+            <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-4 ml-2">MEJORAR HÁBITOS</p>
+            <div className="space-y-3">
+              <HabitIndicator label="Hacer más ejercicio" current={12} total={30} color={categoryColors.exercise} />
+              <HabitIndicator label="Levantarse pronto" current={22} total={30} color={categoryColors.wakeUp} />
+              <HabitIndicator label="Comer sano" current={28} total={30} color={categoryColors.eatHealthy} />
+            </div>
+          </section>
+
+          {/* Stress Load – REDESIGNED */}
+          <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 mt-4">
+            <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-center">NIVEL DE ESTRÉS</p>
+            <div className="relative flex justify-center mb-4">
+              <StressGauge value={65} />
+            </div>
+            <div className="text-center mt-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Tu nivel de estrés ha bajado un <span className="font-bold text-emerald-500">15%</span> esta semana</p>
+            </div>
+          </section>
+
+          {/* Recommended Articles – REDESIGNED with gradients */}
+          <section className="mt-4">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 ml-2">Artículos recomendados</h3>
+            <div className="space-y-6">
+              {ARTICLES.map(article => (
+                <ArticleCard
+                  key={article.id}
+                  article={article}
+                  onOpen={() => setSelectedArticle(article)}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* PlanifAI Tip */}
+          <section className="bg-rose-50/50 dark:bg-rose-950/20 rounded-[2.5rem] p-6 border border-rose-100 dark:border-rose-900/30 flex items-start gap-5 mt-4">
+            <div className="w-14 h-14 shrink-0 rounded-[1.2rem] bg-rose-400 flex items-center justify-center text-white shadow-lg shadow-rose-400/20">
+              <Lightbulb size={28} className="fill-white/20" />
+            </div>
             <div>
-              <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-1">RACHA ACTUAL</p>
-              <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter">
-                {streakProgress} <span className="text-2xl font-bold ml-1">días</span>
-              </h2>
-              <div className="flex items-center gap-1 mt-2 text-[#078809] font-bold text-xs">
-                <TrendingUp size={14} />
-                <span>+2% vs. mes anterior</span>
-              </div>
+              <h4 className="font-bold text-gray-900 dark:text-white text-base">Tip de PlanifAI</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                Tu concentración es mayor los miércoles por la mañana. ¿Agendamos tus tareas críticas ahí?
+              </p>
             </div>
-            <div className="relative w-24 h-24 flex items-center justify-center">
-              <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 overflow-visible">
-                <circle className="text-gray-50 dark:text-gray-800" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" strokeWidth="10"></circle>
-                <circle
-                  cx="50"
-                  cy="50"
-                  fill="transparent"
-                  r="42"
-                  stroke={accentColor}
-                  strokeWidth="10"
-                  strokeDasharray="263.89"
-                  strokeDashoffset={263.89 - (263.89 * Math.min(streakProgress / streakGoal, 1))}
-                  strokeLinecap="round"
-                  className="transition-all duration-1000"
-                ></circle>
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Flame size={32} style={{ color: accentColor }} className="fill-current" />
-              </div>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-              <span className="text-gray-400">Progreso de racha</span>
-              <span className="text-gray-600 dark:text-gray-300">{streakProgress}/{streakGoal}</span>
-            </div>
-            <div className="h-2.5 w-full bg-gray-50 dark:bg-gray-800 rounded-full overflow-hidden p-[1px]">
-              <div
-                className="h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(0,0,0,0.1)]"
-                style={{
-                  width: `${Math.min((streakProgress / streakGoal) * 100, 100)}%`,
-                  backgroundColor: accentColor
-                }}
-              ></div>
-            </div>
-          </div>
-        </section>
+          </section>
+        </main>
+      </div>
 
-        {/* Comparison Cards */}
-        <div className="space-y-4">
-          <CategoryComparisonCard
-            title="Deporte"
-            data={categoryData.deporte}
-            accentColor={accentColor}
-            t={t}
-          />
-          <CategoryComparisonCard
-            title="Social"
-            data={categoryData.social}
-            accentColor={accentColor}
-            t={t}
-          />
-        </div>
-
-        {/* Mejorar Hábitos */}
-        <section className="mt-2">
-          <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-4 ml-2">MEJORAR HÁBITOS</p>
-          <div className="space-y-3">
-            <HabitIndicator label="Hacer más ejercicio" current={12} total={30} accentColor={accentColor} />
-            <HabitIndicator label="Levantarse pronto" current={22} total={30} accentColor={accentColor} />
-            <HabitIndicator label="Comer sano" current={28} total={30} accentColor={accentColor} />
-          </div>
-        </section>
-
-        {/* Stress Load */}
-        <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 mt-4">
-          <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-center">STRESS LOAD</p>
-          <div className="relative flex justify-center mb-6">
-            <StressGauge value={65} />
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Tu nivel de estrés ha bajado un 15% esta semana</p>
-          </div>
-        </section>
-
-        {/* Recommended Articles */}
-        <section className="mt-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 ml-2">Artículos recomendados</h3>
-          <div className="space-y-6">
-            <ArticleCard
-              image="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=400&auto=format&fit=crop"
-              title="Optimiza tu flujo de trabajo con la técnica Pomodoro"
-              desc="Descubre cómo pequeños descansos pueden aumentar tu productividad diaria."
-              gradient="from-rose-400/80 to-rose-200/80"
-            />
-            <ArticleCard
-              image="https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=400&auto=format&fit=crop"
-              title="Superalimentos para mantener el cerebro activo"
-              desc="La nutrición es clave para mantener un enfoque sostenido durante el día."
-              gradient="from-emerald-400/80 to-emerald-200/80"
-            />
-          </div>
-        </section>
-
-        {/* PlanifAI Tip */}
-        <section className="bg-rose-50/50 dark:bg-rose-950/20 rounded-[2.5rem] p-6 border border-rose-100 dark:border-rose-900/30 flex items-start gap-5 mt-4">
-          <div className="w-14 h-14 shrink-0 rounded-[1.2rem] bg-rose-400 flex items-center justify-center text-white shadow-lg shadow-rose-400/20">
-            <Lightbulb size={28} className="fill-white/20" />
-          </div>
-          <div>
-            <h4 className="font-bold text-gray-900 dark:text-white text-base">Tip de PlanifAI</h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              Tu concentración es mayor los miércoles por la mañana. ¿Agendamos tus tareas críticas ahí?
-            </p>
-          </div>
-        </section>
-      </main>
-    </div>
+      {/* Apple-Style Article Modal */}
+      {selectedArticle && (
+        <ArticleModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />
+      )}
+    </>
   );
 };
 
+// ─── Category Comparison Card (FIXED chart overflow) ────────────────────
 const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor: string; t: any }> = ({ title, data, accentColor, t }) => (
   <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
     <div className="flex justify-between items-center mb-6">
@@ -186,9 +258,10 @@ const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor
         </div>
       </div>
     </div>
-    <div className="h-32 w-full -ml-4">
+    {/* FIXED: removed -ml-4 and added proper margins so chart is not clipped */}
+    <div className="h-36 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id={`gradient-you-${title}`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={accentColor} stopOpacity={0.3} />
@@ -212,89 +285,227 @@ const CategoryComparisonCard: React.FC<{ title: string; data: any[]; accentColor
             fill="transparent"
             isAnimationActive={false}
           />
-          <XAxis
-            dataKey="day"
-            hide
-          />
+          <XAxis dataKey="day" hide />
         </AreaChart>
       </ResponsiveContainer>
     </div>
   </section>
 );
 
-const HabitIndicator: React.FC<{ label: string; current: number; total: number; accentColor: string }> = ({ label, current, total, accentColor }) => (
-  <div className="bg-white dark:bg-gray-900 rounded-[1.5rem] p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-3">
-    <div className="flex justify-between items-center">
-      <span className="text-sm font-bold text-gray-900 dark:text-white">{label}</span>
-      <ChevronDown size={18} className="text-gray-300" />
-    </div>
-    <div className="flex items-center gap-4">
-      <div className="flex-1 h-2 bg-gray-50 dark:bg-gray-800 rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full"
-          style={{ width: `${(current / total) * 100}%`, backgroundColor: accentColor }}
-        ></div>
+// ─── Habit Indicator (NOW with per-category color) ──────────────────────
+const HabitIndicator: React.FC<{ label: string; current: number; total: number; color: string }> = ({ label, current, total, color }) => {
+  const pct = Math.round((current / total) * 100);
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-[1.5rem] p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-bold text-gray-900 dark:text-white">{label}</span>
+        <span
+          className="text-[10px] font-black px-2.5 py-1 rounded-full"
+          style={{ backgroundColor: `${color}20`, color }}
+        >
+          {pct}%
+        </span>
       </div>
-      <span className="text-[10px] font-black text-rose-400 whitespace-nowrap">{current}/{total} días</span>
-    </div>
-  </div>
-);
-
-const StressGauge: React.FC<{ value: number }> = ({ value }) => (
-  <div className="relative w-64 h-32 overflow-hidden">
-    <svg viewBox="0 0 200 100" className="w-full h-full">
-      <path
-        d="M 20 100 A 80 80 0 0 1 180 100"
-        fill="none"
-        stroke="#F1F5F9"
-        strokeWidth="12"
-        strokeLinecap="round"
-      />
-      <path
-        d="M 20 100 A 80 80 0 0 1 180 100"
-        fill="none"
-        stroke="url(#stressGradient)"
-        strokeWidth="12"
-        strokeLinecap="round"
-        strokeDasharray="251.32"
-        strokeDashoffset={251.32 - (251.32 * (value / 100))}
-        className="transition-all duration-1000"
-      />
-      <defs>
-        <linearGradient id="stressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#10B981" />
-          <stop offset="50%" stopColor="#F59E0B" />
-          <stop offset="100%" stopColor="#EF4444" />
-        </linearGradient>
-      </defs>
-    </svg>
-    <div className="absolute bottom-0 left-0 right-0 flex justify-between px-6 pb-1">
-      <span className="text-[9px] font-bold text-emerald-500 uppercase">Óptimo</span>
-      <span className="text-[9px] font-bold text-amber-500 uppercase">Regular</span>
-      <span className="text-[9px] font-bold text-rose-500 uppercase">Muy estresado</span>
-    </div>
-    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 mt-4">
-      <div className="w-4 h-4 bg-white border-2 border-gray-200 rounded-full shadow-sm"></div>
-    </div>
-  </div>
-);
-
-const ArticleCard: React.FC<{ image: string; title: string; desc: string; gradient: string }> = ({ image, title, desc, gradient }) => (
-  <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800">
-    <div className="relative h-44 flex items-center justify-center">
-      <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover opacity-80" />
-      <div className={`absolute inset-0 bg-gradient-to-b ${gradient}`}></div>
-      <div className="relative text-center px-4">
-        <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-3">
-          <Calendar className="text-white" size={24} />
+      <div className="flex items-center gap-4">
+        <div className="flex-1 h-3 bg-gray-50 dark:bg-gray-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${pct}%`, backgroundColor: color }}
+          ></div>
         </div>
-        <p className="text-white font-black text-xs uppercase tracking-widest opacity-80 mb-1">PRODUCTIVITY</p>
-        <div className="h-[1px] w-20 bg-white/40 mx-auto"></div>
+        <span className="text-[10px] font-black whitespace-nowrap" style={{ color }}>
+          {current}/{total} días
+        </span>
       </div>
     </div>
-    <div className="p-8">
-      <h4 className="text-lg font-bold text-gray-900 dark:text-white leading-snug mb-3">{title}</h4>
-      <p className="text-[11px] text-gray-400 font-medium leading-relaxed">{desc}</p>
+  );
+};
+
+// ─── Stress Gauge (REDESIGNED – thicker, better labels, needle, value) ──
+const StressGauge: React.FC<{ value: number }> = ({ value }) => {
+  // Clamp value 0-100
+  const clamped = Math.max(0, Math.min(100, value));
+
+  // Calculate needle angle: 0 = far left (180°), 100 = far right (0°)
+  const needleAngle = 180 - (clamped / 100) * 180;
+  const needleRad = (needleAngle * Math.PI) / 180;
+  const cx = 100, cy = 95, needleLen = 58;
+  const needleX = cx + needleLen * Math.cos(needleRad);
+  const needleY = cy - needleLen * Math.sin(needleRad);
+
+  // Label for stress level
+  let stressLabel = 'Óptimo';
+  let stressColor = '#10B981';
+  if (clamped > 70) { stressLabel = 'Muy estresado'; stressColor = '#EF4444'; }
+  else if (clamped > 40) { stressLabel = 'Regular'; stressColor = '#F59E0B'; }
+
+  return (
+    <div className="relative w-72 h-44 flex flex-col items-center">
+      <svg viewBox="0 0 200 120" className="w-full h-auto">
+        <defs>
+          <linearGradient id="stressGradientNew" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#10B981" />
+            <stop offset="35%" stopColor="#34D399" />
+            <stop offset="55%" stopColor="#FBBF24" />
+            <stop offset="75%" stopColor="#F97316" />
+            <stop offset="100%" stopColor="#EF4444" />
+          </linearGradient>
+          <filter id="needleShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.15" />
+          </filter>
+        </defs>
+
+        {/* Background arc */}
+        <path
+          d="M 20 95 A 80 80 0 0 1 180 95"
+          fill="none"
+          stroke="#F1F5F9"
+          strokeWidth="18"
+          strokeLinecap="round"
+        />
+        {/* Colored arc */}
+        <path
+          d="M 20 95 A 80 80 0 0 1 180 95"
+          fill="none"
+          stroke="url(#stressGradientNew)"
+          strokeWidth="18"
+          strokeLinecap="round"
+          strokeDasharray="251.32"
+          strokeDashoffset={251.32 - (251.32 * (clamped / 100))}
+          className="transition-all duration-1000 ease-out"
+        />
+
+        {/* Needle */}
+        <line
+          x1={cx} y1={cy}
+          x2={needleX} y2={needleY}
+          stroke="#1F2937"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          filter="url(#needleShadow)"
+          className="transition-all duration-1000 ease-out"
+          style={{ transformOrigin: `${cx}px ${cy}px` }}
+        />
+        {/* Needle center dot */}
+        <circle cx={cx} cy={cy} r="6" fill="white" stroke="#E5E7EB" strokeWidth="2" />
+        <circle cx={cx} cy={cy} r="3" fill="#1F2937" />
+      </svg>
+
+      {/* Labels under the arc */}
+      <div className="absolute bottom-6 left-0 right-0 flex justify-between px-4">
+        <span className="text-[11px] font-bold text-emerald-500">Óptimo</span>
+        <span className="text-[11px] font-bold text-amber-500">Regular</span>
+        <span className="text-[11px] font-bold text-rose-500">Estresado</span>
+      </div>
+
+      {/* Center value display */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
+        <span className="text-2xl font-black text-gray-900 dark:text-white">{clamped}</span>
+        <span className="text-[10px] font-bold mt-0.5" style={{ color: stressColor }}>{stressLabel}</span>
+      </div>
     </div>
+  );
+};
+
+// ─── Article Card (REDESIGNED – CSS gradients, no images) ───────────────
+const ArticleCard: React.FC<{ article: typeof ARTICLES[0]; onOpen: () => void }> = ({ article, onOpen }) => (
+  <button
+    onClick={onOpen}
+    className="w-full text-left bg-white dark:bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md active:scale-[0.98] transition-all duration-200"
+  >
+    {/* Gradient header with icon */}
+    <div
+      className="relative h-40 flex flex-col items-center justify-center"
+      style={{ background: article.gradient }}
+    >
+      <span className="text-5xl mb-3 drop-shadow-lg">{article.icon}</span>
+      <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em]">{article.tag}</p>
+      {/* Read time badge */}
+      <div className="absolute top-4 right-5 flex items-center gap-1.5 bg-white/20 backdrop-blur-md rounded-full px-3 py-1">
+        <Clock className="text-white/80" size={12} />
+        <span className="text-white/90 text-[10px] font-bold">{article.readTime}</span>
+      </div>
+    </div>
+    {/* Content */}
+    <div className="p-7">
+      <h4 className="text-base font-bold text-gray-900 dark:text-white leading-snug mb-2">{article.title}</h4>
+      <p className="text-[11px] text-gray-400 font-medium leading-relaxed mb-4">{article.desc}</p>
+      <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#667eea' }}>
+        <span>Leer artículo</span>
+        <ArrowRight size={14} />
+      </div>
+    </div>
+  </button>
+);
+
+// ─── Apple-Style Article Modal ──────────────────────────────────────────
+const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void }> = ({ article, onClose }) => (
+  <div
+    className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-gray-950 animate-[slideUp_0.35s_ease-out]"
+    style={{
+      animationFillMode: 'forwards'
+    }}
+  >
+    {/* Hero */}
+    <div
+      className="relative shrink-0 h-56 flex flex-col items-center justify-center"
+      style={{ background: article.gradient }}
+    >
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        className="absolute top-12 right-5 w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+      >
+        <X size={18} />
+      </button>
+      <span className="text-6xl mb-3 drop-shadow-lg">{article.icon}</span>
+      <p className="text-white/80 font-black text-[10px] uppercase tracking-[0.3em] mb-1">{article.tag}</p>
+      <div className="flex items-center gap-1.5 text-white/60 text-[10px] font-bold">
+        <Clock size={12} />
+        <span>{article.readTime} lectura</span>
+      </div>
+    </div>
+
+    {/* Content body */}
+    <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="max-w-lg mx-auto px-7 py-8">
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white leading-tight mb-2">
+          {article.title}
+        </h1>
+        <p className="text-sm text-gray-400 font-medium mb-8">{article.desc}</p>
+
+        <div className="space-y-8">
+          {article.body.map((section, idx) => (
+            <div key={idx}>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">{section.heading}</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+                {section.text}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer spacer for safe area */}
+        <div className="h-20"></div>
+      </div>
+    </div>
+
+    {/* Bottom close bar */}
+    <div className="shrink-0 pb-8 pt-4 px-7 bg-gradient-to-t from-white dark:from-gray-950 via-white/80 dark:via-gray-950/80 to-transparent">
+      <button
+        onClick={onClose}
+        className="w-full py-4 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-sm active:scale-95 transition-transform"
+      >
+        Cerrar artículo
+      </button>
+    </div>
+
+    {/* Keyframes */}
+    <style>{`
+      @keyframes slideUp {
+        from { transform: translateY(100%); opacity: 0.5; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+    `}</style>
   </div>
 );
