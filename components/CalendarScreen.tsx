@@ -13,25 +13,25 @@ const END_HOUR = 23;
 const HOUR_HEIGHT = 100;
 
 export const getEventIcon = (event: CalendarEvent, template: PlannerTemplate) => {
-    if (event.categoryLabel) {
-        const catByLabel = template.categories.find(c => c.label === event.categoryLabel);
-        if (catByLabel) {
-            return ICON_MAP[catByLabel.icon] || ICON_MAP.Star;
-        }
+  if (event.categoryLabel) {
+    const catByLabel = template.categories.find(c => c.label === event.categoryLabel);
+    if (catByLabel) {
+      return ICON_MAP[catByLabel.icon] || ICON_MAP.Star;
     }
-    const category = template.categories.find(c => c.type === event.type);
-    const iconName = category?.icon || 'Star';
-    return ICON_MAP[iconName] || ICON_MAP.Star;
+  }
+  const category = template.categories.find(c => c.type === event.type);
+  const iconName = category?.icon || 'Star';
+  return ICON_MAP[iconName] || ICON_MAP.Star;
 };
 
 export const getEventColor = (event: CalendarEvent, template: PlannerTemplate): string => {
-    if (event.color) return event.color;
-    if (event.categoryLabel) {
-        const catByLabel = template.categories.find(c => c.label === event.categoryLabel);
-        if (catByLabel) return catByLabel.color;
-    }
-    const category = template.categories.find(c => c.type === event.type);
-    return category ? category.color : template.categories[0].color;
+  // Always derive color from viewer's active template (never from stored event.color)
+  if (event.categoryLabel) {
+    const catByLabel = template.categories.find(c => c.label === event.categoryLabel);
+    if (catByLabel) return catByLabel.color;
+  }
+  const category = template.categories.find(c => c.type === event.type);
+  return category ? category.color : template.categories[0].color;
 };
 
 export const CalendarScreen: React.FC = () => {
@@ -45,8 +45,8 @@ export const CalendarScreen: React.FC = () => {
 
   const localeStr = language === 'es' ? 'es-ES' : 'en-US';
 
-  const activeEvent = useMemo(() => 
-    events.find(e => e.id === selectedEventId) || null, 
+  const activeEvent = useMemo(() =>
+    events.find(e => e.id === selectedEventId) || null,
     [events, selectedEventId]
   );
 
@@ -114,12 +114,12 @@ export const CalendarScreen: React.FC = () => {
 
   const renderCategoryLegend = () => (
     <div className="mt-12 flex flex-wrap justify-center gap-x-6 gap-y-4 px-4 pb-20">
-        {activeTemplate.categories.map((cat, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: cat.color }}></div>
-                <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{cat.label}</span>
-            </div>
-        ))}
+      {activeTemplate.categories.map((cat, idx) => (
+        <div key={idx} className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: cat.color }}></div>
+          <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{cat.label}</span>
+        </div>
+      ))}
     </div>
   );
 
@@ -145,29 +145,28 @@ export const CalendarScreen: React.FC = () => {
           </div>
           <div className="flex flex-col items-end gap-3">
             <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 border border-gray-200/50 dark:border-gray-700">
-                {(['day', 'week', 'month'] as ViewMode[]).map((m) => (
+              {(['day', 'week', 'month'] as ViewMode[]).map((m) => (
                 <button
-                    key={m}
-                    onClick={() => setView(m)}
-                    className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${
-                    view === m 
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' 
-                    : 'text-[#94A3B8]'
+                  key={m}
+                  onClick={() => setView(m)}
+                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${view === m
+                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-[#94A3B8]'
                     }`}
                 >
-                    {m === 'day' ? t.view_day : m === 'week' ? t.view_week : t.view_month}
+                  {m === 'day' ? t.view_day : m === 'week' ? t.view_week : t.view_month}
                 </button>
-                ))}
+              ))}
             </div>
-            <button 
-                onClick={() => {
-                    setIsAddingManually(true);
-                    setIsDetailViewOpen(true);
-                }}
-                className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-4 py-2.5 rounded-2xl shadow-sm active:scale-95 transition-all text-gray-900 dark:text-white"
+            <button
+              onClick={() => {
+                setIsAddingManually(true);
+                setIsDetailViewOpen(true);
+              }}
+              className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-4 py-2.5 rounded-2xl shadow-sm active:scale-95 transition-all text-gray-900 dark:text-white"
             >
-                <Plus size={16} strokeWidth={3} className="text-[#FF7566]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.1em]">{t.manual_task}</span>
+              <Plus size={16} strokeWidth={3} className="text-[#FF7566]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.1em]">{t.manual_task}</span>
             </button>
           </div>
         </div>
@@ -205,11 +204,10 @@ export const CalendarScreen: React.FC = () => {
                   <button
                     key={idx}
                     onClick={() => setSelectedDate(new Date(d))}
-                    className={`flex flex-col items-center justify-center w-14 h-20 rounded-2xl transition-all duration-300 ${
-                      isSelected 
-                      ? 'bg-[#EFF4FF] dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 shadow-sm' 
-                      : 'opacity-40'
-                    }`}
+                    className={`flex flex-col items-center justify-center w-14 h-20 rounded-2xl transition-all duration-300 ${isSelected
+                        ? 'bg-[#EFF4FF] dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 shadow-sm'
+                        : 'opacity-40'
+                      }`}
                   >
                     <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${isSelected ? 'text-blue-800 dark:text-blue-300' : 'text-gray-400'}`}>
                       {d.toLocaleDateString(localeStr, { weekday: 'short' }).slice(0, 3)}
@@ -224,29 +222,29 @@ export const CalendarScreen: React.FC = () => {
             <button onClick={handleNext} className="p-2 text-gray-300"><ChevronRight size={20} /></button>
           </div>
         </section>
-        
+
         <div className="mt-8 bg-white dark:bg-gray-950 rounded-t-[3.5rem] flex-1 border-t border-gray-100 dark:border-gray-900 overflow-y-auto no-scrollbar">
           <div className="p-8 pb-80 relative">
             <div className="absolute left-[5.4rem] top-10 bottom-0 w-px bg-gray-100 dark:bg-gray-800 opacity-50"></div>
             <div className="space-y-6">
               {dayEvents.length === 0 ? (
-                 <div className="text-center py-20 text-gray-300 font-bold uppercase tracking-widest text-[10px]">{t.no_events}</div>
+                <div className="text-center py-20 text-gray-300 font-bold uppercase tracking-widest text-[10px]">{t.no_events}</div>
               ) : dayEvents.map(event => {
                 const start = new Date(event.start);
                 const end = new Date(event.end);
                 const timeStr = formatTime(start);
                 const endTimeStr = formatTime(end);
-                
+
                 const Icon = getEventIcon(event, activeTemplate);
                 const dynamicColor = getEventColor(event, activeTemplate);
-                
+
                 return (
                   <div key={event.id} className="flex gap-4 items-center group cursor-pointer" onClick={() => handleOpenEventDetail(event)}>
                     <div className="w-16 text-right pr-2">
                       <span className="text-[11px] font-black text-gray-900 dark:text-white block leading-none">{timeStr}</span>
                     </div>
                     <div className="flex-1 flex gap-4 items-center relative z-10">
-                      <div 
+                      <div
                         className="w-14 h-24 rounded-[2rem] flex items-center justify-center shadow-sm shrink-0 transition-colors duration-500"
                         style={{ backgroundColor: dynamicColor }}
                       >
@@ -260,22 +258,21 @@ export const CalendarScreen: React.FC = () => {
                           {event.title}
                         </h3>
                         {event.location && (
-                           <div className="flex items-center gap-1 mt-1 text-[10px] text-[#94A3B8] font-bold uppercase">
-                              <MapPin size={10} />
-                              <span>{event.location}</span>
-                           </div>
+                          <div className="flex items-center gap-1 mt-1 text-[10px] text-[#94A3B8] font-bold uppercase">
+                            <MapPin size={10} />
+                            <span>{event.location}</span>
+                          </div>
                         )}
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleComplete(event.id, event.status);
                         }}
-                        className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${
-                          event.status === 'completed' 
-                          ? 'bg-blue-600 border-blue-600 text-white' 
-                          : 'border-gray-100 dark:border-gray-800'
-                        }`}
+                        className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${event.status === 'completed'
+                            ? 'bg-blue-600 border-blue-600 text-white'
+                            : 'border-gray-100 dark:border-gray-800'
+                          }`}
                       >
                         {event.status === 'completed' && <Check size={18} strokeWidth={4} />}
                       </button>
@@ -306,7 +303,7 @@ export const CalendarScreen: React.FC = () => {
       return events.filter(e => new Date(e.start).toDateString() === date.toDateString());
     };
     const dayLabels = language === 'es' ? ['L', 'M', 'X', 'J', 'V', 'S', 'D'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    
+
     return (
       <div className="flex flex-col h-full bg-white dark:bg-gray-950 transition-colors duration-300 overflow-y-auto no-scrollbar relative">
         <div className="px-6 pt-4 flex sticky top-0 bg-white dark:bg-gray-950 z-20 border-b border-gray-100 dark:border-gray-900 pb-4">
@@ -324,7 +321,7 @@ export const CalendarScreen: React.FC = () => {
             })}
           </div>
         </div>
-        
+
         <div className="flex-1 relative pt-2 pb-80">
           <div className="flex px-4 relative min-h-[1200px]">
             <div className="w-12 shrink-0 flex flex-col text-[10px] font-black text-gray-300 dark:text-gray-600 pt-0">
@@ -336,8 +333,8 @@ export const CalendarScreen: React.FC = () => {
             </div>
             <div className="flex-1 grid grid-cols-7 relative">
               {hours.map(h => (
-                <div 
-                  key={`line-${h}`} 
+                <div
+                  key={`line-${h}`}
                   className="absolute left-0 right-0 border-t border-gray-50 dark:border-gray-900/50 pointer-events-none"
                   style={{ top: `${(h - START_HOUR) * HOUR_HEIGHT}px` }}
                 ></div>
@@ -353,18 +350,18 @@ export const CalendarScreen: React.FC = () => {
                       const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
                       const top = (startMinutes / 60) * HOUR_HEIGHT;
                       const height = (durationMinutes / 60) * HOUR_HEIGHT;
-                      
+
                       const Icon = getEventIcon(event, activeTemplate);
                       const dynamicColor = getEventColor(event, activeTemplate);
-                      
+
                       return (
-                        <div 
+                        <div
                           key={event.id}
-                          style={{ 
-                            top: `${top}px`, 
+                          style={{
+                            top: `${top}px`,
                             height: `${Math.max(30, height)}px`,
                             backgroundColor: dynamicColor,
-                            zIndex: 10 
+                            zIndex: 10
                           }}
                           onClick={() => handleOpenEventDetail(event)}
                           className={`absolute left-1 right-1 rounded-2xl p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95 text-white`}
@@ -421,39 +418,37 @@ export const CalendarScreen: React.FC = () => {
               const isSelected = date.toDateString() === selectedDate.toDateString();
               const isCurrentMonth = date.getMonth() === month;
               const dayEvents = events.filter(e => new Date(e.start).toDateString() === date.toDateString());
-              
+
               return (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   onClick={() => setSelectedDate(new Date(date))}
-                  className={`aspect-square bg-white dark:bg-gray-950 flex flex-col items-center justify-center relative cursor-pointer transition-all border-none ${
-                    !isCurrentMonth ? 'bg-gray-50/50 dark:bg-gray-900/20' : ''
-                  }`}
+                  className={`aspect-square bg-white dark:bg-gray-950 flex flex-col items-center justify-center relative cursor-pointer transition-all border-none ${!isCurrentMonth ? 'bg-gray-50/50 dark:bg-gray-900/20' : ''
+                    }`}
                 >
                   <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
-                      <span className={`text-[14px] font-black transition-colors ${
-                        isSelected 
-                          ? 'text-blue-600' 
-                          : isToday 
-                              ? 'text-blue-500' 
-                              : isCurrentMonth 
-                                  ? 'text-gray-900 dark:text-gray-100' 
-                                  : 'text-gray-300 dark:text-gray-600'
+                    <span className={`text-[14px] font-black transition-colors ${isSelected
+                        ? 'text-blue-600'
+                        : isToday
+                          ? 'text-blue-500'
+                          : isCurrentMonth
+                            ? 'text-gray-900 dark:text-gray-100'
+                            : 'text-gray-300 dark:text-gray-600'
                       }`}>
-                        {date.getDate()}
-                      </span>
-                      
-                      <div className="grid grid-cols-3 gap-0.5 mt-1 px-1 min-h-[14px] items-center justify-center">
-                        {dayEvents.slice(0, 6).map((e, idx) => (
-                          <div 
-                              key={idx} 
-                              style={{ backgroundColor: getEventColor(e, activeTemplate) }}
-                              className="w-1.5 h-1.5 rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)]"
-                          ></div>
-                        ))}
-                      </div>
+                      {date.getDate()}
+                    </span>
+
+                    <div className="grid grid-cols-3 gap-0.5 mt-1 px-1 min-h-[14px] items-center justify-center">
+                      {dayEvents.slice(0, 6).map((e, idx) => (
+                        <div
+                          key={idx}
+                          style={{ backgroundColor: getEventColor(e, activeTemplate) }}
+                          className="w-1.5 h-1.5 rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)]"
+                        ></div>
+                      ))}
+                    </div>
                   </div>
-                  
+
                   {isSelected && (
                     <div className="absolute inset-1 rounded-2xl bg-blue-50/40 dark:bg-blue-500/10 border-2 border-blue-500/20 z-0"></div>
                   )}
@@ -476,11 +471,11 @@ export const CalendarScreen: React.FC = () => {
         {view === 'month' && renderMonthView()}
       </main>
       {(activeEvent || isAddingManually) && (
-        <EventDetailModal 
-          event={activeEvent || undefined} 
+        <EventDetailModal
+          event={activeEvent || undefined}
           isCreating={isAddingManually}
           initialDate={selectedDate}
-          onClose={handleCloseEventDetail} 
+          onClose={handleCloseEventDetail}
         />
       )}
     </div>

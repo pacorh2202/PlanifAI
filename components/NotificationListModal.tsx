@@ -219,8 +219,17 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
             <div className="w-full sm:w-[450px] max-h-[90vh] sm:max-h-[85vh] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col pointer-events-auto transform transition-all duration-300 ease-out">
 
                 {/* Header */}
-                <div className="px-8 py-6 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-800/50 shrink-0">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight" style={{ letterSpacing: '-0.02em' }}>Notificaciones</h2>
+                <div className="px-8 pt-8 pb-6 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-800/50 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onClose}
+                            className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors active:scale-90"
+                            aria-label="Close"
+                        >
+                            <X size={16} strokeWidth={3} />
+                        </button>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight" style={{ letterSpacing: '-0.02em' }}>Notificaciones</h2>
+                    </div>
                     <button
                         onClick={handleClearAll}
                         className="text-[#FF6B6B] hover:text-[#FF5252] font-semibold text-sm transition-colors active:scale-95 transform"

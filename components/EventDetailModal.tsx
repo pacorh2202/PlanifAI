@@ -95,7 +95,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     setIsEditing(true);
   };
 
-  const dynamicColor = (editedEvent.color || getEventColor(editedEvent, activeTemplate));
+  const dynamicColor = getEventColor(editedEvent, activeTemplate);
   const Icon = getEventIcon(editedEvent, activeTemplate);
 
   const statusLabel = useMemo(() => {
@@ -221,8 +221,15 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] animate-fade-in transition-opacity duration-300 cursor-pointer" onClick={onClose}></div>
 
       <div className="relative bg-[#F8FAFC] dark:bg-gray-950 w-full h-[85vh] rounded-t-[3.5rem] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.4)] border-t border-white/20 overflow-hidden animate-slide-up">
-        <div className="absolute top-0 left-0 right-0 h-10 flex items-center justify-center z-50 pointer-events-none">
-          <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full"></div>
+        <div className="absolute top-0 left-0 right-0 h-14 flex items-center justify-center z-50">
+          <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full mt-3"></div>
+          <button
+            onClick={onClose}
+            className="absolute right-5 top-4 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors active:scale-90"
+            aria-label="Close"
+          >
+            <X size={16} strokeWidth={3} />
+          </button>
         </div>
 
         <div className="absolute top-4 right-6 flex items-center gap-2.5 z-[120]">
