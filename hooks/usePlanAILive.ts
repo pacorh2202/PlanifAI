@@ -193,6 +193,12 @@ export const usePlanAILive = () => {
 - Amigos disponibles: ${friendsSummary}
 - Eventos hoy: ${eventsSummary || "No hay eventos hoy."}
 
+## Manejo de Amigos y Nombres Duplicados (IMPORTANTE)
+- Si el usuario menciona un nombre (ej: "Juan") y hay múltiples amigos con ese nombre:
+  1. NO asumas ninguno.
+  2. Pregunta: "¿A cuál te refieres? ¿A @handle1 o a @handle2?".
+- Si el usuario usa un @handle, identifica a la persona unívocamente.
+
 Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática perfecta.`
             }]
           },

@@ -491,10 +491,28 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return;
               }
 
-              const friend = friends.find(f =>
-                f.name.toLowerCase().trim().includes(cleanInput) ||
-                f.handle.toLowerCase().trim().includes(cleanInput)
+              // 1. Try exact handle match (stripping @ if present)
+              let friend = friends.find(f =>
+                f.handle.toLowerCase().replace(/^@/, '') === cleanInput.replace(/^@/, '')
               );
+
+              // 2. If no handle match, try name match
+              if (!friend) {
+                const nameMatches = friends.filter(f => f.name.toLowerCase().trim().includes(cleanInput));
+
+                if (nameMatches.length === 1) {
+                  friend = nameMatches[0];
+                } else if (nameMatches.length > 1) {
+                  console.warn(`[executeAction] Ambigüedad: "${cleanInput}" coincide con ${nameMatches.length} amigos.`);
+                  // In a real scenario, we might want to ask the user, but for now we pick the first one 
+                  // OR we fail if we want to be strict.
+                  // The AI instructions will be updated to force handles in this case, so we can assume
+                  // if we got here, it's a best-effort try.
+                  // Let's try to find an exact full name match among them
+                  const exactNameMatch = nameMatches.find(f => f.name.toLowerCase().trim() === cleanInput);
+                  friend = exactNameMatch || nameMatches[0];
+                }
+              }
 
               if (friend) {
                 // Evitar duplicados

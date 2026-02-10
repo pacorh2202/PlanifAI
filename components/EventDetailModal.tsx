@@ -469,7 +469,10 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                     <button onClick={() => isEditing && toggleAttendee(friend.name)} className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all ${isAttendee ? 'border-gray-900 dark:border-white shadow-lg scale-105' : 'border-transparent opacity-40 grayscale'}`}>
                       <img src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.name)}&background=FF7566&color=fff`} alt={friend.name} className="w-12 h-12 rounded-full object-cover" />
                     </button>
-                    <p className="text-[8px] font-black text-center mt-1 uppercase text-gray-400 truncate w-14">{friend.name.split(' ')[0]}</p>
+                    <div className="flex flex-col items-center w-14 overflow-hidden">
+                      <p className="text-[8px] font-black text-center mt-1 uppercase text-gray-500 truncate w-full leading-tight">{friend.name.split(' ')[0]}</p>
+                      <p className="text-[7px] font-bold text-center text-gray-400 truncate w-full leading-tight">@{friend.handle}</p>
+                    </div>
                   </div>
                 );
               })}
