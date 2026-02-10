@@ -254,11 +254,12 @@ export const CalendarScreen: React.FC = () => {
                       <div
                         className="w-14 h-24 rounded-[2rem] flex items-center justify-center shadow-sm shrink-0 transition-colors duration-500 box-border"
                         style={{
-                          backgroundColor: isPast ? 'white' : dynamicColor,
-                          border: isPast ? `1px solid ${dynamicColor}` : 'none'
+                          backgroundColor: dynamicColor,
+                          opacity: isPast ? 0.5 : 1,
+                          filter: isPast ? 'grayscale(30%)' : 'none'
                         }}
                       >
-                        <Icon size={24} strokeWidth={2.5} style={{ color: isPast ? dynamicColor : 'white' }} />
+                        <Icon size={24} strokeWidth={2.5} className="text-white" />
                       </div>
                       <div className="flex flex-col justify-center flex-1">
                         <span className="text-[9px] font-black text-[#94A3B8] uppercase tracking-wider mb-0.5">
@@ -459,14 +460,15 @@ export const CalendarScreen: React.FC = () => {
                           style={{
                             top: `${top}px`,
                             height: `${height}px`,
-                            backgroundColor: isPast ? 'white' : dynamicColor,
-                            border: isPast ? `1px solid ${dynamicColor}` : 'none',
-                            zIndex: 10
+                            backgroundColor: dynamicColor,
+                            zIndex: 10,
+                            opacity: isPast ? 0.5 : 1,
+                            filter: isPast ? 'grayscale(30%)' : 'none'
                           }}
                           onClick={() => handleOpenEventDetail(event)}
-                          className="absolute left-1 right-1 rounded-[50px] p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95"
+                          className="absolute left-1 right-1 rounded-[50px] p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95 text-white"
                         >
-                          <Icon size={14} strokeWidth={2.5} style={{ color: isPast ? dynamicColor : 'white' }} />
+                          <Icon size={14} strokeWidth={2.5} />
                         </div>
                       );
                     })}
