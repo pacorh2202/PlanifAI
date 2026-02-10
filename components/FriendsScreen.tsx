@@ -172,7 +172,7 @@ export const FriendsScreen: React.FC = () => {
                   onChange={(e) => setSearch(e.target.value)}
                   onFocus={() => setSearch(search)} // Trigger focus state
                   placeholder={t.friends_search}
-                  className="w-full bg-gray-100 dark:bg-gray-800 border-0 rounded-xl py-3.5 pl-12 pr-10 text-sm text-gray-900 dark:text-white outline-none placeholder:text-gray-400 focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors caret-gray-900 dark:caret-white"
+                  className="w-full bg-gray-100 dark:bg-gray-800 border-0 rounded-xl py-3.5 pl-12 pr-10 text-sm text-gray-900 dark:text-white outline-none ring-0 shadow-none focus:ring-0 focus:shadow-none focus:outline-none focus:border-0 placeholder:text-gray-400 focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors caret-gray-900 dark:caret-white"
                   style={{ caretColor: 'inherit' }}
                 />
                 {search && (
