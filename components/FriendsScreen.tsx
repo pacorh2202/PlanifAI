@@ -92,7 +92,6 @@ export const FriendsScreen: React.FC = () => {
     if (!user) return;
     try {
       await friendsApi.sendFriendRequest(user.id, userId);
-      // Optimistically update search results and suggestions
       setSearchResults(prev => prev.filter(u => u.id !== userId));
       setSuggestedFriends(prev => prev.filter(u => u.id !== userId));
       await refreshFriends();
@@ -164,7 +163,7 @@ export const FriendsScreen: React.FC = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto no-scrollbar pb-40">
-          <div className="px-6 mb-8">
+          <div className="sticky top-0 z-20 bg-[#F9FAFB] dark:bg-black px-6 py-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
@@ -176,7 +175,7 @@ export const FriendsScreen: React.FC = () => {
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => { if (!search) setSearchFocused(false); }}
                   placeholder={t.friends_search}
-                  className="w-full bg-gray-200/70 dark:bg-gray-800 border-0 rounded-full py-3 pl-12 pr-10 text-sm text-gray-900 dark:text-white outline-none ring-0 shadow-none focus:ring-0 focus:shadow-none focus:outline-none focus:border-0 placeholder:text-gray-400 transition-colors"
+                  className="w-full bg-gray-200/70 dark:bg-gray-800 border-0 rounded-full py-3.5 pl-12 pr-10 text-sm text-gray-900 dark:text-white outline-none ring-0 shadow-none focus:ring-0 focus:shadow-none focus:outline-none focus:border-0 placeholder:text-gray-400 transition-colors"
                 />
                 {search && (
                   <button
