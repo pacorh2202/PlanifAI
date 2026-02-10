@@ -79,7 +79,7 @@ const AppContent: React.FC = () => {
 
       {showNavbar && (
         <div className="fixed bottom-8 left-0 right-0 px-6 z-[100] animate-fade-in flex justify-center">
-          <nav className="w-full max-w-[350px] bg-white/80 dark:bg-gray-900/85 backdrop-blur-3xl border border-white/40 dark:border-gray-800 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.2)] rounded-[2.2rem] h-[72px] flex items-center justify-around px-1.5 pointer-events-auto transition-all duration-500">
+          <nav className="w-full max-w-[22rem] bg-white/80 dark:bg-gray-900/85 backdrop-blur-3xl border border-white/40 dark:border-gray-800 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.2)] rounded-[2.2rem] h-[4.5rem] flex items-center justify-around px-1.5 pointer-events-auto transition-all duration-500">
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               const Icon = tab.icon;
