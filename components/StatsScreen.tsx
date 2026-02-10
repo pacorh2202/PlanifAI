@@ -452,14 +452,14 @@ const ArticleCard: React.FC<{ article: typeof ARTICLES[0]; onOpen: () => void }>
 // ─── Apple-Style Article Modal ──────────────────────────────────────────
 const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void }> = ({ article, onClose }) => (
   <div
-    className="fixed inset-0 z-[200] flex flex-col bg-white dark:bg-gray-950 animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)]"
+    className="fixed inset-0 z-[200] bg-white dark:bg-gray-950 animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)] overflow-y-auto"
     style={{
       animationFillMode: 'forwards'
     }}
   >
     {/* Hero */}
     <div
-      className="relative shrink-0 h-64 flex flex-col items-center justify-center -mt-10 pt-10 overflow-hidden"
+      className="relative h-64 flex flex-col items-center justify-center -mt-10 pt-10 overflow-hidden"
       style={{
         background: article.image ? `url(${article.image}) center/cover no-repeat` : article.gradient
       }}
@@ -481,7 +481,7 @@ const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void 
     </div>
 
     {/* Content body */}
-    <div className="flex-1 overflow-y-auto w-full">
+    <div className="w-full">
       <div className="max-w-2xl mx-auto px-8 py-10">
         <h1 className="text-3xl font-black text-gray-900 dark:text-white leading-tight mb-3 tracking-tight">
           {article.title}
