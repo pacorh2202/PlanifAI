@@ -376,16 +376,20 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 mb-8 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-500">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
+                  >
                     <Repeat size={18} />
                   </div>
-                  <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em]">{language === 'es' ? 'Repetir' : 'Repeat'}</h2>
+                  <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em]">{language === 'es' ? 'Tarea recurrente' : 'Recurring Task'}</h2>
                 </div>
                 <div
                   onClick={() => setIsRecurring(!isRecurring)}
-                  className={`w-12 h-7 rounded-full transition-colors duration-300 flex items-center px-1 cursor-pointer ${isRecurring ? 'bg-purple-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+                  className={`w-12 h-7 rounded-full transition-colors duration-300 flex items-center px-1 cursor-pointer`}
+                  style={{ backgroundColor: isRecurring ? accentColor : undefined }}
                 >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${isRecurring ? 'translate-x-5' : 'translate-x-0'}`} />
+                  <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${isRecurring ? 'translate-x-5' : 'translate-x-0'} ${!isRecurring ? 'bg-gray-200 dark:bg-gray-700' : ''}`} />
                 </div>
               </div>
 
@@ -411,9 +415,10 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                               setSelectedDays(prev => [...prev, dayIndex]);
                             }
                           }}
+                          style={isSelected ? { backgroundColor: accentColor, color: '#fff' } : undefined}
                           className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-black transition-all ${isSelected
-                              ? 'bg-purple-500 text-white shadow-lg scale-105'
-                              : 'bg-gray-50 dark:bg-gray-800 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            ? 'shadow-lg scale-105'
+                            : 'bg-gray-50 dark:bg-gray-800 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                         >
                           {label}
