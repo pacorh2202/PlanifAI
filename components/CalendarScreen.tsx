@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { MapPin, ChevronLeft, ChevronRight, Check, Plus } from 'lucide-react';
 import { CalendarEvent, PlannerTemplate } from '../types';
@@ -8,9 +8,9 @@ import { ICON_MAP } from '../constants';
 
 type ViewMode = 'day' | 'week' | 'month';
 
-const START_HOUR = 6;
-const END_HOUR = 23;
-const HOUR_HEIGHT = 100;
+const DEFAULT_START_HOUR = 7;
+const DEFAULT_END_HOUR = 21;
+const HOUR_HEIGHT = 80;
 
 export const getEventIcon = (event: CalendarEvent, template: PlannerTemplate) => {
   if (event.categoryLabel) {
@@ -42,6 +42,8 @@ export const CalendarScreen: React.FC = () => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isAddingManually, setIsAddingManually] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const weekScrollRef = useRef<HTMLDivElement>(null);
+  const hasAutoScrolledWeek = useRef(false);
 
   const localeStr = language === 'es' ? 'es-ES' : 'en-US';
 
@@ -150,8 +152,8 @@ export const CalendarScreen: React.FC = () => {
                   key={m}
                   onClick={() => setView(m)}
                   className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${view === m
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-[#94A3B8]'
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-[#94A3B8]'
                     }`}
                 >
                   {m === 'day' ? t.view_day : m === 'week' ? t.view_week : t.view_month}
@@ -205,8 +207,8 @@ export const CalendarScreen: React.FC = () => {
                     key={idx}
                     onClick={() => setSelectedDate(new Date(d))}
                     className={`flex flex-col items-center justify-center w-14 h-20 rounded-2xl transition-all duration-300 ${isSelected
-                        ? 'bg-[#EFF4FF] dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 shadow-sm'
-                        : 'opacity-40'
+                      ? 'bg-[#EFF4FF] dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 shadow-sm'
+                      : 'opacity-40'
                       }`}
                   >
                     <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${isSelected ? 'text-blue-800 dark:text-blue-300' : 'text-gray-400'}`}>
@@ -270,8 +272,8 @@ export const CalendarScreen: React.FC = () => {
                           toggleComplete(event.id, event.status);
                         }}
                         className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${event.status === 'completed'
-                            ? 'bg-blue-600 border-blue-600 text-white'
-                            : 'border-gray-100 dark:border-gray-800'
+                          ? 'bg-blue-600 border-blue-600 text-white'
+                          : 'border-gray-100 dark:border-gray-800'
                           }`}
                       >
                         {event.status === 'completed' && <Check size={18} strokeWidth={4} />}
@@ -288,42 +290,120 @@ export const CalendarScreen: React.FC = () => {
     );
   };
 
-  const renderWeekView = () => {
-    const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i);
+  // ── Adaptive week hour range ──
+  const weekData = useMemo(() => {
     const startOfWeek = new Date(selectedDate);
     const day = startOfWeek.getDay();
     const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
     startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+
     const weekDays = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(startOfWeek);
       d.setDate(startOfWeek.getDate() + i);
       return d;
     });
+
+    // Gather all events this week
+    const weekEvents = events.filter(e => {
+      const eDate = new Date(e.start);
+      return weekDays.some(wd => wd.toDateString() === eDate.toDateString());
+    });
+
+    // Compute adaptive bounds
+    let startHour = DEFAULT_START_HOUR;
+    let endHour = DEFAULT_END_HOUR;
+
+    if (weekEvents.length > 0) {
+      let minH = 23;
+      let maxH = 0;
+      weekEvents.forEach(e => {
+        const sh = new Date(e.start).getHours();
+        const eh = new Date(e.end).getHours() + (new Date(e.end).getMinutes() > 0 ? 1 : 0);
+        if (sh < minH) minH = sh;
+        if (eh > maxH) maxH = eh;
+      });
+      startHour = Math.max(0, minH - 1);  // 1h padding before
+      endHour = Math.min(23, maxH + 1);    // 1h padding after
+      // Ensure at least 8 hours visible
+      if (endHour - startHour < 8) {
+        const mid = Math.round((startHour + endHour) / 2);
+        startHour = Math.max(0, mid - 4);
+        endHour = Math.min(23, mid + 4);
+      }
+    }
+
+    const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
+
+    return { weekDays, hours, startHour, endHour };
+  }, [selectedDate, events]);
+
+  // Auto-scroll to current time when entering week view
+  useEffect(() => {
+    if (view !== 'week') {
+      hasAutoScrolledWeek.current = false;
+      return;
+    }
+    if (hasAutoScrolledWeek.current) return;
+
+    // Small delay to ensure DOM is rendered
+    const timer = setTimeout(() => {
+      if (!weekScrollRef.current) return;
+      const now = new Date();
+      const nowHour = now.getHours() + now.getMinutes() / 60;
+      const offsetFromStart = (nowHour - weekData.startHour) * HOUR_HEIGHT;
+      // Center the current time in the viewport
+      const containerHeight = weekScrollRef.current.clientHeight;
+      const scrollTarget = Math.max(0, offsetFromStart - containerHeight / 3);
+      weekScrollRef.current.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+      hasAutoScrolledWeek.current = true;
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [view, weekData.startHour]);
+
+  const renderWeekView = () => {
+    const { weekDays, hours, startHour } = weekData;
+    const totalHeight = hours.length * HOUR_HEIGHT;
+
     const getDayEvents = (date: Date) => {
       return events.filter(e => new Date(e.start).toDateString() === date.toDateString());
     };
     const dayLabels = language === 'es' ? ['L', 'M', 'X', 'J', 'V', 'S', 'D'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
+    // Current time indicator position
+    const now = currentTime;
+    const nowHour = now.getHours() + now.getMinutes() / 60;
+    const isNowVisible = nowHour >= startHour && nowHour <= startHour + hours.length;
+    const nowTop = (nowHour - startHour) * HOUR_HEIGHT;
+
     return (
-      <div className="flex flex-col h-full bg-white dark:bg-gray-950 transition-colors duration-300 overflow-y-auto no-scrollbar relative">
-        <div className="px-6 pt-4 flex sticky top-0 bg-white dark:bg-gray-950 z-20 border-b border-gray-100 dark:border-gray-900 pb-4">
+      <div
+        ref={weekScrollRef}
+        className="flex flex-col h-full bg-white dark:bg-gray-950 transition-colors duration-300 overflow-y-auto no-scrollbar relative"
+      >
+        {/* Sticky day header */}
+        <div className="px-6 pt-4 flex sticky top-0 bg-white dark:bg-gray-950 z-20 pb-4">
           <div className="w-12 shrink-0"></div>
           <div className="flex-1 grid grid-cols-7 text-center gap-1">
             {dayLabels.map((label, i) => {
               const date = weekDays[i];
+              const isToday = date.toDateString() === new Date().toDateString();
               const isSelected = date.toDateString() === selectedDate.toDateString();
               return (
                 <div key={i} className="flex flex-col items-center">
-                  <span className={`text-[9px] font-bold uppercase mb-1 ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>{label}</span>
-                  <span className={`text-sm font-black ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>{date.getDate()}</span>
+                  <span className={`text-[9px] font-bold uppercase mb-1 ${isToday ? 'text-red-500' : isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>{label}</span>
+                  <span className={`text-sm font-black ${isToday ? 'text-red-500' : isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>{date.getDate()}</span>
                 </div>
               );
             })}
           </div>
         </div>
 
+        {/* Scrollable time grid — no grid lines */}
         <div className="flex-1 relative pt-2 pb-80">
-          <div className="flex px-4 relative min-h-[1200px]">
+          <div className="flex px-4 relative" style={{ minHeight: `${totalHeight}px` }}>
+            {/* Hour labels column */}
             <div className="w-12 shrink-0 flex flex-col text-[10px] font-black text-gray-300 dark:text-gray-600 pt-0">
               {hours.map(h => (
                 <div key={h} style={{ height: `${HOUR_HEIGHT}px` }} className="flex items-start">
@@ -331,22 +411,28 @@ export const CalendarScreen: React.FC = () => {
                 </div>
               ))}
             </div>
+
+            {/* Day columns — clean, no borders */}
             <div className="flex-1 grid grid-cols-7 relative">
-              {hours.map(h => (
+              {/* Current time indicator */}
+              {isNowVisible && (
                 <div
-                  key={`line-${h}`}
-                  className="absolute left-0 right-0 border-t border-gray-50 dark:border-gray-900/50 pointer-events-none"
-                  style={{ top: `${(h - START_HOUR) * HOUR_HEIGHT}px` }}
-                ></div>
-              ))}
+                  className="absolute left-0 right-0 z-30 pointer-events-none flex items-center"
+                  style={{ top: `${nowTop}px` }}
+                >
+                  <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 shrink-0"></div>
+                  <div className="flex-1 h-[2px] bg-red-500 opacity-70"></div>
+                </div>
+              )}
+
               {weekDays.map((date, dayIdx) => {
                 const dayEvents = getDayEvents(date);
                 return (
-                  <div key={dayIdx} className="relative border-l border-gray-50 dark:border-gray-900/30 first:border-l-0">
+                  <div key={dayIdx} className="relative">
                     {dayEvents.map(event => {
                       const start = new Date(event.start);
                       const end = new Date(event.end);
-                      const startMinutes = (start.getHours() - START_HOUR) * 60 + start.getMinutes();
+                      const startMinutes = (start.getHours() - startHour) * 60 + start.getMinutes();
                       const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
                       const top = (startMinutes / 60) * HOUR_HEIGHT;
                       const height = (durationMinutes / 60) * HOUR_HEIGHT;
@@ -364,7 +450,7 @@ export const CalendarScreen: React.FC = () => {
                             zIndex: 10
                           }}
                           onClick={() => handleOpenEventDetail(event)}
-                          className={`absolute left-1 right-1 rounded-2xl p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95 text-white`}
+                          className="absolute left-1 right-1 rounded-2xl p-1.5 flex flex-col items-center justify-center shadow-sm overflow-hidden transition-all duration-300 cursor-pointer active:scale-95 text-white"
                         >
                           <Icon size={14} strokeWidth={2.5} />
                         </div>
@@ -428,12 +514,12 @@ export const CalendarScreen: React.FC = () => {
                 >
                   <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
                     <span className={`text-[14px] font-black transition-colors ${isSelected
-                        ? 'text-blue-600'
-                        : isToday
-                          ? 'text-blue-500'
-                          : isCurrentMonth
-                            ? 'text-gray-900 dark:text-gray-100'
-                            : 'text-gray-300 dark:text-gray-600'
+                      ? 'text-blue-600'
+                      : isToday
+                        ? 'text-blue-500'
+                        : isCurrentMonth
+                          ? 'text-gray-900 dark:text-gray-100'
+                          : 'text-gray-300 dark:text-gray-600'
                       }`}>
                       {date.getDate()}
                     </span>
