@@ -491,10 +491,10 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                 return (
                   <div key={friend.id} className="relative">
                     <button onClick={() => isEditing && toggleAttendee(friend)} className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all ${isAttendee ? 'border-gray-900 dark:border-white shadow-lg scale-105' : 'border-transparent opacity-40 grayscale'}`}>
-                      <img src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.name)}&background=FF7566&color=fff`} alt={friend.name} className="w-12 h-12 rounded-full object-cover" />
+                      <img src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.handle)}&background=FF7566&color=fff`} alt={friend.handle} className="w-12 h-12 rounded-full object-cover" />
                     </button>
                     <div className="flex flex-col items-center w-14 overflow-hidden">
-                      <p className="text-[9px] font-black text-center mt-1 text-gray-900 dark:text-white truncate w-full leading-tight">@{friend.handle}</p>
+                      <p className="text-[9px] font-black text-center mt-1 text-gray-900 dark:text-white truncate w-full leading-tight">{friend.handle}</p>
                     </div>
                   </div>
                 );
