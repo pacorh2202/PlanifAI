@@ -22,6 +22,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -119,12 +120,53 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
               )}
             </div>
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => setShowPhotoMenu(true)}
               className="absolute bottom-0 right-0 w-10 h-10 bg-gray-900 dark:bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-900 active:scale-90 transition-transform"
             >
               <Camera size={18} className="text-white dark:text-gray-900" />
             </button>
             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+
+            {/* Photo Action Menu Overlay */}
+            {showPhotoMenu && (
+              <div className="fixed inset-0 z-[100] flex items-end justify-center px-4 pb-10 sm:items-center sm:pb-0">
+                <div
+                  className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"
+                  onClick={() => setShowPhotoMenu(false)}
+                />
+                <div className="relative w-full max-w-sm bg-white dark:bg-gray-900 rounded-[2.5rem] p-4 shadow-2xl animate-slide-up">
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        setShowPhotoMenu(false);
+                        fileInputRef.current?.click();
+                      }}
+                      className="w-full py-5 text-gray-900 dark:text-white font-black text-sm uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 rounded-3xl transition-colors"
+                    >
+                      Cambiar foto
+                    </button>
+                    {profileImage && (
+                      <button
+                        onClick={() => {
+                          setProfileImage(null);
+                          setShowPhotoMenu(false);
+                        }}
+                        className="w-full py-5 text-red-500 font-black text-sm uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 rounded-3xl transition-colors"
+                      >
+                        Suprimir foto actual
+                      </button>
+                    )}
+                    <div className="h-px bg-gray-100 dark:bg-gray-800 mx-8 my-2" />
+                    <button
+                      onClick={() => setShowPhotoMenu(false)}
+                      className="w-full py-5 text-gray-400 font-black text-sm uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 rounded-3xl transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
