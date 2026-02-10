@@ -215,7 +215,7 @@ export const FriendsScreen: React.FC = () => {
                   <div key={friend.id} className="flex flex-col items-center shrink-0 w-[80px]">
                     <div className="relative mb-2">
                       <img
-                        src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.handle || 'User')}&background=FF7566&color=fff`}
+                        src={friend.avatar || '/default-avatar.png'}
                         alt={friend.handle}
                         className="w-16 h-16 rounded-full object-cover bg-gray-50 dark:bg-gray-800 border-2 border-white dark:border-black"
                       />
@@ -260,7 +260,7 @@ export const FriendsScreen: React.FC = () => {
                   return (
                     <div key={user.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800">
                       <img
-                        src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.handle || 'User')}&background=FF7566&color=fff`}
+                        src={user.avatar || '/default-avatar.png'}
                         alt={user.handle}
                         className="w-14 h-14 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
                       />
@@ -311,7 +311,7 @@ export const FriendsScreen: React.FC = () => {
                   <div key={request.id} className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
                     <div className="flex gap-4 mb-6">
                       <img
-                        src={request.avatar_url || request.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(request.handle)}&background=FF7566&color=fff`}
+                        src={request.avatar_url || request.avatar || '/default-avatar.png'}
                         alt={request.handle}
                         className="w-14 h-14 rounded-full object-cover"
                       />
@@ -356,7 +356,7 @@ export const FriendsScreen: React.FC = () => {
                   {myNetwork.map(friend => (
                     <div key={friend.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800 relative">
                       <img
-                        src={friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.handle)}&background=FF7566&color=fff`}
+                        src={friend.avatar || '/default-avatar.png'}
                         alt={friend.handle}
                         className="w-14 h-14 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
                       />
