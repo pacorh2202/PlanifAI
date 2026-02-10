@@ -434,7 +434,7 @@ const ArticleCard: React.FC<{ article: typeof ARTICLES[0]; onOpen: () => void }>
     >
       {article.image && <div className="absolute inset-0 bg-black/20" />}
       {!article.image && <span className="relative z-10 text-5xl mb-3 drop-shadow-sm select-none transform transition-transform group-hover:scale-110">{article.icon}</span>}
-      <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em]">{article.tag}</p>
+      {!article.image && <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em]">{article.tag}</p>}
       {/* Read time badge removed as requested */}
     </div>
     {/* Content */}
@@ -475,7 +475,7 @@ const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void 
 
       <div className="flex flex-col items-center animate-[fadeIn_0.5s_ease-out_0.2s_both]">
         {!article.image && <span className="text-7xl mb-4 drop-shadow-lg">{article.icon}</span>}
-        <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em] mb-2">{article.tag}</p>
+        {!article.image && <p className="text-white/90 font-black text-[10px] uppercase tracking-[0.3em] mb-2">{article.tag}</p>}
 
       </div>
     </div>
