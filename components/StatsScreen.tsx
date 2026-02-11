@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { Flame, TrendingUp, ChevronDown, Lightbulb, X, BookOpen, Clock, ArrowRight, CheckCircle2, Zap, Hourglass, Info } from 'lucide-react';
+import { Flame, TrendingUp, ChevronDown, ChevronUp, Lightbulb, X, BookOpen, Clock, ArrowRight, CheckCircle2, Zap, Hourglass, Info } from 'lucide-react';
 import gradientGreen from '../src/assets/gradient-green.png';
 import gradientPink from '../src/assets/gradient-pink.png';
 
@@ -14,7 +14,7 @@ const subDays = (date: Date, days: number) => {
 };
 const isSameDay = (d1: Date, d2: Date) => d1.toDateString() === d2.toDateString();
 const differenceInMinutes = (d1: Date, d2: Date) => Math.floor((d1.getTime() - d2.getTime()) / 60000);
-const formatDayName = (date: Date) => date.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase().slice(0, 3).replace('.', '');
+const formatDayName = (date: Date, locale: string) => date.toLocaleDateString(locale, { weekday: 'short' }).toUpperCase().slice(0, 3).replace('.', '');
 const eachDayOfInterval = ({ start, end }: { start: Date, end: Date }) => {
   const days = [];
   let current = new Date(start);
@@ -26,69 +26,63 @@ const eachDayOfInterval = ({ start, end }: { start: Date, end: Date }) => {
 };
 
 // ─── Article content data ───────────────────────────────────────────────
-const ARTICLES = [
-  {
-    id: 'pomodoro',
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    image: gradientGreen,
-    icon: '🍅',
-    tag: 'PRODUCTIVIDAD',
-    title: 'Optimiza tu flujo de trabajo con la técnica Pomodoro',
-    desc: 'Descubre cómo pequeños descansos pueden aumentar tu productividad diaria.',
-    readTime: '5 min',
-    body: [
-      {
-        heading: '¿Qué es la técnica Pomodoro?',
-        text: 'La técnica Pomodoro es un método de gestión del tiempo desarrollado por Francesco Cirillo a finales de los años 80. Consiste en dividir el trabajo en intervalos de 25 minutos (llamados "pomodoros"), separados por descansos cortos de 5 minutos.'
-      },
-      {
-        heading: '¿Por qué funciona?',
-        text: 'Nuestro cerebro no está diseñado para mantener la concentración durante horas seguidas. Los intervalos cortos mantienen la mente fresca y reducen la fatiga mental. Estudios demuestran que esta técnica puede aumentar la productividad hasta un 25%.'
-      },
-      {
-        heading: 'Cómo implementarla',
-        text: '1. Elige una tarea específica.\n2. Configura un temporizador a 25 minutos.\n3. Trabaja sin interrupciones hasta que suene.\n4. Toma un descanso de 5 minutos.\n5. Cada 4 pomodoros, toma un descanso largo de 15-30 minutos.'
-      },
-      {
-        heading: 'Consejos avanzados',
-        text: 'Combina la técnica Pomodoro con la regla de las 2 tareas: durante cada pomodoro, enfócate en máximo 2 objetivos. Registra cuántos pomodoros dedicas a cada proyecto para identificar dónde inviertes más energía.'
-      }
-    ]
-  },
-  {
-    id: 'superfoods',
-    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    image: gradientPink,
-    icon: '🧠',
-    tag: 'BIENESTAR',
-    title: 'Superalimentos para mantener el cerebro activo',
-    desc: 'La nutrición es clave para mantener un enfoque sostenido durante el día.',
-    readTime: '4 min',
-    body: [
-      {
-        heading: '¿Qué son los superalimentos?',
-        text: 'Los superalimentos son alimentos ricos en nutrientes que ofrecen beneficios significativos para la salud. Para el cerebro, ciertos alimentos pueden mejorar la memoria, la concentración y la claridad mental.'
-      },
-      {
-        heading: 'Top 5 para tu cerebro',
-        text: '• Arándanos: Ricos en antioxidantes que protegen las neuronas.\n• Nueces: Contienen ácidos grasos omega-3 esenciales.\n• Aguacate: Promueve el flujo sanguíneo cerebral.\n• Chocolate negro: Mejora la concentración y el estado de ánimo.\n• Salmón: Alto en DHA, crucial para la función cerebral.'
-      },
-      {
-        heading: 'Planifica tu alimentación',
-        text: 'Incluye al menos 2-3 superalimentos en tu dieta diaria. Un desayuno con arándanos y nueces, un snack de chocolate negro por la tarde, y salmón para cenar puede transformar tu rendimiento cognitivo.'
-      },
-      {
-        heading: 'Hidratación',
-        text: 'No olvides el agua. La deshidratación, incluso leve, puede reducir la concentración hasta un 30%. Bebe al menos 8 vasos de agua al día y considera infusiones de té verde para un extra de antioxidantes.'
-      }
-    ]
-  }
-];
+// ─── Article content moved inside component for i18n ─────────────────────
 
 // ─── Main Component ─────────────────────────────────────────────────────
 export const StatsScreen: React.FC = () => {
   const { stats, t, language, accentColor, activeTemplate } = useCalendar();
-  const [selectedArticle, setSelectedArticle] = useState<typeof ARTICLES[0] | null>(null);
+
+  const localeStr = language === 'es' ? 'es-ES' : 'en-US';
+
+
+
+  // Re-write ARTICLES variable to be simple array of 4 items mapped from t
+  const localizedArticles = useMemo(() => [
+    {
+      id: 'rest',
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      image: gradientGreen,
+      icon: '💤',
+      tag: t.cat_rest?.toUpperCase() || 'REST',
+      title: t.article_1_title,
+      desc: t.article_1_desc,
+      readTime: '5 min',
+      body: [{ heading: t.article_1_title, text: t.article_1_content }]
+    },
+    {
+      id: 'pomodoro',
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      image: gradientPink,
+      icon: '🍅',
+      tag: t.cat_study?.toUpperCase() || 'PRODUCTIVITY',
+      title: t.article_2_title,
+      desc: t.article_2_desc,
+      readTime: '25 min',
+      body: [{ heading: t.article_2_title, text: t.article_2_content }]
+    },
+    {
+      id: 'mindfulness',
+      gradient: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+      icon: '🧘',
+      tag: t.cat_health?.toUpperCase() || 'WELLNESS',
+      title: t.article_3_title,
+      desc: t.article_3_desc,
+      readTime: '5 min',
+      body: [{ heading: t.article_3_title, text: t.article_3_content }]
+    },
+    {
+      id: 'digital',
+      gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+      icon: '💻',
+      tag: 'ORGANIZATION',
+      title: t.article_4_title,
+      desc: t.article_4_desc,
+      readTime: '10 min',
+      body: [{ heading: t.article_4_title, text: t.article_4_content }]
+    }
+  ], [t]);
+
+  const [selectedArticle, setSelectedArticle] = useState<typeof localizedArticles[0] | null>(null);
   const [showStressInfo, setShowStressInfo] = useState(false);
 
   // Map habits to their category colors from the active template
@@ -128,7 +122,7 @@ export const StatsScreen: React.FC = () => {
       // Count completed tasks
       const count = dayEvents.filter(e => e.status === 'completed').length;
       return {
-        day: formatDayName(day), // LUN, MAR...
+        day: formatDayName(day, localeStr), // LUN, MAR...
         value: count,
         fullDate: day
       };
@@ -184,7 +178,7 @@ export const StatsScreen: React.FC = () => {
       >
         <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20">
           <div className="w-10"></div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Estadísticas</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.stats_title}</h1>
           <div className="w-10"></div>
         </header>
 
@@ -193,13 +187,13 @@ export const StatsScreen: React.FC = () => {
           <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-1">RACHA ACTUAL</p>
+                <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-1">{t.current_streak.toUpperCase()}</p>
                 <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter">
-                  {streakProgress} <span className="text-2xl font-bold ml-1">días</span>
+                  {streakProgress} <span className="text-2xl font-bold ml-1">{t.days_label}</span>
                 </h2>
                 <div className="flex items-center gap-1 mt-2 text-[#078809] font-bold text-xs">
                   <TrendingUp size={14} />
-                  <span>+2% vs. mes anterior</span>
+                  <span>+2% {t.stats_vs_month}</span>
                 </div>
               </div>
               <div className="relative w-24 h-24 flex items-center justify-center">
@@ -221,7 +215,7 @@ export const StatsScreen: React.FC = () => {
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                <span className="text-gray-400">Progreso de racha</span>
+                <span className="text-gray-400">{t.streak_progress}</span>
                 <span className="text-gray-600 dark:text-gray-300">{streakProgress}/{streakGoal}</span>
               </div>
               <div className="h-2.5 w-full bg-gray-50 dark:bg-gray-800 rounded-full overflow-hidden p-[1px]">
@@ -246,7 +240,7 @@ export const StatsScreen: React.FC = () => {
                 <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                   <CheckCircle2 size={16} strokeWidth={3} />
                 </div>
-                <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em]">TASA DE FINALIZACIÓN</p>
+                <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em]">{t.completion_rate.toUpperCase()}</p>
               </div>
 
               <div className="flex items-end justify-between">
@@ -255,12 +249,12 @@ export const StatsScreen: React.FC = () => {
                     {stats?.completion_rate || kpiStats.completionRate}%
                   </h2>
                   <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-wide">
-                    Tareas completadas vs planificadas
+                    {t.stats_efficiency_desc}
                   </p>
                 </div>
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-100 dark:border-emerald-800/30">
                   <TrendingUp size={12} className="text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">+{kpiStats.efficiencyGain}%</span>
+                  <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">+{kpiStats.efficiencyGain}% {t.efficiency_improvement}</span>
                 </div>
               </div>
             </section>
@@ -269,8 +263,8 @@ export const StatsScreen: React.FC = () => {
             <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 h-80 flex flex-col">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Actividades</h3>
-                  <p className="text-xs text-gray-400 font-medium">Últimos 7 días</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{t.activities}</h3>
+                  <p className="text-xs text-gray-400 font-medium">{t.stats_last_7}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-black text-gray-900 dark:text-white">{kpiStats.totalCompletedLast7}</p>
@@ -307,7 +301,7 @@ export const StatsScreen: React.FC = () => {
 
             {/* 3. Distribution Donut */}
             <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
-              <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6">DISTRIBUCIÓN SEMANAL</p>
+              <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6">{t.weekly_distribution.toUpperCase()}</p>
 
               <div className="flex items-center gap-6">
                 <div className="w-32 h-32 relative shrink-0">
@@ -357,7 +351,7 @@ export const StatsScreen: React.FC = () => {
               <StatSmallCard
                 icon={<Hourglass size={18} className="text-rose-500" />}
                 bgIcon="bg-rose-100"
-                label="TIEMPO AHORRADO"
+                label={t.time_saved.toUpperCase()}
                 value={
                   // Improved Time Saved Logic:
                   // 1. If 0, show minimal value if there's activity, or "0 min"
@@ -370,13 +364,13 @@ export const StatsScreen: React.FC = () => {
                     return `${(minutes / 60).toFixed(1)} h`;
                   })()
                 }
-                subtext="Semanales"
+                subtext={t.stats_time_saved_desc}
                 tooltip="Calculado en base al uso de funciones rápidas (voz, IA, automatizaciones) vs. gestión manual."
               />
               <StatSmallCard
                 icon={<Zap size={18} className="text-sky-500" />}
                 bgIcon="bg-sky-100"
-                label="EFICIENCIA" // Changed from "MEJORA" to generic title
+                label={t.efficiency.toUpperCase()} // Changed from "MEJORA" to generic title
                 value={
                   // Efficiency is now a SCORE (0-100%), not a diff
                   // We use Completion Rate as the base "Score" or calculate a specific one
@@ -387,8 +381,8 @@ export const StatsScreen: React.FC = () => {
                   // +% if improvement
                   // "Estable" if <= 0 change (no negative numbers)
                   kpiStats.efficiencyGain > 0
-                    ? `+${kpiStats.efficiencyGain}% mejora`
-                    : "Estable"
+                    ? `+${kpiStats.efficiencyGain}% ${t.efficiency_improvement}`
+                    : t.efficiency_stable
                 }
                 tooltip="Tu puntuación semanal de organización y cumplimiento de tareas."
                 subtextClassName={kpiStats.efficiencyGain > 0 ? "text-emerald-500" : "text-gray-400"}
@@ -398,7 +392,7 @@ export const StatsScreen: React.FC = () => {
 
           {/* Mejorar Hábitos – IMPROVED: category-specific colors */}
           <section className="mt-2">
-            <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-4 ml-2">MEJORAR HÁBITOS</p>
+            <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-4 ml-2">{t.improve_habits}</p>
             <div className="space-y-3">
               <HabitIndicator label="Hacer más ejercicio" current={12} total={30} color={categoryColors.exercise} />
               <HabitIndicator label="Levantarse pronto" current={22} total={30} color={categoryColors.wakeUp} />
@@ -408,37 +402,48 @@ export const StatsScreen: React.FC = () => {
 
           {/* Stress Load – REDESIGNED */}
           <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 mt-4">
-            <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-center">NIVEL DE ESTRÉS</p>
+            <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-center">{t.stress_level}</p>
             <div className="relative flex justify-center mb-4">
               <StressGauge value={kpiStats.stressLevel} />
             </div>
             <div className="text-center mt-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-4">Nivel de equilibrio emocional basado en tus actividades</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-4">{t.stress_subtitle}</p>
 
-              {/* Minimalist Expand Trigger */}
-              <button
-                onClick={() => setShowStressInfo(!showStressInfo)}
-                className="flex flex-col items-center justify-center gap-1 w-full py-2 group focus:outline-none"
-              >
-                <div className={`w-8 h-[2px] bg-gray-200 dark:bg-gray-700 rounded-full transition-all duration-300 ${showStressInfo ? 'rotate-45 translate-y-[3px] w-4' : ''}`} />
-                <div className={`w-8 h-[2px] bg-gray-200 dark:bg-gray-700 rounded-full transition-all duration-300 ${showStressInfo ? '-rotate-45 -translate-y-[3px] w-4' : ''}`} />
-              </button>
+              {/* Minimalist Expand Trigger (Only visible when collapsed) */}
+              {!showStressInfo && (
+                <button
+                  onClick={() => setShowStressInfo(true)}
+                  className="flex flex-col items-center justify-center w-full py-2 group focus:outline-none animate-fade-in"
+                >
+                  <ChevronDown className="text-gray-300 dark:text-gray-600 animate-bounce" size={20} strokeWidth={2.5} />
+                </button>
+              )}
 
               {/* Expandable Content */}
               <div
-                className={`overflow-hidden transition-all duration-500 ease-in-out ${showStressInfo ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}
+                className={`overflow-hidden transition-all duration-500 ease-in-out ${showStressInfo ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}
               >
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 text-left border border-gray-100 dark:border-gray-800">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 text-left border border-gray-100 dark:border-gray-800 relative">
                   <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
                     <Info size={14} className="text-gray-400" />
-                    ¿Cómo se calcula?
+                    {t.stress_info_title}
                   </h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">
-                    Calculamos tu nivel de estrés basándonos en el equilibrio entre tus tareas de <span className="font-semibold text-gray-700 dark:text-gray-300">Trabajo/Estudio</span> y tus momentos de <span className="font-semibold text-gray-700 dark:text-gray-300">Salud/Ocio</span>.
+                    {t.stress_info_desc}
                   </p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                    Tip: Intenta intercalar más pausas activas o tiempo personal entre tus bloques de trabajo intenso.
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-4">
+                    {t.stress_tip_label} {t.stress_tip_text}
                   </p>
+
+                  {/* Collapse Trigger (Bottom of content) */}
+                  <div className="flex justify-center pt-2 border-t border-gray-200 dark:border-gray-700/50">
+                    <button
+                      onClick={() => setShowStressInfo(false)}
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    >
+                      <ChevronUp className="text-gray-300 dark:text-gray-600" size={20} strokeWidth={2.5} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -446,9 +451,9 @@ export const StatsScreen: React.FC = () => {
 
           {/* Recommended Articles – REDESIGNED with gradients */}
           <section className="mt-4">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 ml-2">Artículos recomendados</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 ml-2">{t.recommended_articles}</h3>
             <div className="space-y-6">
-              {ARTICLES.map(article => (
+              {localizedArticles.map(article => (
                 <ArticleCard
                   key={article.id}
                   article={article}
@@ -464,9 +469,9 @@ export const StatsScreen: React.FC = () => {
               <Lightbulb size={28} className="fill-white/20" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 dark:text-white text-base">Tip de PlanifAI</h4>
+              <h4 className="font-bold text-gray-900 dark:text-white text-base">{t.planifai_tip}</h4>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                Tu concentración es mayor los miércoles por la mañana. ¿Agendamos tus tareas críticas ahí?
+                {t.tip_desc}
               </p>
             </div>
           </section>
@@ -510,6 +515,7 @@ const StatSmallCard: React.FC<{
 
 // ─── Habit Indicator (NOW with per-category color) ──────────────────────
 const HabitIndicator: React.FC<{ label: string; current: number; total: number; color: string }> = ({ label, current, total, color }) => {
+  const { t } = useCalendar();
   const pct = Math.round((current / total) * 100);
   return (
     <div className="bg-white dark:bg-gray-900 rounded-[1.5rem] p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-3">
@@ -530,7 +536,7 @@ const HabitIndicator: React.FC<{ label: string; current: number; total: number; 
           ></div>
         </div>
         <span className="text-[10px] font-black whitespace-nowrap" style={{ color }}>
-          {current}/{total} días
+          {current}/{total} {t.days_label}
         </span>
       </div>
     </div>
@@ -539,6 +545,7 @@ const HabitIndicator: React.FC<{ label: string; current: number; total: number; 
 
 // ─── Stress Gauge (REDESIGNED – thicker, better labels, needle, value) ──
 const StressGauge: React.FC<{ value: number }> = ({ value }) => {
+  const { t } = useCalendar(); // Needed for Low/High labels if we interpolate them (but labels are svg text, so we can just pass them as props or use t here if safe)
   // Clamp value 0-100
   const clamped = Math.max(0, Math.min(100, value));
 
@@ -547,9 +554,8 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
   // Convert to radians for calculation if needed, but we use rotate transform
 
   // Label for stress level
-  let stressLabel = 'Óptimo';
-  if (clamped > 70) { stressLabel = 'Muy estresado'; }
-  else if (clamped > 40) { stressLabel = 'Regular'; }
+  let stressLabel = t && t.stress_low ? t.stress_low : 'Low';
+  /* Logic for label removed as it is not displayed */
 
   return (
     <div className="relative w-full max-w-[18rem] aspect-[2/1] flex flex-col items-center mb-6">
@@ -622,8 +628,8 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
         <circle cx="100" cy="90" r="4" fill="#1F2937" />
 
         {/* Gauge ticks (adjusted downwards) */}
-        <text x="20" y="125" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">Bajo</text>
-        <text x="180" y="125" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">Alto</text>
+        <text x="20" y="125" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">{t?.stress_low || 'LOW'}</text>
+        <text x="180" y="125" textAnchor="middle" className="text-[10px] fill-gray-400 font-bold uppercase tracking-wider">{t?.stress_high || 'HIGH'}</text>
       </svg>
 
       {/* Center Value removed completely as requested */}
@@ -632,7 +638,7 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
 };
 
 // ─── Article Card (REDESIGNED – CSS gradients, no images) ───────────────
-const ArticleCard: React.FC<{ article: typeof ARTICLES[0]; onOpen: () => void }> = ({ article, onOpen }) => (
+const ArticleCard: React.FC<{ article: any; onOpen: () => void }> = ({ article, onOpen }) => (
   <button
     onClick={onOpen}
     className="w-full text-left bg-white dark:bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md active:scale-[0.98] transition-all duration-200"
@@ -662,7 +668,7 @@ const ArticleCard: React.FC<{ article: typeof ARTICLES[0]; onOpen: () => void }>
 );
 
 // ─── Apple-Style Article Modal ──────────────────────────────────────────
-const ArticleModal: React.FC<{ article: typeof ARTICLES[0]; onClose: () => void }> = ({ article, onClose }) => (
+const ArticleModal: React.FC<{ article: any; onClose: () => void }> = ({ article, onClose }) => (
   <div
     className="fixed inset-0 z-[200] bg-white dark:bg-gray-950 animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)] overflow-y-auto"
     style={{

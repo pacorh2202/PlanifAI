@@ -402,7 +402,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                   >
                     <Repeat size={18} />
                   </div>
-                  <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em]">{language === 'es' ? 'Tarea recurrente' : 'Recurring Task'}</h2>
+                  <h2 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-[0.25em]">{t.event_recurring_title}</h2>
                 </div>
                 <div
                   onClick={() => setIsRecurring(!isRecurring)}
@@ -416,7 +416,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
               {isRecurring && (
                 <div className="animate-fade-in">
                   <p className="text-xs text-gray-400 mb-4 font-medium ml-1">
-                    {language === 'es' ? 'Selecciona los días (solo este mes):' : 'Select days (this month only):'}
+                    {t.event_select_days}
                   </p>
                   <div className="flex justify-between gap-1">
                     {[1, 2, 3, 4, 5, 6, 0].map((dayIndex) => {

@@ -50,7 +50,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
       if (formData.handle !== profile?.handle) {
         const handleRegex = /^[a-z0-9_]{3,20}$/;
         if (!handleRegex.test(formData.handle.toLowerCase())) {
-          throw new Error('El ID de usuario debe tener entre 3 y 20 caracteres (letras, números o guiones bajos)');
+          throw new Error(t.handle_error);
         }
         profileUpdates.handle = formData.handle.toLowerCase();
       }
@@ -65,17 +65,17 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
       // 3. Update Password if provided
       if (formData.password) {
         if (formData.password.length < 6) {
-          throw new Error('La contraseña debe tener al menos 6 caracteres');
+          throw new Error(t.password_error);
         }
         const { error: passError } = await updatePassword(formData.password);
         if (passError) throw passError;
         setFormData(prev => ({ ...prev, password: '' }));
       }
 
-      showToast('success', 'Perfil actualizado correctamente');
+      showToast('success', t.update_success);
     } catch (error: any) {
       console.error(error);
-      showToast('error', error.message || 'Error al actualizar el perfil');
+      showToast('error', error.message || t.update_error);
     } finally {
       setLoading(false);
     }
@@ -101,7 +101,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
         <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
           <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
         </button>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Configuración</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.settings_title}</h1>
         <div className="w-10"></div>
       </header>
 
@@ -143,7 +143,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                       }}
                       className="w-full py-5 text-gray-900 dark:text-white font-black text-sm uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 rounded-3xl transition-colors"
                     >
-                      Cambiar foto
+                      {t.change_photo}
                     </button>
                     {profileImage && (
                       <button
@@ -153,7 +153,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                         }}
                         className="w-full py-5 text-red-500 font-black text-sm uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 rounded-3xl transition-colors"
                       >
-                        Suprimir foto actual
+                        {t.remove_photo}
                       </button>
                     )}
                     <div className="h-px bg-gray-100 dark:bg-gray-800 mx-8 my-2" />
@@ -161,7 +161,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                       onClick={() => setShowPhotoMenu(false)}
                       className="w-full py-5 text-gray-400 font-black text-sm uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800 rounded-3xl transition-colors"
                     >
-                      Cancelar
+                      {t.account_cancel}
                     </button>
                   </div>
                 </div>
@@ -184,26 +184,26 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
         {/* Fields */}
         <div className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-4">Nombre</label>
+            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-4">{t.name_label}</label>
             <div className="relative">
               <input
                 type="text"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Tu nombre"
+                placeholder={t.placeholder_name}
                 className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-gray-100 dark:focus:border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900 dark:text-white transition-all focus:ring-0"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-4">Nombre de usuario</label>
+            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-4">{t.username_label}</label>
             <div className="relative">
               <input
                 type="text"
                 value={formData.handle}
                 onChange={e => setFormData({ ...formData, handle: e.target.value })}
-                placeholder="nombre_usuario"
+                placeholder={t.placeholder_username}
                 className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-gray-100 dark:focus:border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900 dark:text-white transition-all focus:ring-0"
                 style={{ paddingLeft: formData.handle.length > 0 ? '2.8rem' : '1.5rem' }}
               />
@@ -212,7 +212,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-4">Correo electrónico</label>
+            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-4">{t.email_label}</label>
             <input
               type="email"
               value={formData.email}
@@ -220,17 +220,17 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
               placeholder="correo@ejemplo.com"
               className="w-full bg-gray-100 dark:bg-gray-900 border-2 border-transparent rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-500 dark:text-gray-500 cursor-not-allowed opacity-70"
             />
-            <p className="text-[10px] text-gray-400 px-4">El correo electrónico no se puede cambiar.</p>
+            <p className="text-[10px] text-gray-400 px-4">{t.email_no_change}</p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-4">Contraseña</label>
+            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-4">{t.account_pass}</label>
             <div className="relative isolate">
               <input
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Nueva contraseña (mín. 6 caracteres)"
+                placeholder={t.new_password_placeholder}
                 className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-gray-100 dark:focus:border-gray-700 rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-900 dark:text-white transition-all focus:ring-0 pr-12"
               />
               <button
@@ -250,7 +250,7 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
         </div>
 
         <p className="text-[11px] text-center text-gray-400 font-medium px-4 leading-relaxed">
-          Tu perfil ayuda a que otras personas te reconozcan. Tu nombre y nombre de usuario también se usan en PlanifAI.
+          {t.profile_help}
         </p>
 
         {/* Buttons */}
@@ -261,21 +261,21 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
             className="w-full py-5 rounded-[2rem] text-white font-black text-sm uppercase tracking-[0.15em] shadow-xl active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             style={{ backgroundColor: accentColor }}
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : 'Guardar perfil'}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : t.save_profile}
           </button>
 
           <button
             onClick={onBack}
             className="w-full py-4 text-gray-500 dark:text-gray-400 font-black text-xs uppercase tracking-widest active:scale-95 transition-all"
           >
-            Cancelar
+            {t.account_cancel}
           </button>
 
           <button
             onClick={signOut}
             className="w-full py-4 text-red-500 dark:text-red-400 font-black text-xs uppercase tracking-widest active:scale-95 transition-all"
           >
-            Cerrar sesión
+            {t.logout}
           </button>
         </div>
       </main>
