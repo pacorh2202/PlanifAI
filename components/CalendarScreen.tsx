@@ -5,6 +5,7 @@ import { MapPin, ChevronLeft, ChevronRight, Check, Plus } from 'lucide-react';
 import { CalendarEvent, PlannerTemplate } from '../types';
 import { EventDetailModal } from './EventDetailModal';
 import { ICON_MAP } from '../constants';
+import { getLocalizedCategoryLabel } from '../src/utils/translationHelpers';
 
 type ViewMode = 'day' | 'week' | 'month';
 
@@ -123,7 +124,7 @@ export const CalendarScreen: React.FC = () => {
       {activeTemplate.categories.map((cat, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: cat.color }}></div>
-          <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{cat.label}</span>
+          <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{getLocalizedCategoryLabel(cat.label, language)}</span>
         </div>
       ))}
     </div>

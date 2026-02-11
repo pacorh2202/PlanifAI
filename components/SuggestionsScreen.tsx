@@ -9,7 +9,7 @@ interface SuggestionsScreenProps {
 }
 
 export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) => {
-    const { accentColor } = useCalendar();
+    const { accentColor, language, t } = useCalendar();
     const { user } = useAuth();
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -40,7 +40,8 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
             setMessage('');
         } catch (error) {
             console.error('Error sending suggestion:', error);
-            alert('Error al enviar sugerencia. Por favor intenta de nuevo.');
+            console.error('Error sending suggestion:', error);
+            alert(t.suggestions_error || 'Error sending suggestion');
         } finally {
             setLoading(false);
         }
@@ -53,16 +54,16 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                     <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
                         <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
                     </button>
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight text-center flex-1 pr-6">Sugerencias</h1>
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight text-center flex-1 pr-6">{t.suggestions_title || 'Suggestions'}</h1>
                 </header>
 
                 <main className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
                     <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-6 text-green-500">
                         <CheckCircle2 size={40} />
                     </div>
-                    <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">¡Gracias por tu ayuda!</h2>
+                    <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">{t.suggestions_thanks_title || 'Thanks!'}</h2>
                     <p className="text-gray-500 dark:text-gray-400 font-medium leading-relaxed max-w-xs">
-                        Valoramos mucho tu input y trataremos de mejorar lo máximo posible.
+                        {t.suggestions_thanks_desc}
                     </p>
 
                     <button
@@ -70,7 +71,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                         className="mt-12 px-8 py-3 rounded-2xl font-bold text-white shadow-lg active:scale-95 transition-transform"
                         style={{ backgroundColor: accentColor }}
                     >
-                        Volver al menú
+                        {t.suggestions_back || 'Back to menu'}
                     </button>
                 </main>
             </div>
@@ -83,7 +84,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                 <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
                     <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
                 </button>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight text-center flex-1 pr-6">Sugerencias</h1>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight text-center flex-1 pr-6">{t.suggestions_title || 'Suggestions'}</h1>
             </header>
 
             <main className="flex-1 flex flex-col px-6 pb-6 overflow-hidden">
@@ -92,9 +93,9 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                     <div className="w-16 h-16 bg-white dark:bg-gray-900 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-100 dark:border-gray-800" style={{ color: accentColor }}>
                         <MessageSquare size={28} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2 tracking-tight">¡Ayúdanos a mejorar!</h2>
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2 tracking-tight">{t.suggestions_help_title || 'Help us improve!'}</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed px-4">
-                        ¿Tienes alguna idea o has encontrado un error? Escribe tu sugerencia abajo y la revisaremos personalmente.
+                        {t.suggestions_help_desc}
                     </p>
                 </div>
 
@@ -103,7 +104,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                     <textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Escribe tu sugerencia aquí..."
+                        placeholder={t.suggestions_placeholder || 'Write your suggestion here...'}
                         className="w-full flex-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[2rem] p-6 text-base font-medium focus:ring-2 focus:ring-offset-2 focus:outline-none resize-none placeholder:text-gray-400 dark:text-white shadow-sm transition-all"
                         style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
                     />
@@ -117,12 +118,12 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
                         {loading ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 size={24} className="animate-spin" />
-                                <span>Enviando...</span>
+                                <span>{t.suggestions_sending || 'Sending...'}</span>
                             </div>
                         ) : (
                             <div className="flex items-center gap-2">
                                 <Send size={24} />
-                                <span>Enviar Sugerencia</span>
+                                <span>{t.suggestions_send || 'Send'}</span>
                             </div>
                         )}
                     </button>

@@ -146,8 +146,7 @@ export const translations = {
     cat_leisure: "Ocio",
     cat_personal: "Familia",
     cat_food: "Comida",
-    cat_rest: "Descanso",
-    cat_study: "Estudio",
+    cat_work: "Trabajo",
     category_label: "Categoría",
     no_friends_yet: "No tienes amigos añadidos todavía.",
     notif_now: "Ahora",
@@ -213,7 +212,17 @@ export const translations = {
     article_4_desc: "Recupera tu foco limpiando tu entorno virtual.",
     article_4_content: "En el mundo físico, un escritorio desordenado genera estrés visual. En el mundo digital, el desorden consume RAM mental. Cada notificación, icono o pestaña abierta compite por tu limitada atención cognitiva.\n\nAdopta el sistema de 'Bandeja de Entrada Cero' no solo para el correo, sino para tu escritorio y archivos. Crea una estructura de carpetas basada en áreas de responsabilidad (ej. Trabajo, Finanzas, Salud) y no en tipos de archivo.\n\nRealiza una 'limpieza digital' semanal: vacía la carpeta de descargas, elimina apps que no usas y cancela suscripciones a newsletters que no lees. Un entorno digital minimalista reduce la fricción para empezar a trabajar y te da una sensación inmediata de control y calma.",
     placeholder_name: "Tu nombre",
-    placeholder_username: "nombre_usuario"
+    placeholder_username: "nombre_usuario",
+    suggestions_title: "Sugerencias",
+    suggestions_thanks_title: "¡Gracias por tu ayuda!",
+    suggestions_thanks_desc: "Valoramos mucho tu input y trataremos de mejorar lo máximo posible.",
+    suggestions_back: "Volver al menú",
+    suggestions_help_title: "¡Ayúdanos a mejorar!",
+    suggestions_help_desc: "¿Tienes alguna idea o has encontrado un error? Escribe tu sugerencia abajo y la revisaremos personalmente.",
+    suggestions_placeholder: "Escribe tu sugerencia aquí...",
+    suggestions_send: "Enviar Sugerencia",
+    suggestions_sending: "Enviando...",
+    suggestions_error: "Error al enviar sugerencia. Por favor intenta de nuevo."
   },
   en: {
     app_name: "PlanifAI",
@@ -361,8 +370,7 @@ export const translations = {
     cat_leisure: "Leisure",
     cat_personal: "Family",
     cat_food: "Food",
-    cat_rest: "Rest",
-    cat_study: "Study",
+    cat_work: "Work",
     category_label: "Category",
     no_friends_yet: "You have no friends added yet.",
     notif_now: "Now",
@@ -428,7 +436,17 @@ export const translations = {
     article_4_desc: "Reclaim your focus by cleaning your virtual environment.",
     article_4_content: "In the physical world, a messy desk creates visual stress. In the digital world, clutter consumes mental RAM. Every notification, icon, or open tab competes for your limited cognitive attention.\n\nAdopt the 'Inbox Zero' system not just for email, but for your desktop and files. Create a folder structure based on areas of responsibility (e.g., Work, Finance, Health) rather than file types.\n\nPerform a weekly 'digital cleanup': empty the downloads folder, delete unused apps, and unsubscribe from newsletters you don't read. A minimalist digital environment reduces friction to starting work and gives you an immediate sense of control and calm.",
     placeholder_name: "Your name",
-    placeholder_username: "username"
+    placeholder_username: "username",
+    suggestions_title: "Suggestions",
+    suggestions_thanks_title: "Thanks for your help!",
+    suggestions_thanks_desc: "We highly value your input and will try to improve as much as possible.",
+    suggestions_back: "Back to menu",
+    suggestions_help_title: "Help us improve!",
+    suggestions_help_desc: "Have an idea or found a bug? Write your suggestion below and we will review it personally.",
+    suggestions_placeholder: "Write your suggestion here...",
+    suggestions_send: "Send Suggestion",
+    suggestions_sending: "Sending...",
+    suggestions_error: "Error sending suggestion. Please try again."
   }
 };
 
