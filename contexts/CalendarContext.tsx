@@ -476,7 +476,9 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             descriptionPoints,
             location: action.eventData.location || null,
             allDay: action.eventData.allDay || false,
-            attendees: finalAttendees // Use the potentially modified attendees list
+            attendees: finalAttendees, // Use the potentially modified attendees list
+            creationSource: action.eventData.creationSource || 'manual',
+            emotionalImpact: action.eventData.emotionalImpact || 'neutral'
           };
 
           // 6. Social Integration: Map named attendees to user IDs (con feedback)
@@ -550,11 +552,19 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             end: action.eventData.end,
             status: 'moved'
           });
+          // Log reorganization activity if it's a move
+          if (user) {
+            calendarApi.logActivity(user.id, 'reorganized', { eventId: action.eventId, action: 'move' });
+          }
           return "Evento movido correctamente.";
 
         case 'delete':
           if (!action.eventId) return "Error: ID de evento requerido.";
           await deleteEvent(action.eventId);
+          // Log reorganization activity if it's a delete (often part of cleanup)
+          if (user) {
+            calendarApi.logActivity(user.id, 'reorganized', { eventId: action.eventId, action: 'delete' });
+          }
           return "Evento eliminado correctamente.";
 
         default:

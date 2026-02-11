@@ -24,6 +24,8 @@ function dbEventToFrontend(dbEvent: DBCalendarEvent): any {
         location: dbEvent.location || undefined,
         attendees: dbEvent.attendees || undefined,
         color: dbEvent.color || undefined,
+        creationSource: dbEvent.creation_source || 'manual',
+        emotionalImpact: dbEvent.emotional_impact || 'neutral',
     };
 }
 
@@ -33,7 +35,7 @@ function dbEventToFrontend(dbEvent: DBCalendarEvent): any {
 function frontendEventToDB(
     event: any,
     userId: string
-): NewCalendarEvent | UpdateCalendarEvent {
+): any { // Use any or a custom intermediate type to avoid strict New/Update mismatch during creation
     return {
         user_id: userId,
         title: event.title,
@@ -47,6 +49,8 @@ function frontendEventToDB(
         location: event.location || null,
         attendees: event.attendees || null,
         color: event.color || null,
+        creation_source: event.creationSource || 'manual',
+        emotional_impact: event.emotionalImpact || 'neutral',
     };
 }
 
@@ -138,6 +142,8 @@ export async function updateEvent(eventId: string, updates: any, userId: string)
     if (updates.location !== undefined) dbUpdates.location = updates.location;
     if (updates.attendees !== undefined) dbUpdates.attendees = updates.attendees;
     if (updates.color !== undefined) dbUpdates.color = updates.color;
+    if (updates.creationSource !== undefined) dbUpdates.creation_source = updates.creationSource;
+    if (updates.emotionalImpact !== undefined) dbUpdates.emotional_impact = updates.emotionalImpact;
 
     const { data, error } = await supabase
         .from('calendar_events')
@@ -297,5 +303,22 @@ export async function migrateLocalStorageToSupabase(userId: string) {
     } catch (error) {
         console.error('Migration failed:', error);
         throw error;
+    }
+}
+
+/**
+ * Log a user activity (for Time Saved metric)
+ */
+export async function logActivity(userId: string, activityType: string, metadata: any = {}) {
+    const { error } = await supabase
+        .from('user_activity_logs')
+        .insert({
+            user_id: userId,
+            activity_type: activityType,
+            metadata
+        });
+
+    if (error) {
+        console.error('Error logging activity:', error);
     }
 }

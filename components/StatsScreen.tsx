@@ -159,18 +159,14 @@ export const StatsScreen: React.FC = () => {
                 type === 'leisure' ? '#FFD2CC' : '#A7C7E7' // default
     })).sort((a, b) => b.value - a.value); // Sort by biggest
 
-    // 4. Time Saved & Efficiency
-    // Estimate: You verify/complete tasks 15% faster using the app (mock logic or based on 'moved' vs 'completed')
-    const timeSavedHours = (totalDurationMinutes * 0.15 / 60).toFixed(1);
-    const efficiencyGain = 15; // static or calculated
-
     return {
       completionRate,
       totalCompletedLast7: completed,
       activityData,
       distributionCharData,
-      timeSavedHours,
-      efficiencyGain
+      timeSavedHours: stats?.time_saved_minutes ? (stats.time_saved_minutes / 60).toFixed(1) : "0.0",
+      efficiencyGain: stats?.efficiency_improvement || 0,
+      stressLevel: stats?.stress_level || 50
     };
 
   }, [events]);
@@ -254,7 +250,7 @@ export const StatsScreen: React.FC = () => {
               <div className="flex items-end justify-between">
                 <div>
                   <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">
-                    {kpiStats.completionRate}%
+                    {stats?.completion_rate || kpiStats.completionRate}%
                   </h2>
                   <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-wide">
                     Tareas completadas vs planificadas
@@ -262,7 +258,7 @@ export const StatsScreen: React.FC = () => {
                 </div>
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-100 dark:border-emerald-800/30">
                   <TrendingUp size={12} className="text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">+5%</span>
+                  <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">+{kpiStats.efficiencyGain}%</span>
                 </div>
               </div>
             </section>
@@ -387,10 +383,10 @@ export const StatsScreen: React.FC = () => {
           <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 mt-4">
             <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-center">NIVEL DE ESTRÉS</p>
             <div className="relative flex justify-center mb-4">
-              <StressGauge value={65} />
+              <StressGauge value={kpiStats.stressLevel} />
             </div>
             <div className="text-center mt-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Tu nivel de estrés ha bajado un <span className="font-bold text-emerald-500">15%</span> esta semana</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Nivel de equilibrio emocional basado en tus actividades</p>
             </div>
           </section>
 

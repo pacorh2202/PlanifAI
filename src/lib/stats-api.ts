@@ -13,6 +13,10 @@ export interface UserStats {
     distribution: Record<string, number>;
     total_tasks: number;
     pending_tasks: number;
+    // NEW METRICS
+    time_saved_minutes: number;
+    efficiency_improvement: number;
+    stress_level: number;
 }
 
 /**
@@ -21,7 +25,7 @@ export interface UserStats {
 export async function fetchUserStats(userId: string): Promise<UserStats> {
     try {
         const { data, error } = await supabase
-            .rpc('get_user_stats', { p_user_id: userId });
+            .rpc('get_user_stats_v2', { p_user_id: userId });
 
         if (error) {
             console.error('Error fetching user stats:', error);
@@ -44,9 +48,12 @@ export async function fetchUserStats(userId: string): Promise<UserStats> {
             completion_rate: Number(stats.completion_rate) || 0,
             avg_daily: Number(stats.avg_daily) || 0,
             favorite_category: stats.favorite_category || 'N/A',
-            distribution: stats.distribution || {},
+            distribution: (stats.distribution as Record<string, number>) || {},
             total_tasks: Number(stats.total_tasks) || 0,
-            pending_tasks: Number(stats.pending_tasks) || 0
+            pending_tasks: Number(stats.pending_tasks) || 0,
+            time_saved_minutes: Number(stats.time_saved_minutes) || 0,
+            efficiency_improvement: Number(stats.efficiency_improvement) || 0,
+            stress_level: Number(stats.stress_level) || 50
         };
     } catch (error) {
         console.error('Exception fetching user stats:', error);
@@ -69,6 +76,9 @@ function getDefaultStats(): UserStats {
         favorite_category: 'N/A',
         distribution: {},
         total_tasks: 0,
-        pending_tasks: 0
+        pending_tasks: 0,
+        time_saved_minutes: 0,
+        efficiency_improvement: 0,
+        stress_level: 50
     };
 }

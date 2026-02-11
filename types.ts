@@ -15,6 +15,8 @@ export interface CalendarEvent {
   location?: string;
   attendees?: string[];
   color?: string; // Color personalizado opcional para esta actividad específica
+  creationSource?: 'manual' | 'voice' | 'ai_suggestion' | 'automation';
+  emotionalImpact?: 'stress' | 'relief' | 'neutral';
 }
 
 export interface CategoryStyle {
@@ -42,6 +44,9 @@ export interface KPIStats {
   moved: number;
   streak: number;
   distribution: Record<EventType, number>;
+  timeSavedMinutes: number;
+  efficiencyImprovement: number;
+  stressLevel: number;
 }
 
 export type ChatRole = 'user' | 'model';
