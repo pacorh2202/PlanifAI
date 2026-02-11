@@ -232,7 +232,6 @@ export const CalendarScreen: React.FC = () => {
 
         <div className="mt-8 bg-white dark:bg-gray-950 rounded-t-[3.5rem] flex-1 border-t border-gray-100 dark:border-gray-900 overflow-y-auto no-scrollbar">
           <div className="p-8 pb-80 relative">
-            <div className="absolute left-[5.4rem] top-10 bottom-0 w-px bg-gray-100 dark:bg-gray-800 opacity-50"></div>
             <div className="space-y-6">
               {dayEvents.length === 0 ? (
                 <div className="text-center py-20 text-gray-300 font-bold uppercase tracking-widest text-[10px]">{t.no_events}</div>

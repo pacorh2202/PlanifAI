@@ -18,7 +18,7 @@ interface FriendWithStatus {
 }
 
 export const FriendsScreen: React.FC = () => {
-  const { t, friends, refreshFriends, accentColor } = useCalendar();
+  const { t, friends, refreshFriends, accentColor, language } = useCalendar();
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -97,7 +97,7 @@ export const FriendsScreen: React.FC = () => {
       await refreshFriends();
     } catch (error) {
       console.error('[Friends] Error sending request:', error);
-      alert('Error al enviar solicitud de amistad');
+      alert(t.friends_error_send);
     }
   };
 
@@ -108,7 +108,7 @@ export const FriendsScreen: React.FC = () => {
       await refreshFriends();
     } catch (error) {
       console.error('[Friends] Error accepting request:', error);
-      alert('Error al aceptar solicitud');
+      alert(t.friends_error_accept);
     }
   };
 
@@ -119,7 +119,7 @@ export const FriendsScreen: React.FC = () => {
       await refreshFriends();
     } catch (error) {
       console.error('[Friends] Error declining request:', error);
-      alert('Error al rechazar solicitud');
+      alert(t.friends_error_decline);
     }
   };
 
@@ -131,7 +131,7 @@ export const FriendsScreen: React.FC = () => {
       setActiveMenuId(null);
     } catch (error) {
       console.error('[Friends] Error removing friend:', error);
-      alert('Error al eliminar amigo');
+      alert(t.friends_error_remove);
     }
   };
 
@@ -196,7 +196,7 @@ export const FriendsScreen: React.FC = () => {
                   onClick={() => { setSearch(''); setSearchFocused(false); searchInputRef.current?.blur(); }}
                   className="text-gray-900 dark:text-white font-medium text-sm whitespace-nowrap"
                 >
-                  Cancelar
+                  {t.friends_cancel}
                 </button>
               )}
             </div>
@@ -208,7 +208,7 @@ export const FriendsScreen: React.FC = () => {
           {search.length < 2 && suggestedFriends.length > 0 && (
             <section className="px-6 mb-10">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-[17px] font-black text-gray-900 dark:text-white tracking-tight">Sugerencias</h2>
+                <h2 className="text-[17px] font-black text-gray-900 dark:text-white tracking-tight">{t.friends_suggestions}</h2>
               </div>
               <div className="flex gap-6 overflow-x-auto no-scrollbar pb-4 px-1">
                 {suggestedFriends.map(friend => (
@@ -232,11 +232,11 @@ export const FriendsScreen: React.FC = () => {
 
                     {friend.mutualFriends > 0 ? (
                       <p className="text-[9px] text-gray-400 font-bold text-center leading-tight mt-0.5">
-                        {friend.mutualFriends} en común
+                        {friend.mutualFriends} {t.friends_mutual}
                       </p>
                     ) : (
                       <p className="text-[9px] text-gray-400 font-bold text-center leading-tight mt-0.5">
-                        Sugerencia
+                        {t.friends_suggestion}
                       </p>
                     )}
                   </div>
@@ -249,7 +249,7 @@ export const FriendsScreen: React.FC = () => {
           {search.length >= 2 && displayList.length > 0 && (
             <section className="px-6 mb-10">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-[17px] font-black text-gray-900 dark:text-white uppercase tracking-tight">Resultados</h2>
+                <h2 className="text-[17px] font-black text-gray-900 dark:text-white uppercase tracking-tight">{t.friends_results}</h2>
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{displayList.length}</span>
               </div>
               <div className="space-y-3">
@@ -269,7 +269,7 @@ export const FriendsScreen: React.FC = () => {
                         {user.mutualFriends > 0 && (
                           <p className="text-[10px] text-gray-500 font-bold mt-1.5 flex items-center gap-1">
                             <Users size={10} className="text-gray-400" />
-                            {user.mutualFriends} {user.mutualFriends === 1 ? 'amigo en común' : 'amigos en común'}
+                            {user.mutualFriends} {user.mutualFriends === 1 ? t.friends_mutual_singular : t.friends_mutual_plural}
                           </p>
                         )}
                       </div>
@@ -277,11 +277,11 @@ export const FriendsScreen: React.FC = () => {
                       {isFriend ? (
                         <div className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 flex items-center gap-2">
                           <Check size={14} strokeWidth={3} />
-                          Amigo
+                          {t.friends_friend}
                         </div>
                       ) : isPending ? (
                         <div className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest bg-orange-100/50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center gap-2">
-                          Pendiente
+                          {t.friends_pending}
                         </div>
                       ) : (
                         <button
@@ -289,7 +289,7 @@ export const FriendsScreen: React.FC = () => {
                           className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest bg-[#FF7566] text-white shadow-lg active:scale-95 transition-all flex items-center gap-2"
                         >
                           <UserPlus size={14} />
-                          Añadir
+                          {t.friends_add}
                         </button>
                       )}
                     </div>
@@ -364,7 +364,7 @@ export const FriendsScreen: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{(friend.handle || '').replace(/^@/, '')}</h3>
                           {friend.status === 'pending' && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[8px] font-black uppercase tracking-widest">{t.friends_pending || 'Pendiente'}</span>
+                            <span className="px-1.5 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[8px] font-black uppercase tracking-widest">{t.friends_pending}</span>
                           )}
                         </div>
                       </div>

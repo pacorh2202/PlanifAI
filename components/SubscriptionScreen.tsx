@@ -15,28 +15,28 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
     const plans = [
         {
             id: 'free',
-            name: 'Plan Free',
+            name: t.sub_plan_free,
             monthlyPrice: '0€',
             yearlyPrice: '0€',
             features: t.sub_features_basic,
-            buttonText: 'Elegir Plan Free'
+            buttonText: t.sub_choose_free
         },
         {
             id: 'plus',
-            name: 'Plan Plus',
+            name: t.sub_plan_plus,
             monthlyPrice: '5€',
             yearlyPrice: '50€',
             features: t.sub_features_plus,
-            buttonText: 'Elegir Plan Plus',
+            buttonText: t.sub_choose_plus,
             recommended: billingPeriod === 'yearly'
         },
         {
             id: 'pro',
-            name: 'Plan Pro',
+            name: t.sub_plan_pro,
             monthlyPrice: '10€',
             yearlyPrice: '100€',
             features: t.sub_features_premium,
-            buttonText: 'Elegir Plan Pro'
+            buttonText: t.sub_choose_pro
         }
     ];
 
@@ -87,7 +87,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                             >
                                 {plan.recommended && (
                                     <div className="absolute top-4 right-8 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg z-10" style={{ backgroundColor: accentColor, opacity: 0.9 }}>
-                                        RECOMENDADO
+                                        {t.sub_recommended}
                                     </div>
                                 )}
 
@@ -100,7 +100,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                                             {billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
                                         </span>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                                            / {billingPeriod === 'monthly' ? (t.sub_monthly === 'Mensual' ? 'mes' : 'month') : (t.sub_yearly === 'Anual' ? 'año' : 'year')}
+                                            / {billingPeriod === 'monthly' ? t.sub_per_month.replace('/ ', '') : t.sub_per_year.replace('/ ', '')}
                                         </p>
                                     </div>
                                 </div>
@@ -136,7 +136,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                 </div>
 
                 <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest px-12 leading-relaxed pb-10">
-                    Puedes cancelar tu suscripción en cualquier momento desde los ajustes de tu cuenta.
+                    {t.sub_cancel_disclaimer}
                 </p>
             </main>
         </div>

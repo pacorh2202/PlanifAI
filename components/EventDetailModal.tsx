@@ -407,9 +407,9 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                 <div
                   onClick={() => setIsRecurring(!isRecurring)}
                   className={`w-12 h-7 rounded-full transition-colors duration-300 flex items-center px-1 cursor-pointer`}
-                  style={{ backgroundColor: isRecurring ? accentColor : undefined }}
+                  style={{ backgroundColor: isRecurring ? accentColor : '#D1D5DB' }}
                 >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${isRecurring ? 'translate-x-5' : 'translate-x-0'} ${!isRecurring ? 'bg-gray-200 dark:bg-gray-700' : ''}`} />
+                  <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${isRecurring ? 'translate-x-5' : 'translate-x-0'}`} />
                 </div>
               </div>
 

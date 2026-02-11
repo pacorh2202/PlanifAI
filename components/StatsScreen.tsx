@@ -388,7 +388,7 @@ export const StatsScreen: React.FC = () => {
                     ? `+${kpiStats.efficiencyGain}% ${t.efficiency_improvement}`
                     : t.efficiency_stable
                 }
-                tooltip="Tu puntuación semanal de organización y cumplimiento de tareas."
+                tooltip={t.stats_tooltip_efficiency}
                 subtextClassName={kpiStats.efficiencyGain > 0 ? "text-emerald-500" : "text-gray-400"}
               />
             </div>
@@ -398,9 +398,9 @@ export const StatsScreen: React.FC = () => {
           <section className="mt-2">
             <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-4 ml-2">{t.improve_habits}</p>
             <div className="space-y-3">
-              <HabitIndicator label="Hacer más ejercicio" current={12} total={30} color={categoryColors.exercise} />
-              <HabitIndicator label="Levantarse pronto" current={22} total={30} color={categoryColors.wakeUp} />
-              <HabitIndicator label="Comer sano" current={28} total={30} color={categoryColors.eatHealthy} />
+              <HabitIndicator label={t.habit_exercise} current={12} total={30} color={categoryColors.exercise} />
+              <HabitIndicator label={t.habit_wake_early} current={22} total={30} color={categoryColors.wakeUp} />
+              <HabitIndicator label={t.habit_eat_healthy} current={28} total={30} color={categoryColors.eatHealthy} />
             </div>
           </section>
 
