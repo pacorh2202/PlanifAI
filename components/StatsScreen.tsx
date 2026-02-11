@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { Flame, TrendingUp, ChevronDown, Lightbulb, X, BookOpen, Clock, ArrowRight, CheckCircle2, Zap, Hourglass } from 'lucide-react';
+import { Flame, TrendingUp, ChevronDown, Lightbulb, X, BookOpen, Clock, ArrowRight, CheckCircle2, Zap, Hourglass, Info } from 'lucide-react';
 import gradientGreen from '../src/assets/gradient-green.png';
 import gradientPink from '../src/assets/gradient-pink.png';
 
@@ -165,6 +165,7 @@ export const StatsScreen: React.FC = () => {
       activityData,
       distributionCharData,
       timeSavedHours: stats?.time_saved_minutes ? (stats.time_saved_minutes / 60).toFixed(1) : "0.0",
+      timeSavedMinutes: stats?.time_saved_minutes || 0,
       efficiencyGain: stats?.efficiency_improvement || 0,
       stressLevel: stats?.stress_level || 50
     };
@@ -356,15 +357,40 @@ export const StatsScreen: React.FC = () => {
                 icon={<Hourglass size={18} className="text-rose-500" />}
                 bgIcon="bg-rose-100"
                 label="TIEMPO AHORRADO"
-                value={`${kpiStats.timeSavedHours} h`}
+                value={
+                  // Improved Time Saved Logic:
+                  // 1. If 0, show minimal value if there's activity, or "0 min"
+                  // 2. If < 60 min, show "XX min"
+                  // 3. If >= 1h, show "X.X h"
+                  (() => {
+                    const minutes = kpiStats.timeSavedMinutes; // Need to ensure we map this from API
+                    if (minutes < 1 && kpiStats.totalCompletedLast7 > 0) return "< 5 min";
+                    if (minutes < 60) return `${Math.max(0, minutes)} min`;
+                    return `${(minutes / 60).toFixed(1)} h`;
+                  })()
+                }
                 subtext="Semanales"
+                tooltip="Calculado en base al uso de funciones rápidas (voz, IA, automatizaciones) vs. gestión manual."
               />
               <StatSmallCard
                 icon={<Zap size={18} className="text-sky-500" />}
                 bgIcon="bg-sky-100"
-                label="EFICIENCIA"
-                value={`+${kpiStats.efficiencyGain}%`}
-                subtext="Mejora total"
+                label="EFICIENCIA" // Changed from "MEJORA" to generic title
+                value={
+                  // Efficiency is now a SCORE (0-100%), not a diff
+                  // We use Completion Rate as the base "Score" or calculate a specific one
+                  `${kpiStats.completionRate}%`
+                }
+                subtext={
+                  // Badge logic:
+                  // +% if improvement
+                  // "Estable" if <= 0 change (no negative numbers)
+                  kpiStats.efficiencyGain > 0
+                    ? `+${kpiStats.efficiencyGain}% mejora`
+                    : "Estable"
+                }
+                tooltip="Tu puntuación semanal de organización y cumplimiento de tareas."
+                subtextClassName={kpiStats.efficiencyGain > 0 ? "text-emerald-500" : "text-gray-400"}
               />
             </div>
           </div>
@@ -428,15 +454,28 @@ export const StatsScreen: React.FC = () => {
 };
 
 // ─── Small Stat Card Component ─────────────────────────────────────────
-const StatSmallCard: React.FC<{ icon: React.ReactNode; bgIcon: string; label: string; value: string; subtext: string }> = ({ icon, bgIcon, label, value, subtext }) => (
-  <div className="bg-white dark:bg-gray-900 rounded-[2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between h-40">
+const StatSmallCard: React.FC<{
+  icon: React.ReactNode;
+  bgIcon: string;
+  label: string;
+  value: string;
+  subtext: string;
+  tooltip?: string;
+  subtextClassName?: string;
+}> = ({ icon, bgIcon, label, value, subtext, tooltip, subtextClassName }) => (
+  <div className="bg-white dark:bg-gray-900 rounded-[2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between h-40 relative group">
+    {tooltip && (
+      <div className="absolute top-4 right-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" title={tooltip}>
+        <Info size={14} />
+      </div>
+    )}
     <div className={`w-10 h-10 rounded-full ${bgIcon} dark:bg-opacity-20 flex items-center justify-center mb-2`}>
       {icon}
     </div>
     <div>
       <p className="text-[#94A3B8] text-[9px] font-black uppercase tracking-[0.2em] mb-1">{label}</p>
       <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter mb-0.5">{value}</h3>
-      <p className="text-[10px] text-gray-400 font-bold">{subtext}</p>
+      <p className={`text-[10px] font-bold ${subtextClassName || 'text-gray-400'}`}>{subtext}</p>
     </div>
   </div>
 );
