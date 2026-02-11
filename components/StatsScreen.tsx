@@ -89,6 +89,7 @@ const ARTICLES = [
 export const StatsScreen: React.FC = () => {
   const { stats, t, language, accentColor, activeTemplate } = useCalendar();
   const [selectedArticle, setSelectedArticle] = useState<typeof ARTICLES[0] | null>(null);
+  const [showStressInfo, setShowStressInfo] = useState(false);
 
   // Map habits to their category colors from the active template
   const categoryColors = useMemo(() => {
@@ -412,7 +413,34 @@ export const StatsScreen: React.FC = () => {
               <StressGauge value={kpiStats.stressLevel} />
             </div>
             <div className="text-center mt-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Nivel de equilibrio emocional basado en tus actividades</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-4">Nivel de equilibrio emocional basado en tus actividades</p>
+
+              {/* Minimalist Expand Trigger */}
+              <button
+                onClick={() => setShowStressInfo(!showStressInfo)}
+                className="flex flex-col items-center justify-center gap-1 w-full py-2 group focus:outline-none"
+              >
+                <div className={`w-8 h-[2px] bg-gray-200 dark:bg-gray-700 rounded-full transition-all duration-300 ${showStressInfo ? 'rotate-45 translate-y-[3px] w-4' : ''}`} />
+                <div className={`w-8 h-[2px] bg-gray-200 dark:bg-gray-700 rounded-full transition-all duration-300 ${showStressInfo ? '-rotate-45 -translate-y-[3px] w-4' : ''}`} />
+              </button>
+
+              {/* Expandable Content */}
+              <div
+                className={`overflow-hidden transition-all duration-500 ease-in-out ${showStressInfo ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}
+              >
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 text-left border border-gray-100 dark:border-gray-800">
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                    <Info size={14} className="text-gray-400" />
+                    ¿Cómo se calcula?
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">
+                    Calculamos tu nivel de estrés basándonos en el equilibrio entre tus tareas de <span className="font-semibold text-gray-700 dark:text-gray-300">Trabajo/Estudio</span> y tus momentos de <span className="font-semibold text-gray-700 dark:text-gray-300">Salud/Ocio</span>.
+                  </p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                    Tip: Intenta intercalar más pausas activas o tiempo personal entre tus bloques de trabajo intenso.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
