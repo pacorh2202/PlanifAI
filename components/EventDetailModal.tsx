@@ -138,6 +138,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
       const current = new Date(start);
 
       const promises: Promise<string>[] = [];
+      const recurrenceId = crypto.randomUUID(); // Generate unique ID for this series
 
       while (current <= endOfMonth) {
         if (selectedDays.includes(current.getDay())) {
@@ -149,6 +150,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             start: newStart.toISOString(),
             end: newEnd.toISOString(),
             participantIds, // Pass participant IDs for sharing
+            recurrenceId, // Link all events in this series
           };
           promises.push(addEvent(eventToCreate));
         }

@@ -223,6 +223,10 @@ export const translations = {
     suggestions_send: "Enviar Sugerencia",
     suggestions_sending: "Enviando...",
     suggestions_error: "Error al enviar sugerencia. Por favor intenta de nuevo.",
+    menu_suggestions: "Sugerencias",
+
+    // Habits
+    read_article: "Leer artículo",
     friends_cancel: "Cancelar",
     friends_add: "Añadir",
     friends_pending: "Pendiente",
@@ -475,6 +479,10 @@ export const translations = {
     suggestions_send: "Send Suggestion",
     suggestions_sending: "Sending...",
     suggestions_error: "Error sending suggestion. Please try again.",
+    menu_suggestions: "Suggestions",
+
+    // Habits
+    read_article: "Read article",
     friends_cancel: "Cancel",
     friends_add: "Add",
     friends_pending: "Pending",

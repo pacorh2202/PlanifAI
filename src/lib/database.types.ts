@@ -25,6 +25,7 @@ export type Database = {
           event_type: string
           id: string
           location: string | null
+          recurrence_id: string | null
           start_time: string
           status: string
           title: string
@@ -44,6 +45,7 @@ export type Database = {
           event_type: string
           id?: string
           location?: string | null
+          recurrence_id?: string | null
           start_time: string
           status?: string
           title: string
@@ -63,6 +65,7 @@ export type Database = {
           event_type?: string
           id?: string
           location?: string | null
+          recurrence_id?: string | null
           start_time?: string
           status?: string
           title?: string
@@ -569,6 +572,14 @@ export type Database = {
       rpc_get_kpi_stats: { Args: never; Returns: Json }
       user_has_access_to_event: { Args: { event_id: string }; Returns: boolean }
       user_has_editor_access: { Args: { event_id: string }; Returns: boolean }
+      accept_recurring_invitation: {
+        Args: { p_recurrence_id: string; p_user_id: string }
+        Returns: void
+      }
+      reject_recurring_invitation: {
+        Args: { p_recurrence_id: string; p_user_id: string }
+        Returns: void
+      }
     }
     Enums: {
       subscription_tier: "free" | "pro" | "premium"

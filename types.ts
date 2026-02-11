@@ -17,6 +17,7 @@ export interface CalendarEvent {
   color?: string; // Color personalizado opcional para esta actividad específica
   creationSource?: 'manual' | 'voice' | 'ai_suggestion' | 'automation';
   emotionalImpact?: 'stress' | 'relief' | 'neutral';
+  recurrenceId?: string;
 }
 
 export interface CategoryStyle {

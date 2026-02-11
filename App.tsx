@@ -275,7 +275,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
               <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
                 <MessageSquare size={18} />
               </div>
-              <span className="font-bold text-sm">Sugerencias</span>
+              <span className="font-bold text-sm">{t.menu_suggestions}</span>
             </div>
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>

@@ -174,11 +174,18 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
                     .eq('id', conflictEventId);
             }
 
-            await supabase
-                .from('event_participants')
-                .update({ status: 'accepted' })
-                .eq('event_id', notification.metadata.eventId)
-                .eq('user_id', user.id);
+            if (notification.metadata.recurrenceId) {
+                // If it's a recurring event, accept the whole series
+                const { acceptRecurringInvitation } = await import('../src/lib/calendar-api');
+                await acceptRecurringInvitation(notification.metadata.recurrenceId);
+            } else {
+                // Single event acceptance
+                await supabase
+                    .from('event_participants')
+                    .update({ status: 'accepted' })
+                    .eq('event_id', notification.metadata.eventId)
+                    .eq('user_id', user.id);
+            }
 
             await markAsRead(notification.id);
             if (onNotificationUpdate) await onNotificationUpdate();
@@ -196,11 +203,18 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
         if (!user || !notification.metadata?.eventId) return;
 
         try {
-            await supabase
-                .from('event_participants')
-                .update({ status: 'declined' })
-                .eq('event_id', notification.metadata.eventId)
-                .eq('user_id', user.id);
+            if (notification.metadata.recurrenceId) {
+                // If it's a recurring event, decline the whole series
+                const { rejectRecurringInvitation } = await import('../src/lib/calendar-api');
+                await rejectRecurringInvitation(notification.metadata.recurrenceId);
+            } else {
+                // Single event rejection
+                await supabase
+                    .from('event_participants')
+                    .update({ status: 'declined' })
+                    .eq('event_id', notification.metadata.eventId)
+                    .eq('user_id', user.id);
+            }
 
             await markAsRead(notification.id);
             if (onNotificationUpdate) await onNotificationUpdate();

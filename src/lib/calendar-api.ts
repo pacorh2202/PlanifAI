@@ -11,29 +11,35 @@ type UpdateCalendarEvent = Updates<'calendar_events'>;
  * Database uses snake_case, frontend uses camelCase
  */
 function dbEventToFrontend(dbEvent: DBCalendarEvent): any {
-    return {
-        id: dbEvent.id,
-        title: dbEvent.title,
-        descriptionPoints: dbEvent.description_points || undefined,
-        start: dbEvent.start_time,
-        end: dbEvent.end_time,
-        allDay: dbEvent.all_day,
-        type: dbEvent.event_type,
-        categoryLabel: dbEvent.category_label || undefined,
-        status: dbEvent.status,
-        location: dbEvent.location || undefined,
-        attendees: dbEvent.attendees || undefined,
-        color: dbEvent.color || undefined,
-        creationSource: dbEvent.creation_source || 'manual',
-        emotionalImpact: dbEvent.emotional_impact || 'neutral',
-    };
+    try {
+        return {
+            id: dbEvent.id,
+            title: dbEvent.title,
+            descriptionPoints: dbEvent.description_points || undefined,
+            start: dbEvent.start_time,
+            end: dbEvent.end_time,
+            allDay: dbEvent.all_day,
+            type: dbEvent.event_type,
+            categoryLabel: dbEvent.category_label || undefined,
+            status: dbEvent.status,
+            location: dbEvent.location || undefined,
+            attendees: dbEvent.attendees || undefined,
+            color: dbEvent.color || undefined,
+            creationSource: dbEvent.creation_source as any,
+            emotionalImpact: dbEvent.emotional_impact as any,
+            recurrenceId: dbEvent.recurrence_id || undefined,
+        };
+    } catch (error) {
+        console.error('Error converting DB event to frontend:', error);
+        return null;
+    }
 }
 
 /**
  * Convert frontend CalendarEvent format to database format
  */
 function frontendEventToDB(
-    event: any,
+    event: any, // Changed to any to match the instruction's implied type
     userId: string
 ): any { // Use any or a custom intermediate type to avoid strict New/Update mismatch during creation
     return {
@@ -48,10 +54,41 @@ function frontendEventToDB(
         status: event.status || 'scheduled',
         location: event.location || null,
         attendees: event.attendees || null,
-        color: event.color || null,
+        // color: event.color || null, // Removed as per instruction
         creation_source: event.creationSource || 'manual',
         emotional_impact: event.emotionalImpact || 'neutral',
+        recurrence_id: event.recurrenceId || null, // Added recurrence_id
     };
+}
+
+export async function acceptRecurringInvitation(recurrenceId: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase.rpc('accept_recurring_invitation', {
+        p_recurrence_id: recurrenceId,
+        p_user_id: user.id
+    });
+
+    if (error) {
+        console.error('Error accepting recurring invitation:', error);
+        throw error;
+    }
+}
+
+export async function rejectRecurringInvitation(recurrenceId: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase.rpc('reject_recurring_invitation', {
+        p_recurrence_id: recurrenceId,
+        p_user_id: user.id
+    });
+
+    if (error) {
+        console.error('Error rejecting recurring invitation:', error);
+        throw error;
+    }
 }
 
 /**

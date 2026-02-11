@@ -144,6 +144,28 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [profile]);
 
+  // Update custom template labels when language changes
+  useEffect(() => {
+    setCustomTemplate(prev => {
+      const newCategories = prev.categories.map(cat => {
+        let newLabel = cat.label;
+        switch (cat.type) {
+          case 'health': newLabel = t.cat_health; break;
+          case 'leisure': newLabel = t.cat_leisure; break;
+          case 'personal': newLabel = t.cat_personal; break;
+          case 'study': newLabel = t.cat_study; break;
+          case 'work': newLabel = t.cat_work; break;
+          case 'other':
+            if (cat.icon === 'Utensils') newLabel = t.cat_food;
+            else if (cat.icon === 'Leaf') newLabel = t.cat_rest;
+            break;
+        }
+        return { ...cat, label: newLabel };
+      });
+      return { ...prev, name: t.my_template_name, categories: newCategories };
+    });
+  }, [t]);
+
   // Load events from Supabase on mount
   const loadEvents = async () => {
     if (!user) return;
