@@ -220,7 +220,6 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
               placeholder="correo@ejemplo.com"
               className="w-full bg-gray-100 dark:bg-gray-900 border-2 border-transparent rounded-3xl py-4 px-6 text-[15px] font-bold text-gray-500 dark:text-gray-500 cursor-not-allowed opacity-70"
             />
-            <p className="text-[10px] text-gray-400 px-4">{t.email_no_change}</p>
           </div>
 
           <div className="space-y-2">

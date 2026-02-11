@@ -57,7 +57,12 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [language, setLanguageState] = useState<Language>('es');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [accentColor, setAccentColorState] = useState<string>('#B2D3A1');
+  const [accentColor, setAccentColorState] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('planifai_accent_color') || '#B2D3A1';
+    }
+    return '#B2D3A1';
+  });
   const [userName, setUserNameState] = useState<string>('');
   const [userHandle, setUserHandleState] = useState<string>('');
   const [assistantName, setAssistantNameState] = useState<string>('PlanifAI');
@@ -265,6 +270,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setAccentColor = (color: string) => {
     setAccentColorState(color);
+    localStorage.setItem('planifai_accent_color', color);
     updateProfile({ accent_color: color });
   };
 
