@@ -125,7 +125,12 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (profile) {
       setLanguageState(profile.language as Language || 'es');
       setIsDarkMode(profile.is_dark_mode || false);
-      setAccentColorState(profile.accent_color || '#B2D3A1');
+      if (profile.accent_color) {
+        setAccentColorState(profile.accent_color);
+        localStorage.setItem('planifai_accent_color', profile.accent_color);
+      } else {
+        setAccentColorState('#B2D3A1');
+      }
       setUserNameState(profile.user_name || '');
       setUserHandleState(profile.handle || '');
       setAssistantNameState(profile.assistant_name || 'PlanifAI');

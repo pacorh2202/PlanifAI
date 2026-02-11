@@ -176,7 +176,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
               {t.hello}, {userName}!
             </h2>
             <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mt-1">{t.premium_plan}</p>
-            <p className="text-[10px] font-mono text-gray-300 mt-1">v2.1-fixed</p>
+
           </div>
         </section>
 
