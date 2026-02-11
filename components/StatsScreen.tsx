@@ -4,6 +4,8 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, 
 import { Flame, TrendingUp, ChevronDown, ChevronUp, Lightbulb, X, BookOpen, Clock, ArrowRight, CheckCircle2, Zap, Hourglass, Info } from 'lucide-react';
 import gradientGreen from '../src/assets/gradient-green.png';
 import gradientPink from '../src/assets/gradient-pink.png';
+import mindfulnessHeader from '../src/assets/mindfulness-header.png';
+import digitalHeader from '../src/assets/digital-header.png';
 
 // ─── Date Helpers (Native JS to avoid dependencies) ─────────────────────
 const parseISO = (str: string) => new Date(str);
@@ -63,6 +65,7 @@ export const StatsScreen: React.FC = () => {
     {
       id: 'mindfulness',
       gradient: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+      image: mindfulnessHeader,
       icon: '🧘',
       tag: t.cat_health?.toUpperCase() || 'WELLNESS',
       title: t.article_3_title,
@@ -73,6 +76,7 @@ export const StatsScreen: React.FC = () => {
     {
       id: 'digital',
       gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+      image: digitalHeader,
       icon: '💻',
       tag: 'ORGANIZATION',
       title: t.article_4_title,
