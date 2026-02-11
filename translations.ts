@@ -254,7 +254,24 @@ export const translations = {
     habit_eat_healthy: "Comer sano",
     stats_tooltip_efficiency: "Tu puntuación semanal de organización y cumplimiento de tareas.",
     event_recurring_title: "Automatizar tarea",
-    event_select_days: "Selecciona los días (solo este mes):"
+    event_select_days: "Selecciona los días (solo este mes):",
+    // Habit Builder
+    habit_builder_title: "CONSTRUCTOR DE HÁBITOS",
+    habit_builder_subtitle: "La regla de los 21 días para transformar tu rutina.",
+    habit_builder_create: "Crear nuevo hábito",
+    habit_builder_start: "COMENZAR RETO",
+    habit_builder_placeholder: "Ej: Ir al gimnasio, Leer 30 min...",
+    habit_builder_days_remaining: "DÍAS RESTANTES",
+    habit_builder_day_start: "Día 1",
+    habit_builder_day_end: "Día 21",
+    habit_builder_step1_title: "CATEGORIZA TU META",
+    habit_builder_step1_desc: "Crea una tarea con el nombre de tu hábito.",
+    habit_builder_step2_title: "AUTOMATIZA EL ÉXITO",
+    habit_builder_step2_desc: "Programa la repetición en tu agenda.",
+    habit_builder_step3_title: "DOMINIO DEL HÁBITO",
+    habit_builder_step3_desc: "Marca el progreso durante 21 días.",
+    habit_builder_measure: "MEDIR HÁBITO",
+    habit_builder_reset: "Resetear"
   },
   en: {
     app_name: "PlanifAI",
@@ -510,7 +527,24 @@ export const translations = {
     habit_eat_healthy: "Eat healthy",
     stats_tooltip_efficiency: "Your weekly organization and task completion score.",
     event_recurring_title: "Automate task",
-    event_select_days: "Select days (this month only):"
+    event_select_days: "Select days (this month only):",
+    // Habit Builder
+    habit_builder_title: "HABIT BUILDER",
+    habit_builder_subtitle: "The 21-day rule to transform your routine.",
+    habit_builder_create: "Create new habit",
+    habit_builder_start: "START CHALLENGE",
+    habit_builder_placeholder: "E.g.: Go to the gym, Read 30 min...",
+    habit_builder_days_remaining: "DAYS REMAINING",
+    habit_builder_day_start: "Day 1",
+    habit_builder_day_end: "Day 21",
+    habit_builder_step1_title: "CATEGORIZE YOUR GOAL",
+    habit_builder_step1_desc: "Create a task with the name of your habit.",
+    habit_builder_step2_title: "AUTOMATE SUCCESS",
+    habit_builder_step2_desc: "Schedule repetition in your calendar.",
+    habit_builder_step3_title: "HABIT MASTERY",
+    habit_builder_step3_desc: "Track progress for 21 days.",
+    habit_builder_measure: "MEASURE HABIT",
+    habit_builder_reset: "Reset"
   }
 };
 

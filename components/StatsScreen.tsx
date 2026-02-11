@@ -1,7 +1,31 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { Flame, TrendingUp, ChevronDown, ChevronUp, Lightbulb, X, BookOpen, Clock, ArrowRight, CheckCircle2, Zap, Hourglass, Info } from 'lucide-react';
+import { Flame, TrendingUp, ChevronDown, ChevronUp, Lightbulb, X, BookOpen, Clock, ArrowRight, CheckCircle2, Zap, Hourglass, Info, Trophy, Play, Plus, RotateCcw, Check, Target, RefreshCw } from 'lucide-react';
+
+// ─── Habit Challenge Types ──────────────────────────────────────────────
+interface HabitChallenge {
+  id: string;
+  title: string;
+  startDate: string; // ISO
+  taskCreated: boolean;
+  automationCreated: boolean;
+  active: boolean; // true = graduated to tracker
+  daysCompleted: number;
+}
+
+const HABIT_STORAGE_KEY = 'planifai_habit_challenges';
+
+function loadHabits(): HabitChallenge[] {
+  try {
+    const data = localStorage.getItem(HABIT_STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch { return []; }
+}
+
+function saveHabits(habits: HabitChallenge[]) {
+  localStorage.setItem(HABIT_STORAGE_KEY, JSON.stringify(habits));
+}
 import gradientGreen from '../src/assets/gradient-green.png';
 import gradientPink from '../src/assets/gradient-pink.png';
 import mindfulnessHeader from '../src/assets/mindfulness-header.png';
@@ -32,7 +56,7 @@ const eachDayOfInterval = ({ start, end }: { start: Date, end: Date }) => {
 
 // ─── Main Component ─────────────────────────────────────────────────────
 export const StatsScreen: React.FC = () => {
-  const { stats, t, language, accentColor, activeTemplate } = useCalendar();
+  const { stats, t, language, accentColor, activeTemplate, events } = useCalendar();
 
   const localeStr = language === 'es' ? 'es-ES' : 'en-US';
 
@@ -89,6 +113,91 @@ export const StatsScreen: React.FC = () => {
   const [selectedArticle, setSelectedArticle] = useState<typeof localizedArticles[0] | null>(null);
   const [showStressInfo, setShowStressInfo] = useState(false);
 
+  // ─── Habit Builder State ──────────────────────────────────────────────
+  const [habitChallenges, setHabitChallenges] = useState<HabitChallenge[]>(loadHabits);
+  const [builderPhase, setBuilderPhase] = useState<'collapsed' | 'input' | 'setup'>('collapsed');
+  const [newHabitTitle, setNewHabitTitle] = useState('');
+  const [currentChallengeId, setCurrentChallengeId] = useState<string | null>(null);
+
+  // Persist habit challenges to localStorage
+  useEffect(() => { saveHabits(habitChallenges); }, [habitChallenges]);
+
+  const currentChallenge = useMemo(() =>
+    habitChallenges.find(h => h.id === currentChallengeId) || null,
+    [habitChallenges, currentChallengeId]
+  );
+
+  // Auto-detect if user created a task or automation matching the challenge
+  const detectSteps = useCallback((challenge: HabitChallenge) => {
+    if (!challenge) return { taskFound: challenge.taskCreated, autoFound: challenge.automationCreated };
+    const titleLower = challenge.title.toLowerCase();
+    const taskFound = challenge.taskCreated || events.some(e => e.title.toLowerCase().includes(titleLower));
+    const autoFound = challenge.automationCreated || events.some(
+      e => e.title.toLowerCase().includes(titleLower) && e.creationSource === 'automation'
+    );
+    return { taskFound, autoFound };
+  }, [events]);
+
+  // Update step detection when events change
+  useEffect(() => {
+    if (!currentChallenge || currentChallenge.active) return;
+    const { taskFound, autoFound } = detectSteps(currentChallenge);
+    if (taskFound !== currentChallenge.taskCreated || autoFound !== currentChallenge.automationCreated) {
+      setHabitChallenges(prev => prev.map(h =>
+        h.id === currentChallenge.id ? { ...h, taskCreated: taskFound, automationCreated: autoFound } : h
+      ));
+    }
+  }, [events, currentChallenge, detectSteps]);
+
+  const handleStartChallenge = () => {
+    if (!newHabitTitle.trim()) return;
+    const newChallenge: HabitChallenge = {
+      id: crypto.randomUUID(),
+      title: newHabitTitle.trim(),
+      startDate: new Date().toISOString(),
+      taskCreated: false,
+      automationCreated: false,
+      active: false,
+      daysCompleted: 0,
+    };
+    setHabitChallenges(prev => [...prev, newChallenge]);
+    setCurrentChallengeId(newChallenge.id);
+    setNewHabitTitle('');
+    setBuilderPhase('setup');
+  };
+
+  const handleMeasureHabit = () => {
+    if (!currentChallengeId) return;
+    setHabitChallenges(prev => prev.map(h =>
+      h.id === currentChallengeId ? { ...h, active: true } : h
+    ));
+    setCurrentChallengeId(null);
+    setBuilderPhase('collapsed');
+  };
+
+  const handleResetBuilder = () => {
+    setBuilderPhase('collapsed');
+    setCurrentChallengeId(null);
+    setNewHabitTitle('');
+  };
+
+  // Active (graduated) habits for the tracker
+  const activeHabits = useMemo(() => habitChallenges.filter(h => h.active), [habitChallenges]);
+
+  // Calculate days completed for active habits
+  const getHabitDays = useCallback((habit: HabitChallenge) => {
+    const start = new Date(habit.startDate);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    // Count how many days the user completed a task with matching title
+    const completedDays = events.filter(e =>
+      e.title.toLowerCase().includes(habit.title.toLowerCase()) &&
+      e.status === 'completed' &&
+      new Date(e.start) >= start
+    ).length;
+    return Math.min(completedDays, 21);
+  }, [events]);
+
   // Map habits to their category colors from the active template
   const categoryColors = useMemo(() => {
     const cats = activeTemplate?.categories || [];
@@ -103,7 +212,7 @@ export const StatsScreen: React.FC = () => {
   }, [activeTemplate]);
 
   // Mock data for comparison charts
-  const { events } = useCalendar(); // Get real events
+
 
   // ─── KPI Calculations ────────────────────────────────────────────────
   const kpiStats = useMemo(() => {
@@ -398,10 +507,170 @@ export const StatsScreen: React.FC = () => {
           <section className="mt-2">
             <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-4 ml-2">{t.improve_habits}</p>
             <div className="space-y-3">
-              {/* Habits now use translations */}
+              {/* Default habits */}
               <HabitIndicator label={t.habit_exercise} current={12} total={30} color={categoryColors.exercise} />
               <HabitIndicator label={t.read_article} current={5} total={7} color={categoryColors.study} />
               <HabitIndicator label={t.habit_eat_healthy} current={28} total={30} color={categoryColors.eatHealthy} />
+              {/* Dynamic habits from builder */}
+              {activeHabits.map(habit => (
+                <HabitIndicator
+                  key={habit.id}
+                  label={habit.title}
+                  current={getHabitDays(habit)}
+                  total={21}
+                  color={accentColor}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* ─── Habit Builder Card ─────────────────────────────────────── */}
+          <section className="mt-3">
+            <div className="bg-white dark:bg-gray-900 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden transition-all duration-500">
+
+              {/* Header – always visible */}
+              <div className="px-6 pt-6 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <Trophy size={20} className="text-gray-500 dark:text-gray-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-black text-gray-900 dark:text-white tracking-wide">{t.habit_builder_title}</h3>
+                    {builderPhase === 'setup' && currentChallenge && (
+                      <button onClick={handleResetBuilder} className="ml-1 inline-flex">
+                        <RotateCcw size={14} className="text-gray-400 hover:text-gray-600 transition-colors" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-2 leading-relaxed">{t.habit_builder_subtitle}</p>
+              </div>
+
+              {/* Phase: Collapsed */}
+              {builderPhase === 'collapsed' && (
+                <div className="px-6 pb-6">
+                  <button
+                    onClick={() => setBuilderPhase('input')}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:border-gray-300 hover:text-gray-500 dark:hover:border-gray-600 dark:hover:text-gray-400 transition-all duration-300 text-sm font-bold"
+                  >
+                    <Plus size={18} />
+                    {t.habit_builder_create}
+                  </button>
+                </div>
+              )}
+
+              {/* Phase: Input */}
+              {builderPhase === 'input' && (
+                <div className="px-6 pb-6 animate-fade-in">
+                  <input
+                    type="text"
+                    value={newHabitTitle}
+                    onChange={e => setNewHabitTitle(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleStartChallenge()}
+                    placeholder={t.habit_builder_placeholder}
+                    className="w-full px-5 py-3.5 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 transition-colors mb-4"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleStartChallenge}
+                    disabled={!newHabitTitle.trim()}
+                    className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-black tracking-wider disabled:opacity-30 hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-300"
+                  >
+                    <Play size={16} fill="currentColor" />
+                    {t.habit_builder_start}
+                  </button>
+                </div>
+              )}
+
+              {/* Phase: Setup */}
+              {builderPhase === 'setup' && currentChallenge && (() => {
+                const { taskFound, autoFound } = detectSteps(currentChallenge);
+                const bothDone = taskFound && autoFound;
+                const startDate = new Date(currentChallenge.startDate);
+                const now = new Date();
+                const daysPassed = Math.max(0, Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+                const daysRemaining = Math.max(0, 21 - daysPassed);
+                const progressPct = Math.min((daysPassed / 21) * 100, 100);
+
+                return (
+                  <div className="px-6 pb-6 animate-fade-in">
+                    {/* Challenge Title */}
+                    <h4 className="text-xl font-black text-gray-900 dark:text-white mb-5">{currentChallenge.title}</h4>
+
+                    {/* Progress Bar */}
+                    <div className="mb-5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">{t.habit_builder_days_remaining}</span>
+                        <span className="text-2xl font-black text-gray-900 dark:text-white">{daysRemaining}</span>
+                      </div>
+                      <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${progressPct}%`, backgroundColor: accentColor }}
+                        />
+                      </div>
+                      <div className="flex justify-between mt-1.5">
+                        <span className="text-[10px] text-gray-400 font-medium">{t.habit_builder_day_start}</span>
+                        <span className="text-[10px] text-gray-400 font-medium">{t.habit_builder_day_end}</span>
+                      </div>
+                    </div>
+
+                    {/* Checklist Steps */}
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 space-y-4 border border-gray-100 dark:border-gray-700/50">
+                      {/* Step 1: Create task */}
+                      <div className="flex items-start gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${taskFound
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
+                          }`}>
+                          {taskFound ? <Check size={16} strokeWidth={3} /> : <Target size={16} />}
+                        </div>
+                        <div>
+                          <p className={`text-xs font-black tracking-wide ${taskFound ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-white'}`}>{t.habit_builder_step1_title}</p>
+                          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{t.habit_builder_step1_desc}</p>
+                        </div>
+                      </div>
+
+                      {/* Step 2: Automate */}
+                      <div className="flex items-start gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${autoFound
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
+                          }`}>
+                          {autoFound ? <Check size={16} strokeWidth={3} /> : <RefreshCw size={16} />}
+                        </div>
+                        <div>
+                          <p className={`text-xs font-black tracking-wide ${autoFound ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-white'}`}>{t.habit_builder_step2_title}</p>
+                          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{t.habit_builder_step2_desc}</p>
+                        </div>
+                      </div>
+
+                      {/* Step 3: Mastery */}
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500">
+                          <Trophy size={16} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black tracking-wide text-gray-900 dark:text-white">{t.habit_builder_step3_title}</p>
+                          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{t.habit_builder_step3_desc}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                      onClick={bothDone ? handleMeasureHabit : undefined}
+                      disabled={!bothDone}
+                      className={`w-full mt-5 py-3.5 rounded-2xl text-sm font-black tracking-wider transition-all duration-300 ${bothDone
+                        ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 cursor-pointer'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                        }`}
+                    >
+                      {t.habit_builder_measure}
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           </section>
 
