@@ -703,14 +703,23 @@ export const StatsScreen: React.FC = () => {
 
                     {/* Action Button */}
                     <button
-                      onClick={bothDone ? handleMeasureHabit : undefined}
-                      disabled={!bothDone}
-                      className={`w-full mt-5 py-3.5 rounded-2xl text-sm font-black tracking-wider transition-all duration-300 ${bothDone
+                      onClick={() => {
+                        if (bothDone) {
+                          handleMeasureHabit();
+                        } else {
+                          // "Crear": If task exists, edit it (to add automation). If not, create it.
+                          // handleStep2Click logic covers both cases (finds existing or delegates to step 1)
+                          handleStep2Click();
+                        }
+                      }}
+                      // Button is always enabled now
+                      className={`w-full mt-5 py-3.5 rounded-2xl text-sm font-black tracking-wider transition-all duration-300 shadow-lg active:scale-95 ${bothDone
                         ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 cursor-pointer'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                        : 'text-white hover:opacity-90 cursor-pointer'
                         }`}
+                      style={!bothDone ? { backgroundColor: accentColor } : undefined}
                     >
-                      {t.habit_builder_measure}
+                      {bothDone ? t.habit_builder_measure : (t.habit_builder_create_action || 'CREAR')}
                     </button>
                   </div>
                 );
