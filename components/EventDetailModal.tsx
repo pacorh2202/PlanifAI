@@ -28,6 +28,41 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
   const [isEditing, setIsEditing] = useState(isCreating || false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // ─── Swipe-to-dismiss state ───────────────────────────────────────────
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const touchStartY = useRef(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const delta = Math.max(0, e.touches[0].clientY - touchStartY.current);
+    setDragY(delta);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    if (dragY > 120) {
+      // Close with animation
+      setIsClosing(true);
+      setTimeout(onClose, 300);
+    } else {
+      setDragY(0);
+    }
+  };
+
+  // ─── Scroll to top on open ────────────────────────────────────────────
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, []);
+
   const localeStr = language === 'es' ? 'es-ES' : 'en-US';
 
   const defaultStartTime = initialDate ? new Date(initialDate) : new Date();
@@ -235,8 +270,19 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     <div className="fixed inset-0 z-[110] flex flex-col justify-end">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] animate-fade-in transition-opacity duration-300 cursor-pointer" onClick={onClose}></div>
 
-      <div className="relative bg-[#F8FAFC] dark:bg-gray-950 w-full h-[85vh] rounded-t-[3.5rem] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.4)] border-t border-white/20 overflow-hidden animate-slide-up">
-        <div className="absolute top-0 left-0 right-0 h-14 flex items-center justify-center z-50">
+      <div
+        className={`relative bg-[#F8FAFC] dark:bg-gray-950 w-full h-[85vh] rounded-t-[3.5rem] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.4)] border-t border-white/20 overflow-hidden ${isClosing ? '' : 'animate-slide-up'}`}
+        style={{
+          transform: `translateY(${isClosing ? '100%' : `${dragY}px`})`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        }}
+      >
+        <div
+          className="absolute top-0 left-0 right-0 h-14 flex items-center justify-center z-50 cursor-grab active:cursor-grabbing"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full mt-3"></div>
           <button
             onClick={onClose}
@@ -460,7 +506,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
             </div>
             <div className="space-y-4">
               {(editedEvent.descriptionPoints || []).length === 0 && !isEditing ? (
-                <p className="text-sm text-gray-400 italic">{t.no_events}.</p>
+                <p className="text-sm text-gray-400 italic">{t.no_notes}.</p>
               ) : (
                 (editedEvent.descriptionPoints || []).map((point, idx) => (
                   <div key={idx} className="flex items-center gap-3 animate-fade-in">
@@ -519,7 +565,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                   <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(editedEvent.location || '')}`, '_blank')} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-400"><Navigation size={18} /></button>
                 </div>
               ) : (
-                <p className="text-sm text-gray-400 italic">{t.no_events}.</p>
+                <p className="text-sm text-gray-400 italic">{t.no_location}.</p>
               )
             ) : (
               <div className="relative group">
