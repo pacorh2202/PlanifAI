@@ -23,6 +23,7 @@ export const usePlanAILive = () => {
   const activeSourceCountRef = useRef<number>(0);
   const turnActiveRef = useRef<boolean>(false);
   const isTalkingRef = useRef<boolean>(false);
+  const unmuteCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const categoryLabels = activeTemplate.categories.map(c => c.label);
 
@@ -305,8 +306,14 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
               playbackNodeRef.current = playbackNode;
               playbackNode.port.onmessage = (e) => {
                 if (e.data === 'playback-ended') {
-                  isTalkingRef.current = false;
                   setIsTalking(false);
+                  // DON'T unmute mic immediately — audio chunks arrive with gaps.
+                  // Schedule unmute after cooldown; cancel if new audio arrives.
+                  if (unmuteCooldownRef.current) clearTimeout(unmuteCooldownRef.current);
+                  unmuteCooldownRef.current = setTimeout(() => {
+                    isTalkingRef.current = false;
+                    unmuteCooldownRef.current = null;
+                  }, 1500);
                 }
               };
               playbackNode.connect(outputContextRef.current.destination);
@@ -324,6 +331,13 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             // Detect turn completion to prevent duplicate audio
             if (msg.serverContent?.turnComplete) {
               turnActiveRef.current = false;
+              // Schedule unmute after turnComplete + cooldown
+              if (unmuteCooldownRef.current) clearTimeout(unmuteCooldownRef.current);
+              unmuteCooldownRef.current = setTimeout(() => {
+                isTalkingRef.current = false;
+                setIsTalking(false);
+                unmuteCooldownRef.current = null;
+              }, 1500);
               return;
             }
 
@@ -332,6 +346,11 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             }
             const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (audioData && playbackNodeRef.current) {
+              // Cancel any pending unmute — new audio is arriving
+              if (unmuteCooldownRef.current) {
+                clearTimeout(unmuteCooldownRef.current);
+                unmuteCooldownRef.current = null;
+              }
               turnActiveRef.current = true;
               isTalkingRef.current = true;
               setIsTalking(true);
