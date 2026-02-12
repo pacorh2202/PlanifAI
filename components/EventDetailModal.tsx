@@ -234,12 +234,32 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
 
     const conflict = events.find(e => {
       if (event && e.id === event.id) return false; // Ignore itself
-      if (e.allDay) return false; // Simple conflict check ignores all-day for now
 
-      const eStart = new Date(e.start).getTime();
-      const eEnd = new Date(e.end).getTime();
+      // Normalize times for comparison
+      let eStart = new Date(e.start).getTime();
+      let eEnd = new Date(e.end).getTime();
 
-      return (start < eEnd && end > eStart);
+      let newStart = start;
+      let newEnd = end;
+
+      // Special handling for All Day events (both existing and new)
+      if (e.allDay) {
+        const eDate = new Date(e.start);
+        eDate.setHours(0, 0, 0, 0);
+        eStart = eDate.getTime();
+        eDate.setHours(23, 59, 59, 999);
+        eEnd = eDate.getTime();
+      }
+
+      if (editedEvent.allDay) {
+        const newDate = new Date(editedEvent.start);
+        newDate.setHours(0, 0, 0, 0);
+        newStart = newDate.getTime();
+        newDate.setHours(23, 59, 59, 999);
+        newEnd = newDate.getTime();
+      }
+
+      return (newStart < eEnd && newEnd > eStart);
     });
 
     if (conflict) {

@@ -181,12 +181,12 @@ export async function updateEvent(eventId: string, updates: any, userId: string)
     if (updates.color !== undefined) dbUpdates.color = updates.color;
     if (updates.creationSource !== undefined) dbUpdates.creation_source = updates.creationSource;
     if (updates.emotionalImpact !== undefined) dbUpdates.emotional_impact = updates.emotionalImpact;
+    if (updates.recurrenceId !== undefined) dbUpdates.recurrence_id = updates.recurrenceId;
 
-    const { data, error } = await supabase
+    const { data: updatedEvent, error } = await supabase
         .from('calendar_events')
         .update(dbUpdates)
         .eq('id', eventId)
-        // .eq('user_id', userId) // Removed to allow participants with edit rights (Agent E expansion)
         .select()
         .single();
 
@@ -195,30 +195,60 @@ export async function updateEvent(eventId: string, updates: any, userId: string)
         throw error;
     }
 
-    // Update participants if provided
+    // Update participants if provided (Smart Delta Update)
     if (updates.participantIds && Array.isArray(updates.participantIds)) {
-        // Delete existing and re-insert (simple sync)
-        await supabase.from('event_participants').delete().eq('event_id', eventId);
+        // 1. Fetch existing participants
+        const { data: existingParticipants, error: fetchError } = await supabase
+            .from('event_participants')
+            .select('user_id')
+            .eq('event_id', eventId);
 
-        if (updates.participantIds.length > 0) {
-            const participants = updates.participantIds.map((pId: string) => ({
+        if (fetchError) {
+            console.error('Error fetching existing participants:', fetchError);
+        }
+
+        const currentIds = (existingParticipants || []).map(p => p.user_id);
+        const newIds = updates.participantIds;
+
+        // 2. Calculate diffs
+        const toAdd = newIds.filter((id: string) => !currentIds.includes(id));
+        const toRemove = currentIds.filter((id: string) => !newIds.includes(id));
+
+        // 3. Remove deleted participants
+        if (toRemove.length > 0) {
+            await supabase
+                .from('event_participants')
+                .delete()
+                .eq('event_id', eventId)
+                .in('user_id', toRemove);
+        }
+
+        // 4. Add new participants
+        if (toAdd.length > 0) {
+            const participantsToAdd = toAdd.map((pId: string) => ({
                 event_id: eventId,
                 user_id: pId,
                 role: 'viewer' as const,
                 status: 'invited' as const,
             }));
-            const { error: partError } = await supabase.from('event_participants').insert(participants);
 
-            if (!partError) {
-                // Notificaciones creadas automáticamente por trigger de base de datos
-                // Ver: supabase/migrations/20260204120000_notifications_trigger.sql
+            const { error: insertError } = await supabase
+                .from('event_participants')
+                .insert(participantsToAdd);
+
+            if (insertError) {
+                console.error('Error adding new participants:', insertError);
+                alert(`Error al invitar nuevos participantes: ${insertError.message}`);
             } else {
-                alert(`Error al actualizar invitaciones: ${partError.message}`);
+                // Manually trigger notification as a backup/confirmation
+                // The DB trigger *should* handle this, but for robustness we can do it here if needed.
+                // However, let's rely on the trigger first since we verified it exists.
+                // If the user reports it still fails, we can add manual notification here.
             }
         }
     }
 
-    return dbEventToFrontend(data);
+    return dbEventToFrontend(updatedEvent);
 }
 
 /**
