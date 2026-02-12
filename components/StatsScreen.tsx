@@ -1,7 +1,9 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { Flame, TrendingUp, ChevronDown, ChevronUp, Lightbulb, X, BookOpen, Clock, ArrowRight, CheckCircle2, Zap, Hourglass, Info, Trophy, Play, Plus, RotateCcw, Check, Target, RefreshCw } from 'lucide-react';
+import { Target, RefreshCw, Trophy, Check, Plus, Play, Info, ArrowRight, Flame, TrendingUp, ChevronDown, ChevronUp, Lightbulb, X, BookOpen, Clock, CheckCircle2, Zap, Hourglass, RotateCcw } from 'lucide-react';
+import { EventDetailModal } from './EventDetailModal';
+import { CalendarEvent } from '../types';
 
 // ─── Habit Challenge Types ──────────────────────────────────────────────
 interface HabitChallenge {
@@ -133,10 +135,46 @@ export const StatsScreen: React.FC = () => {
     const titleLower = challenge.title.toLowerCase();
     const taskFound = challenge.taskCreated || events.some(e => e.title.toLowerCase().includes(titleLower));
     const autoFound = challenge.automationCreated || events.some(
-      e => e.title.toLowerCase().includes(titleLower) && e.creationSource === 'automation'
+      e => e.title.toLowerCase().includes(titleLower) && (e.creationSource === 'automation' || !!e.recurrenceId)
     );
     return { taskFound, autoFound };
   }, [events]);
+  // Modal State for Habit Tasks
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalAttributes, setModalAttributes] = useState<{ isCreating: boolean, event?: Partial<CalendarEvent> }>({ isCreating: true });
+
+  const handleStep1Click = () => {
+    if (!currentChallenge) return;
+    // Check if task already exists to edit it instead? No, Step 1 implies creation usually, but let's be smart.
+    const titleLower = currentChallenge.title.toLowerCase();
+    const existing = events.find(e => e.title.toLowerCase().includes(titleLower));
+
+    if (existing) {
+      setModalAttributes({ isCreating: false, event: existing });
+    } else {
+      // Pre-fill creation
+      setModalAttributes({
+        isCreating: true,
+        event: { title: currentChallenge.title, type: 'health' } // Default category, user can change
+      });
+    }
+    setModalOpen(true);
+  };
+
+  const handleStep2Click = () => {
+    if (!currentChallenge) return;
+    const titleLower = currentChallenge.title.toLowerCase();
+    const existing = events.find(e => e.title.toLowerCase().includes(titleLower));
+
+    if (existing) {
+      // Open edit to allow adding recurrence
+      setModalAttributes({ isCreating: false, event: existing });
+      setModalOpen(true);
+    } else {
+      // Navigate to create first
+      handleStep1Click();
+    }
+  };
 
   // Update step detection when events change
   useEffect(() => {
@@ -618,7 +656,10 @@ export const StatsScreen: React.FC = () => {
                     {/* Checklist Steps */}
                     <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 space-y-4 border border-gray-100 dark:border-gray-700/50">
                       {/* Step 1: Create task */}
-                      <div className="flex items-start gap-3">
+                      <div
+                        onClick={handleStep1Click}
+                        className="flex items-start gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                      >
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${taskFound
                           ? 'bg-emerald-500 text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
@@ -632,7 +673,10 @@ export const StatsScreen: React.FC = () => {
                       </div>
 
                       {/* Step 2: Automate */}
-                      <div className="flex items-start gap-3">
+                      <div
+                        onClick={handleStep2Click}
+                        className="flex items-start gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                      >
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${autoFound
                           ? 'bg-emerald-500 text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
@@ -646,7 +690,7 @@ export const StatsScreen: React.FC = () => {
                       </div>
 
                       {/* Step 3: Mastery */}
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 p-2 rounded-xl opacity-80">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500">
                           <Trophy size={16} />
                         </div>
@@ -755,6 +799,16 @@ export const StatsScreen: React.FC = () => {
       {/* Apple-Style Article Modal */}
       {selectedArticle && (
         <ArticleModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />
+      )}
+
+      {/* Event Modal for Habit Tasks */}
+      {modalOpen && (
+        <EventDetailModal
+          event={modalAttributes.event as CalendarEvent}
+          isCreating={modalAttributes.isCreating}
+          initialDate={new Date()}
+          onClose={() => setModalOpen(false)}
+        />
       )}
     </>
   );
