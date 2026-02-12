@@ -119,6 +119,19 @@ export async function fetchEvents(userId: string) {
 }
 
 /**
+ * Helper to fetch inviter details
+ */
+async function getInviterDetails(userId: string) {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('user_name')
+        .eq('id', userId)
+        .single();
+
+    return { name: data?.user_name || 'Alguien', error };
+}
+
+/**
  * Create a new calendar event
  * @returns The created event with generated ID
  */
@@ -152,10 +165,34 @@ export async function createEvent(event: any, userId: string) {
         if (partError) {
             console.error('Error adding participants:', partError);
             alert(`Error al invitar amigos: ${partError.message}`);
-        }
+        } else {
+            // Manual Notification via Secure RPC
+            // Fetch inviter name
+            const { name: inviterName } = await getInviterDetails(userId);
 
-        // Notificaciones creadas automáticamente por trigger de base de datos
-        // Ver: supabase/migrations/20260204120000_notifications_trigger.sql
+            // Send notification to each participant
+            for (const pId of event.participantIds) {
+                // @ts-ignore - RPC not yet in types
+                const { error: notifError } = await supabase.rpc('send_event_invitation', {
+                    p_user_id: pId,
+                    p_event_id: data.id,
+                    p_title: 'Nueva Invitación 📅',
+                    p_message: `${inviterName} te ha invitado a "${event.title}"`,
+                    p_metadata: {
+                        eventId: data.id,
+                        role: 'viewer',
+                        invitedBy: userId,
+                        eventTitle: event.title,
+                        categoryType: event.type,
+                        categoryLabel: event.categoryLabel,
+                        startTime: event.start,
+                        endTime: event.end
+                    }
+                });
+
+                if (notifError) console.error('Error sending notification RPC:', notifError);
+            }
+        }
     }
 
     return dbEventToFrontend(data);
@@ -240,10 +277,33 @@ export async function updateEvent(eventId: string, updates: any, userId: string)
                 console.error('Error adding new participants:', insertError);
                 alert(`Error al invitar nuevos participantes: ${insertError.message}`);
             } else {
-                // Manually trigger notification as a backup/confirmation
-                // The DB trigger *should* handle this, but for robustness we can do it here if needed.
-                // However, let's rely on the trigger first since we verified it exists.
-                // If the user reports it still fails, we can add manual notification here.
+                // Manual Notification via Secure RPC
+                const { name: inviterName } = await getInviterDetails(userId);
+
+                // Use the updated event title if available, otherwise fallback (though update returns it)
+                const eventTitle = updatedEvent.title;
+
+                for (const pId of toAdd) {
+                    // @ts-ignore - RPC not yet in types
+                    const { error: notifError } = await supabase.rpc('send_event_invitation', {
+                        p_user_id: pId,
+                        p_event_id: eventId,
+                        p_title: 'Nueva Invitación 📅',
+                        p_message: `${inviterName} te ha invitado a "${eventTitle}"`,
+                        p_metadata: {
+                            eventId: eventId,
+                            role: 'viewer',
+                            invitedBy: userId,
+                            eventTitle: eventTitle,
+                            categoryType: updatedEvent.event_type,
+                            categoryLabel: updatedEvent.category_label,
+                            startTime: updatedEvent.start_time,
+                            endTime: updatedEvent.end_time
+                        }
+                    });
+
+                    if (notifError) console.error('Error sending notification RPC:', notifError);
+                }
             }
         }
     }
