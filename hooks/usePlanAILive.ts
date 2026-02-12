@@ -22,6 +22,7 @@ export const usePlanAILive = () => {
   const sessionRef = useRef<Promise<any> | null>(null);
   const activeSourceCountRef = useRef<number>(0);
   const turnActiveRef = useRef<boolean>(false);
+  const isTalkingRef = useRef<boolean>(false);
 
   const categoryLabels = activeTemplate.categories.map(c => c.label);
 
@@ -221,7 +222,7 @@ export const usePlanAILive = () => {
 
 ## Protocolo de Acción (CRÍTICO)
 1. **Ejecución Directa**: Cuando el usuario pida algo, llama a la herramienta manageCalendar INMEDIATAMENTE. No pidas permiso ni digas "vale, lo hago".
-2. **Confirmación Única**: Tras una acción EXITOSA, di SOLO: "${confirmationPhrase}". NADA MÁS. No repitas la confirmación.
+2. **Confirmación Única**: Tras una acción EXITOSA, di EXACTAMENTE: "${confirmationPhrase}". Esa frase se pronuncia UNA ÚNICA VEZ. Después de decirla, CALLA y espera al usuario. PROHIBIDO repetirla o añadir variaciones.
 3. **Manejo de Errores**: Si algo falla, explica brevemente por qué y pregunta qué quieres hacer.
 
 ## Zona Horaria (MUY IMPORTANTE)
@@ -280,6 +281,9 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
 
                 setVolume(rms);
 
+                // CRITICAL: Mute mic input while AI is speaking to prevent echo feedback
+                if (isTalkingRef.current) return;
+
                 sessionPromise.then(session => {
                   try {
                     // Correct conversion: Uint8Array(pcm) -> base64
@@ -301,6 +305,7 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
               playbackNodeRef.current = playbackNode;
               playbackNode.port.onmessage = (e) => {
                 if (e.data === 'playback-ended') {
+                  isTalkingRef.current = false;
                   setIsTalking(false);
                 }
               };
@@ -328,6 +333,7 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (audioData && playbackNodeRef.current) {
               turnActiveRef.current = true;
+              isTalkingRef.current = true;
               setIsTalking(true);
               setIsThinking(false);
               const buffer = base64ToArrayBuffer(audioData);
