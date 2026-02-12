@@ -325,7 +325,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
                 </h1>
               ) : (
                 <input
-                  type="text" autoFocus value={editedEvent.title}
+                  type="text" value={editedEvent.title}
                   onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
                   className="text-[30px] font-black text-gray-900 dark:text-white tracking-tighter leading-tight bg-transparent border-none p-0 focus:ring-0 w-full mt-1"
                   placeholder={t.placeholder_title}

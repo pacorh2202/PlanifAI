@@ -143,21 +143,19 @@ export const StatsScreen: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalAttributes, setModalAttributes] = useState<{ isCreating: boolean, event?: Partial<CalendarEvent> }>({ isCreating: true });
 
+  /* 
+   * NEW BEHAVIOR: Always create a NEW event. 
+   * Even if a task with the same name exists, the user wants a fresh template.
+   */
   const handleStep1Click = () => {
     if (!currentChallenge) return;
-    // Check if task already exists to edit it instead? No, Step 1 implies creation usually, but let's be smart.
-    const titleLower = currentChallenge.title.toLowerCase();
-    const existing = events.find(e => e.title.toLowerCase().includes(titleLower));
 
-    if (existing) {
-      setModalAttributes({ isCreating: false, event: existing });
-    } else {
-      // Pre-fill creation
-      setModalAttributes({
-        isCreating: true,
-        event: { title: currentChallenge.title, type: 'health' } // Default category, user can change
-      });
-    }
+    // Always open in CREATE mode with the title pre-filled
+    // No ID is passed, effectively creating a new draft
+    setModalAttributes({
+      isCreating: true,
+      event: { title: currentChallenge.title, type: 'health' }
+    });
     setModalOpen(true);
   };
 
@@ -569,8 +567,8 @@ export const StatsScreen: React.FC = () => {
               {/* Header – always visible */}
               <div className="px-6 pt-6 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <Trophy size={20} className="text-gray-500 dark:text-gray-400" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${accentColor}20` }}>
+                    <Trophy size={20} style={{ color: accentColor }} />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-sm font-black text-gray-900 dark:text-white tracking-wide">{t.habit_builder_title}</h3>
@@ -589,7 +587,12 @@ export const StatsScreen: React.FC = () => {
                 <div className="px-6 pb-6">
                   <button
                     onClick={() => setBuilderPhase('input')}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:border-gray-300 hover:text-gray-500 dark:hover:border-gray-600 dark:hover:text-gray-400 transition-all duration-300 text-sm font-bold"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-dashed transition-all duration-300 text-sm font-bold shadow-sm hover:shadow-md active:scale-95"
+                    style={{
+                      borderColor: accentColor,
+                      color: accentColor,
+                      backgroundColor: `${accentColor}10` // 10% opacity
+                    }}
                   >
                     <Plus size={18} />
                     {t.habit_builder_create}
