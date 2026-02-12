@@ -587,14 +587,12 @@ export const StatsScreen: React.FC = () => {
                 <div className="px-6 pb-6">
                   <button
                     onClick={() => setBuilderPhase('input')}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-dashed transition-all duration-300 text-sm font-bold shadow-sm hover:shadow-md active:scale-95"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl transition-all duration-300 text-sm font-bold shadow-md hover:shadow-lg active:scale-95 text-white"
                     style={{
-                      borderColor: accentColor,
-                      color: accentColor,
-                      backgroundColor: `${accentColor}10` // 10% opacity
+                      backgroundColor: accentColor,
                     }}
                   >
-                    <Plus size={18} />
+                    <Plus size={18} strokeWidth={3} />
                     {t.habit_builder_create}
                   </button>
                 </div>

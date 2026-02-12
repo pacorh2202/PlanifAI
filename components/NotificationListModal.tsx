@@ -225,12 +225,12 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
     };
 
     return (
-        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center pointer-events-none">
+        <div className="fixed inset-0 z-[10001] flex items-end sm:items-center justify-center pointer-events-none">
             <div
                 className="absolute inset-0 bg-black/30 backdrop-blur-xl transition-opacity pointer-events-auto"
                 onClick={onClose}
             />
-            <div className="w-full sm:w-[450px] max-h-[90vh] sm:max-h-[85vh] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col pointer-events-auto transform transition-all duration-300 ease-out">
+            <div className="w-full sm:w-[450px] h-[92dvh] sm:h-[85vh] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col pointer-events-auto transform transition-all duration-300 ease-out pb-safe">
 
                 {/* Header */}
                 <div className="px-8 pt-8 pb-6 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-800/50 shrink-0">
