@@ -5,6 +5,7 @@ import { Language, translations } from '../translations';
 import { useAuth } from '../src/contexts/AuthContext';
 import * as calendarApi from '../src/lib/calendar-api';
 import * as friendsApi from '../src/lib/friends-api';
+import * as notificationsApi from '../src/lib/notifications-api'; // Import notifications API
 import { fetchUserStats, UserStats } from '../src/lib/stats-api';
 import { supabase } from '../src/lib/supabase';
 import { Friend } from '../types';
@@ -44,6 +45,10 @@ interface CalendarContextType {
   updateEvent: (id: string, data: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   executeAction: (action: CalendarAction) => Promise<string>;
+  // Notification State
+  unreadCount: number;
+  hasUnread: boolean;
+  refreshNotifications: () => Promise<void>;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -72,6 +77,53 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isDetailViewOpen, setIsDetailViewOpen] = useState(false);
   const [friends, setFriendsState] = useState<Friend[]>([]);
   const [friendsLoaded, setFriendsLoaded] = useState(false);
+
+  // Notification State
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [hasUnread, setHasUnread] = useState(false);
+
+  // Initial Data Load & Realtime Subscriptions
+  useEffect(() => {
+    if (!user) return;
+
+    // 1. Fetch Initial Notifications
+    const loadNotifications = async () => {
+      try {
+        const data = await notificationsApi.fetchNotifications(user.id);
+        const unread = data.filter((n: any) => !n.is_read).length;
+        setUnreadCount(unread);
+        setHasUnread(unread > 0);
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
+      }
+    };
+    loadNotifications();
+
+    // 2. Subscribe to Realtime Notifications
+    const unsubscribe = notificationsApi.subscribeToNotifications(user.id, {
+      onInsert: (newNotification) => {
+        // Play sound or show toast here if desired
+        setUnreadCount(prev => prev + 1);
+        setHasUnread(true);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
+
+  const refreshNotifications = async () => {
+    if (!user) return;
+    try {
+      const data = await notificationsApi.fetchNotifications(user.id);
+      const unread = data.filter((n: any) => !n.is_read).length;
+      setUnreadCount(unread);
+      setHasUnread(unread > 0);
+    } catch (err) {
+      console.error('Error refreshing notifications:', err);
+    }
+  };
 
   const t = useMemo(() => translations[language], [language]);
 
@@ -629,7 +681,9 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setTemplate, saveCustomTemplate, setAccentColor, setUserName, setUserHandle,
       setAssistantName, setAssistantVoice, setProfileImage, setIsDetailViewOpen,
       refreshFriends, addEvent, updateEvent, deleteEvent, executeAction,
-      refreshEvents // Exportar para uso en otros componentes
+      refreshEvents, // Exportar para uso en otros componentes
+      // Notification Exports
+      unreadCount, hasUnread, refreshNotifications
     }}>
       {children}
     </CalendarContext.Provider>

@@ -23,7 +23,7 @@ import {
 type TabType = 'chat' | 'calendar' | 'friends' | 'stats' | 'settings';
 
 const AppContent: React.FC = () => {
-  const { accentColor, isDetailViewOpen, t } = useCalendar();
+  const { accentColor, isDetailViewOpen, t, unreadCount } = useCalendar();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('chat');
   const [settingsView, setSettingsView] = useState<'main' | 'colors' | 'custom-palette' | 'privacy' | 'language' | 'account' | 'subscriptions' | 'voice-settings' | 'suggestions'>('main');
@@ -105,6 +105,15 @@ const AppContent: React.FC = () => {
                     className={`relative z-10 transition-all duration-500 ${isActive ? 'text-white scale-110' : 'text-gray-400 dark:text-gray-600 group-hover:text-gray-500'
                       }`}
                   />
+
+                  {/* Notification Badge */}
+                  {tab.id === 'friends' && unreadCount > 0 && (
+                    <div className="absolute top-3 right-[25%] min-w-[16px] h-4 px-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 z-20 shadow-sm animate-pulse">
+                      <span className="text-[9px] font-bold text-white leading-none">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    </div>
+                  )}
                 </button>
               );
             })}

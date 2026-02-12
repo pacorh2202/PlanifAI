@@ -273,7 +273,13 @@ export const translations = {
     habit_builder_step3_title: "DOMINIO DEL HÁBITO",
     habit_builder_step3_desc: "Marca el progreso durante 21 días.",
     habit_builder_measure: "MEDIR HÁBITO",
-    habit_builder_reset: "Resetear"
+    habit_builder_reset: "Resetear",
+    // Conflict Resolution
+    conflict_title: "Conflicto de horario",
+    conflict_desc: "Esta tarea se solapa con \"{existing}\".",
+    conflict_keep_both: "Mantener ambas",
+    conflict_replace: "Reemplazar",
+    conflict_cancel: "Cancelar"
   },
   en: {
     app_name: "PlanifAI",
@@ -548,7 +554,13 @@ export const translations = {
     habit_builder_step3_title: "HABIT MASTERY",
     habit_builder_step3_desc: "Track progress for 21 days.",
     habit_builder_measure: "MEASURE HABIT",
-    habit_builder_reset: "Reset"
+    habit_builder_reset: "Reset",
+    // Conflict Resolution
+    conflict_title: "Schedule Conflict",
+    conflict_desc: "This task overlaps with \"{existing}\".",
+    conflict_keep_both: "Keep Both",
+    conflict_replace: "Replace",
+    conflict_cancel: "Cancel"
   }
 };
 

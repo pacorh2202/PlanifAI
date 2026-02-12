@@ -192,7 +192,7 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
             loadNotifications();
             if (refreshEvents) await refreshEvents();
 
-            alert(t.notif_accepted);
+
         } catch (e) {
             console.error(e);
             alert(t.notif_accept_error);

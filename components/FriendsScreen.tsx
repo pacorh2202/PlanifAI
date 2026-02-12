@@ -5,7 +5,7 @@ import { useCalendar } from '../contexts/CalendarContext';
 import { useAuth } from '../src/contexts/AuthContext';
 import * as friendsApi from '../src/lib/friends-api';
 import { NotificationListModal } from './NotificationListModal';
-import { fetchNotifications, subscribeToNotifications } from '../src/lib/notifications-api';
+// Removed local fetch/subscribe imports as they are now in context
 
 interface FriendWithStatus {
   id: string;
@@ -18,7 +18,7 @@ interface FriendWithStatus {
 }
 
 export const FriendsScreen: React.FC = () => {
-  const { t, friends, refreshFriends, accentColor, language } = useCalendar();
+  const { t, friends, refreshFriends, accentColor, language, unreadCount, hasUnread, refreshNotifications } = useCalendar();
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -28,20 +28,14 @@ export const FriendsScreen: React.FC = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [hasUnread, setHasUnread] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  // Removed local unreadCount and hasUnread state
 
   const [suggestedFriends, setSuggestedFriends] = useState<any[]>([]);
 
   // Check for notifications and load suggestions
   useEffect(() => {
     if (!user) return;
-    const checkNotifs = async () => {
-      const data = await fetchNotifications(user.id);
-      const unread = data.filter((n: any) => !n.is_read).length;
-      setUnreadCount(unread);
-      setHasUnread(unread > 0);
-    };
+    // Notifications are now handled in CalendarContext
 
     const loadSuggestions = async () => {
       try {
@@ -52,17 +46,7 @@ export const FriendsScreen: React.FC = () => {
       }
     };
 
-    checkNotifs();
     loadSuggestions();
-
-    // Subscribe to realtime notifications
-    const unsubscribe = subscribeToNotifications(user.id, {
-      onInsert: () => {
-        setHasUnread(true);
-        setUnreadCount(prev => prev + 1);
-      }
-    });
-    return () => unsubscribe();
   }, [user]);
 
   // Search users when search term changes
@@ -392,12 +376,7 @@ export const FriendsScreen: React.FC = () => {
       {showNotifications && (
         <NotificationListModal
           onClose={() => setShowNotifications(false)}
-          onNotificationUpdate={async () => {
-            const data = await fetchNotifications(user.id);
-            const unread = data.filter((n: any) => !n.is_read).length;
-            setUnreadCount(unread);
-            setHasUnread(unread > 0);
-          }}
+          onNotificationUpdate={refreshNotifications}
         />
       )}
     </>

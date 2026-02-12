@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { X, MapPin, Plus, Check, MoreHorizontal, Calendar as CalendarIcon, Clock, Navigation, ChevronRight, Star, Repeat } from 'lucide-react';
+import { X, MapPin, Plus, Check, MoreHorizontal, Calendar as CalendarIcon, Clock, Navigation, ChevronRight, Star, Repeat, AlertTriangle } from 'lucide-react';
 import { CalendarEvent, Friend } from '../types';
 import { useCalendar } from '../contexts/CalendarContext';
 import { getEventColor, getEventIcon } from './CalendarScreen';
@@ -24,7 +24,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
 // MOCK_FRIENDS removed - using real data from context
 
 export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCreating, initialDate, onClose }) => {
-  const { updateEvent, deleteEvent, addEvent, activeTemplate, accentColor, t, language, friends } = useCalendar();
+  const { updateEvent, deleteEvent, addEvent, activeTemplate, accentColor, t, language, friends, events } = useCalendar();
   const [isEditing, setIsEditing] = useState(isCreating || false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -94,6 +94,11 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
   const [isRecurring, setIsRecurring] = useState(false);
   const [selectedDays, setSelectedDays] = useState<number[]>([]); // 0=Sun, 1=Mon, ...
 
+  // Conflict Resolution State
+  const [conflictEvent, setConflictEvent] = useState<CalendarEvent | null>(null);
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [pendingSaveAction, setPendingSaveAction] = useState<() => Promise<void> | void>();
+
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
@@ -149,12 +154,24 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     return t.pending;
   }, [event, editedEvent, now, isCreating, t]);
 
-  const handleSave = async () => {
-    if (!editedEvent.title.trim()) {
-      alert(t.alert_title);
-      return;
+  const confirmSave = async (replacementMode: boolean = false) => {
+    if (replacementMode && conflictEvent) {
+      await deleteEvent(conflictEvent.id);
     }
 
+    if (pendingSaveAction) {
+      await pendingSaveAction();
+    } else {
+      // Fallback if direct call
+      await performSave();
+    }
+
+    setConflictEvent(null);
+    setShowConflictModal(false);
+    onClose();
+  };
+
+  const performSave = async () => {
     // Resolve attendee names → participant IDs for sharing
     let participantIds: string[] = [];
     if (editedEvent.attendees && editedEvent.attendees.length > 0) {
@@ -202,6 +219,37 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
       if (isCreating) addEvent({ ...editedEvent, participantIds });
       else if (event) updateEvent(event.id, editedEvent);
     }
+  };
+
+  const handleSave = async () => {
+
+    if (!editedEvent.title.trim()) {
+      alert(t.alert_title);
+      return;
+    }
+
+    // Check for conflicts
+    const start = new Date(editedEvent.start).getTime();
+    const end = new Date(editedEvent.end).getTime();
+
+    const conflict = events.find(e => {
+      if (event && e.id === event.id) return false; // Ignore itself
+      if (e.allDay) return false; // Simple conflict check ignores all-day for now
+
+      const eStart = new Date(e.start).getTime();
+      const eEnd = new Date(e.end).getTime();
+
+      return (start < eEnd && end > eStart);
+    });
+
+    if (conflict) {
+      setConflictEvent(conflict);
+      setPendingSaveAction(() => performSave);
+      setShowConflictModal(true);
+      return;
+    }
+
+    await performSave();
     onClose();
   };
 
@@ -582,6 +630,49 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
           )}
         </div>
       </div>
+
+      {/* Conflict Resolution Modal */}
+      {showConflictModal && conflictEvent && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowConflictModal(false)}></div>
+          <div className="relative bg-white dark:bg-gray-900 rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-scale-in">
+            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-amber-500">
+              <AlertTriangle size={32} />
+            </div>
+
+            <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
+              {t.conflict_title}
+            </h3>
+
+            <p className="text-center text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+              {(t.conflict_desc || "Conflict with {existing}").replace('{existing}', conflictEvent.title)}
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => confirmSave(true)}
+                className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold text-sm tracking-wide active:scale-95 transition-transform"
+              >
+                {t.conflict_replace}
+              </button>
+
+              <button
+                onClick={() => confirmSave(false)}
+                className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-bold text-sm tracking-wide active:scale-95 transition-transform"
+              >
+                {t.conflict_keep_both}
+              </button>
+
+              <button
+                onClick={() => setShowConflictModal(false)}
+                className="w-full py-4 text-gray-400 font-bold text-xs uppercase tracking-widest active:scale-95 transition-transform"
+              >
+                {t.conflict_cancel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
