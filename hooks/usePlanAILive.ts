@@ -21,6 +21,7 @@ export const usePlanAILive = () => {
   const nextStartTimeRef = useRef<number>(0);
   const sessionRef = useRef<Promise<any> | null>(null);
   const activeSourceCountRef = useRef<number>(0);
+  const turnActiveRef = useRef<boolean>(false);
 
   const categoryLabels = activeTemplate.categories.map(c => c.label);
 
@@ -47,15 +48,15 @@ export const usePlanAILive = () => {
           type: Type.OBJECT,
           properties: {
             title: { type: Type.STRING, description: "Título de la tarea sin emojis (el icono se asignará automáticamente según la categoría)." },
-            start: { type: Type.STRING, description: "Fecha y hora de inicio (ISO 8601). OBLIGATORIO." },
-            end: { type: Type.STRING, description: "Fecha y hora de fin (ISO 8601). OBLIGATORIO. Si no se especifica duración, asume 1 hora." },
+            start: { type: Type.STRING, description: "Fecha y hora de inicio en ISO 8601 con offset de zona horaria (ej: 2026-02-12T17:00:00+01:00). OBLIGATORIO para create." },
+            end: { type: Type.STRING, description: "Fecha y hora de fin en ISO 8601 con offset de zona horaria. OBLIGATORIO para create. Si no se especifica duración, asume 1 hora." },
             type: { type: Type.STRING, enum: categoryLabels, description: "Categoría exacta del evento." },
             location: { type: Type.STRING, description: "Ubicación o dirección física, si se menciona." },
             descriptionPoints: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Lista de detalles, notas, o subtareas mencionadas." },
             allDay: { type: Type.BOOLEAN },
             attendees: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Nombres EXACTOS de los amigos invitados." }
           },
-          required: ['title', 'start', 'end', 'type']
+          description: "Para 'create': title, start, end, type son obligatorios. Para 'update': envía SOLO los campos que cambian."
         }
       },
       required: ['actionType']
@@ -122,17 +123,46 @@ export const usePlanAILive = () => {
       return;
     }
 
-    const eventsSummary = events.map(e =>
-      `- ID: ${e.id} | Titulo: ${e.title} | Inicio: ${e.start} | Fin: ${e.end} | Estado: ${e.status}${e.attendees && e.attendees.length > 0 ? ` | Participantes: ${e.attendees.join(', ')}` : ''}`
-    ).join('\n');
+    // Build a rich event summary with ALL fields, dates in local timezone
+    const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. 'Europe/Madrid'
+    const fmtLocal = (iso: string) => {
+      try {
+        return new Date(iso).toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {
+          timeZone: userTZ, weekday: 'short', day: 'numeric', month: 'short',
+          hour: '2-digit', minute: '2-digit', hour12: false
+        });
+      } catch { return iso; }
+    };
+    const eventsSummary = events.map(e => {
+      const parts = [
+        `ID: ${e.id}`,
+        `Título: ${e.title}`,
+        `Inicio: ${fmtLocal(e.start)}`,
+        `Fin: ${fmtLocal(e.end)}`,
+        `Categoría: ${e.categoryLabel || e.type}`,
+        `Estado: ${e.status}`
+      ];
+      if (e.location) parts.push(`Ubicación: ${e.location}`);
+      if (e.descriptionPoints && e.descriptionPoints.length > 0) parts.push(`Notas: ${e.descriptionPoints.join('; ')}`);
+      if (e.attendees && e.attendees.length > 0) parts.push(`Participantes: ${e.attendees.join(', ')}`);
+      if (e.allDay) parts.push('Todo el día: sí');
+      return `- ${parts.join(' | ')}`;
+    }).join('\n');
 
     const friendsSummary = friends.length > 0
       ? friends.map(f => `* NOMBRE: "${f.name}" | HANDLE: "@${f.handle}"`).join('\n')
       : "No tienes amigos agregados todavía.";
 
     const now = new Date();
-    const localTimeFull = now.toString();
+    const localTimeFull = now.toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {
+      timeZone: userTZ, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    });
     const tzOffset = now.getTimezoneOffset();
+    const tzSign = tzOffset <= 0 ? '+' : '-';
+    const tzHours = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, '0');
+    const tzMins = String(Math.abs(tzOffset) % 60).padStart(2, '0');
+    const isoOffset = `${tzSign}${tzHours}:${tzMins}`; // e.g. +01:00
 
     console.log('[AI] 📝 Initializing GoogleGenAI and AudioContext...');
     try {
@@ -181,19 +211,40 @@ export const usePlanAILive = () => {
 ## Personalidad y Tono
 - **Natural y Humano**: Habla de forma fluida, como un amigo eficiente. Evita sonar como un robot.
 - **Brevedad Extrema**: Nunca des explicaciones largas. Si puedes decir algo en 5 palabras, no uses 10.
-- **Sin Repeticiones**: Si ya has confirmado algo o el usuario lo sabe, no lo repitas. 
+- **Sin Repeticiones**: NUNCA repitas una frase que ya hayas dicho. Cada respuesta se dice UNA SOLA VEZ. Cuando termines de hablar, detente limpiamente. No añadas nada más después de la despedida o confirmación.
+
+## Calidad de Habla (CRÍTICO)
+- Pronuncia cada palabra COMPLETA y CLARA, especialmente la ÚLTIMA palabra de cada frase.
+- Nunca trunces, acortes ni deformes palabras.
+- Habla como si leyeras en voz alta a una persona, con ritmo natural.
+- Termina cada frase con una pausa limpia y natural.
 
 ## Protocolo de Acción (CRÍTICO)
 1. **Ejecución Directa**: Cuando el usuario pida algo, llama a la herramienta manageCalendar INMEDIATAMENTE. No pidas permiso ni digas "vale, lo hago".
-2. **Confirmación Única**: Tras una acción EXITOSA, di SOLO: "${confirmationPhrase}". NADA MÁS.
+2. **Confirmación Única**: Tras una acción EXITOSA, di SOLO: "${confirmationPhrase}". NADA MÁS. No repitas la confirmación.
 3. **Manejo de Errores**: Si algo falla, explica brevemente por qué y pregunta qué quieres hacer.
 
-## Contexto Temporal y Amigos
-- Fecha actual: ${localTimeFull} (Llevamos cuenta de la zona horaria UTC${tzOffset >= 0 ? '+' : ''}${-tzOffset / 60}).
-- Amigos disponibles: ${friendsSummary}
-- Eventos hoy: ${eventsSummary || "No hay eventos hoy."}
+## Zona Horaria (MUY IMPORTANTE)
+- Zona horaria del usuario: ${userTZ} (UTC${isoOffset}).
+- Fecha y hora actual: ${localTimeFull}.
+- SIEMPRE genera fechas ISO 8601 CON el offset de zona horaria del usuario. Ejemplo: 2026-02-12T17:00:00${isoOffset}.
+- NUNCA uses UTC puro (que termina en Z). SIEMPRE incluye el offset ${isoOffset}.
+- Los horarios mostrados abajo ya están en la hora LOCAL del usuario.
 
-## Manejo de Amigos y Nombres Duplicados (IMPORTANTE)
+## Eventos Actuales
+${eventsSummary || "No hay eventos hoy."}
+
+## Capacidades de Consulta y Edición (COMPLETAS)
+Tienes acceso TOTAL a todos los campos de cada evento. Puedes:
+- **Consultar** CUALQUIER dato: título, horario, ubicación, categoría, notas/subtareas, participantes, estado.
+- **Editar** CUALQUIER campo individualmente con actionType 'update': envía SOLO el campo que cambia en eventData.
+  Ejemplos: cambiar solo la ubicación, añadir/modificar notas, cambiar la categoría, actualizar participantes.
+- **No alterar** otros campos al editar: si el usuario pide cambiar la ubicación, envía solo { location: "nuevo valor" } en eventData.
+
+## Amigos Disponibles
+${friendsSummary}
+
+## Manejo de Amigos y Nombres Duplicados
 - Para referirte a otras personas: USA SIEMPRE SU @handle (nombre de usuario).
 - NUNCA uses el nombre real de otras personas, es información privada.
 - Solo usa el nombre real del usuario (${userName}) para dirigirte a él/ella con naturalidad.
@@ -265,11 +316,18 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             }
           },
           onmessage: async (msg: LiveServerMessage) => {
+            // Detect turn completion to prevent duplicate audio
+            if (msg.serverContent?.turnComplete) {
+              turnActiveRef.current = false;
+              return;
+            }
+
             if (msg.serverContent?.modelTurn?.parts?.[0]?.text) {
               console.log('[AI] 💬 Text message:', msg.serverContent.modelTurn.parts[0].text);
             }
             const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (audioData && playbackNodeRef.current) {
+              turnActiveRef.current = true;
               setIsTalking(true);
               setIsThinking(false);
               const buffer = base64ToArrayBuffer(audioData);
