@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
-import { ChevronLeft, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, Check, Sparkles, CreditCard, ShieldCheck, Zap, RefreshCw } from 'lucide-react';
 import { useCalendar } from '../contexts/CalendarContext';
+import { purchasesService } from '../src/lib/purchases';
 
 interface SubscriptionScreenProps {
     onBack: () => void;
@@ -9,8 +10,22 @@ interface SubscriptionScreenProps {
 
 export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }) => {
     const { accentColor, t } = useCalendar();
-    const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
-    const [activePlanId, setActivePlanId] = useState<string | null>(null);
+    const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('yearly');
+    const [activePlanId, setActivePlanId] = useState<string>('monthly_plus_access');
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        purchasesService.initialize();
+    }, []);
+
+    const handleRestore = async () => {
+        setIsLoading(true);
+        try {
+            await purchasesService.restorePurchases();
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const plans = [
         {
@@ -18,126 +33,212 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
             name: t.sub_plan_free,
             monthlyPrice: '0€',
             yearlyPrice: '0€',
+            icon: Zap,
             features: t.sub_features_basic,
-            buttonText: t.sub_choose_free
+            buttonText: t.sub_choose_free,
+            premiumLink: false
         },
         {
-            id: 'plus',
+            id: 'monthly_plus_access',
             name: t.sub_plan_plus,
-            monthlyPrice: '5€',
-            yearlyPrice: '50€',
+            monthlyPrice: '5.99€',
+            yearlyPrice: '59.90€',
+            icon: Sparkles,
             features: t.sub_features_plus,
             buttonText: t.sub_choose_plus,
-            recommended: billingPeriod === 'yearly'
+            recommended: true,
+            premiumLink: true
         },
         {
-            id: 'pro',
+            id: 'monthly_pro_access',
             name: t.sub_plan_pro,
-            monthlyPrice: '10€',
-            yearlyPrice: '100€',
+            monthlyPrice: '12.99€',
+            yearlyPrice: '129.90€',
+            icon: CreditCard,
             features: t.sub_features_premium,
-            buttonText: t.sub_choose_pro
+            buttonText: t.sub_choose_pro,
+            premiumLink: true
         }
     ];
 
+    const handlePurchase = async (planId: string) => {
+        setIsLoading(true);
+        let actualId = planId;
+        if (billingPeriod === 'yearly') {
+            if (planId === 'monthly_plus_access') actualId = 'Yearly_plus_access';
+            if (planId === 'monthly_pro_access') actualId = 'Yearly_pro_access';
+        }
+
+        try {
+            await purchasesService.purchasePackage(actualId);
+            console.log("Purchase process completed for: ", actualId);
+        } catch (error) {
+            console.error("Purchase failed", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
-        <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar pb-20 transition-colors duration-300">
-            <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20">
-                <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
-                    <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
+        <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar pb-32 transition-colors duration-500">
+            {/* Elegant Header */}
+            <header className="px-6 pt-12 pb-8 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/90 dark:bg-black/90 backdrop-blur-xl z-[100] border-b border-gray-100 dark:border-gray-900 transition-all">
+                <button onClick={onBack} className="p-3 -ml-3 rounded-2xl active:scale-95 bg-white dark:bg-gray-900 shadow-sm border border-gray-100 dark:border-gray-800 transition-all">
+                    <ChevronLeft className="text-gray-900 dark:text-white" size={20} />
                 </button>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight text-center flex-1 pr-6">{t.sub_title}</h1>
+                <div className="flex flex-col items-center flex-1">
+                    <h1 className="text-lg font-black text-gray-900 dark:text-white tracking-widest uppercase italic">{t.sub_title}</h1>
+                    <div className="h-1 w-8 rounded-full mt-1" style={{ backgroundColor: accentColor }}></div>
+                </div>
+                <button onClick={handleRestore} className="p-3 -mr-3 rounded-2xl active:scale-95 text-gray-400 hover:text-gray-600 transition-all flex items-center gap-2">
+                    <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+                </button>
             </header>
 
-            <main className="px-6 pt-4 space-y-8">
-                {/* Toggle Mensual/Anual */}
+            <main className="px-6 pt-6 space-y-10 max-w-lg mx-auto w-full">
+                {/* Hero Section */}
+                <div className="text-center space-y-3">
+                    <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight px-4 leading-[1.1]">
+                        {t.sub_hero_title}
+                    </h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium px-10 leading-relaxed">
+                        {t.sub_hero_desc}
+                    </p>
+                </div>
+
+                {/* Neo-Luxury Toggle */}
                 <div className="flex justify-center">
-                    <div className="bg-gray-100 dark:bg-gray-900 p-1.5 rounded-full flex items-center gap-1 w-full max-w-[300px] border border-gray-200/30 dark:border-gray-800">
+                    <div className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-md p-1.5 rounded-[2rem] flex items-center gap-1 w-full border border-gray-100 dark:border-gray-800 shadow-inner">
                         <button
                             onClick={() => setBillingPeriod('monthly')}
-                            className={`flex-1 py-3 rounded-full text-xs font-bold transition-all ${billingPeriod === 'monthly' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-400'}`}
+                            className={`flex-1 py-4 rounded-[1.6rem] text-xs font-black uppercase tracking-widest transition-all duration-500 ${billingPeriod === 'monthly' ? 'bg-white dark:bg-gray-800 shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)]' : 'text-gray-400'}`}
                             style={{ color: billingPeriod === 'monthly' ? accentColor : undefined }}
                         >
                             {t.sub_monthly}
                         </button>
                         <button
                             onClick={() => setBillingPeriod('yearly')}
-                            className={`flex-1 py-3 rounded-full text-xs font-bold transition-all ${billingPeriod === 'yearly' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-400'}`}
+                            className={`flex-1 py-4 rounded-[1.6rem] text-xs font-black uppercase tracking-widest transition-all duration-500 relative ${billingPeriod === 'yearly' ? 'bg-white dark:bg-gray-800 shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)]' : 'text-gray-400'}`}
                             style={{ color: billingPeriod === 'yearly' ? accentColor : undefined }}
                         >
                             {t.sub_yearly}
+                            {billingPeriod !== 'yearly' && (
+                                <span className="absolute -top-3 -right-2 bg-indigo-500 text-white text-[8px] px-2 py-0.5 rounded-full shadow-lg">
+                                    -20%
+                                </span>
+                            )}
                         </button>
                     </div>
                 </div>
 
-                <div className="space-y-6 pb-8">
+                {/* Card Stack */}
+                <div className="space-y-6">
                     {plans.map((plan) => {
-                        const isActive = activePlanId === plan.id || (activePlanId === null && plan.recommended);
+                        const isSelected = activePlanId === plan.id;
+                        const PlanIcon = plan.icon;
 
                         return (
                             <div
                                 key={plan.id}
-                                onMouseEnter={() => setActivePlanId(plan.id)}
                                 onClick={() => setActivePlanId(plan.id)}
-                                className={`relative bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border-2 transition-all duration-500 transform ${isActive ? 'scale-[1.02] shadow-xl' : 'scale-100 opacity-90'}`}
+                                className={`relative group cursor-pointer rounded-[3rem] p-1 transition-all duration-700 ${isSelected ? 'scale-[1.03]' : 'scale-100'}`}
                                 style={{
-                                    borderColor: isActive ? accentColor : 'transparent',
-                                    boxShadow: isActive ? `0 20px 40px -15px ${accentColor}33` : undefined
+                                    background: isSelected ? `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}66 100%)` : 'transparent'
                                 }}
                             >
-                                {plan.recommended && (
-                                    <div className="absolute top-4 right-8 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg z-10" style={{ backgroundColor: accentColor, opacity: 0.9 }}>
-                                        {t.sub_recommended}
-                                    </div>
-                                )}
+                                <div className={`h-full w-full bg-white dark:bg-gray-900 rounded-[2.9rem] p-8 shadow-2xl transition-all duration-500 overflow-hidden ${isSelected ? 'dark:bg-gray-800/90' : 'opacity-80'}`}>
+                                    {isSelected && (
+                                        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full mix-blend-soft-light filter blur-3xl animate-pulse"
+                                            style={{ backgroundColor: accentColor }}></div>
+                                    )}
 
-                                <div className="flex justify-between items-start mb-6">
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 dark:text-white text-2xl tracking-tight transition-colors" style={{ color: isActive ? accentColor : undefined }}>{plan.name}</h3>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter transition-all" style={{ color: isActive ? accentColor : undefined }}>
-                                            {billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
-                                        </span>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                                            / {billingPeriod === 'monthly' ? t.sub_per_month.replace('/ ', '') : t.sub_per_year.replace('/ ', '')}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4 mb-8">
-                                    {plan.features.map((feature, i) => (
-                                        <div key={i} className="flex items-start gap-3">
-                                            <div
-                                                className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-300`}
-                                                style={{ backgroundColor: isActive ? `${accentColor}20` : '#F1F5F9' }}
-                                            >
-                                                <Check size={12} style={{ color: isActive ? accentColor : '#94A3B8' }} strokeWidth={4} />
-                                            </div>
-                                            <span className={`text-sm font-medium leading-tight transition-colors ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
-                                                {feature}
-                                            </span>
+                                    {plan.recommended && (
+                                        <div className="absolute top-6 right-8 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] text-white shadow-xl animate-bounce" style={{ backgroundColor: accentColor }}>
+                                            {t.sub_recommended}
                                         </div>
-                                    ))}
-                                </div>
+                                    )}
 
-                                <button
-                                    className="w-full py-5 rounded-3xl text-white font-black text-sm uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all duration-300"
-                                    style={{
-                                        backgroundColor: isActive ? accentColor : '#94A3B8',
-                                        transform: isActive ? 'translateY(-2px)' : 'none'
-                                    }}
-                                >
-                                    {plan.buttonText}
-                                </button>
+                                    <div className="flex items-center gap-4 mb-8">
+                                        <div className={`w-14 h-14 rounded-3xl flex items-center justify-center transition-all duration-500 ${isSelected ? 'shadow-lg rotate-3' : 'bg-gray-50 dark:bg-black'}`}
+                                            style={{
+                                                backgroundColor: isSelected ? accentColor : undefined,
+                                                color: isSelected ? 'white' : accentColor
+                                            }}>
+                                            <PlanIcon size={28} strokeWidth={isSelected ? 2.5 : 2} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <h3 className="font-black text-gray-900 dark:text-white text-2xl tracking-tight leading-none mb-1">{plan.name}</h3>
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-xl font-black text-gray-900 dark:text-white leading-none tracking-tighter" style={{ color: isSelected ? accentColor : undefined }}>
+                                                    {billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
+                                                </span>
+                                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                                    / {billingPeriod === 'monthly' ? t.sub_per_month.split(' ')[1] : t.sub_per_year.split(' ')[1]}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 mb-10 pl-2">
+                                        {plan.features.map((feature, i) => (
+                                            <div key={i} className={`flex items-start gap-4 transition-all duration-500 ${isSelected ? 'translate-x-1' : ''}`} style={{ transitionDelay: `${i * 100}ms` }}>
+                                                <div className="mt-1 flex-shrink-0">
+                                                    <Check size={14} style={{ color: isSelected ? accentColor : '#94A3B8' }} strokeWidth={4} />
+                                                </div>
+                                                <span className={`text-sm font-bold leading-snug transition-colors ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600'}`}>
+                                                    {feature}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handlePurchase(plan.id);
+                                        }}
+                                        disabled={isLoading}
+                                        className="w-full relative overflow-hidden group/btn py-6 rounded-[2rem] text-white font-black text-sm uppercase tracking-[0.25em] shadow-2xl active:scale-[0.97] transition-all duration-500"
+                                        style={{ backgroundColor: isSelected ? accentColor : '#334155' }}
+                                    >
+                                        <span className="relative z-10 flex items-center justify-center gap-3">
+                                            {isLoading && activePlanId === plan.id ? (
+                                                <RefreshCw size={18} className="animate-spin" />
+                                            ) : (
+                                                <>
+                                                    {plan.buttonText}
+                                                    <Zap size={16} className="opacity-50 group-hover/btn:scale-125 transition-transform" />
+                                                </>
+                                            )}
+                                        </span>
+                                        <div className="absolute inset-x-0 top-0 h-[1px] bg-white/30"></div>
+                                    </button>
+                                </div>
                             </div>
                         );
                     })}
                 </div>
 
-                <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest px-12 leading-relaxed pb-10">
-                    {t.sub_cancel_disclaimer}
-                </p>
+                {/* Compliance Footer */}
+                <div className="flex flex-col items-center space-y-8 pt-6 pb-12 opacity-60 hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-8 text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 dark:text-gray-600">
+                        <a href="#" className="hover:text-indigo-500 transition-colors">Terms</a>
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-gray-800"></div>
+                        <a href="#" className="hover:text-indigo-500 transition-colors">Privacy</a>
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-gray-800"></div>
+                        <button onClick={handleRestore} className="hover:text-indigo-500 transition-colors">Restore</button>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-2 px-12 text-center">
+                        <div className="flex items-center gap-2 mb-2">
+                            <ShieldCheck size={14} className="text-emerald-500" />
+                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">{t.ssl_label}</span>
+                        </div>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+                            {t.sub_cancel_disclaimer}
+                        </p>
+                    </div>
+                </div>
             </main>
         </div>
     );
