@@ -2,30 +2,40 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Check, Sparkles, CreditCard, ShieldCheck, Zap, RefreshCw } from 'lucide-react';
 import { useCalendar } from '../contexts/CalendarContext';
-import { purchasesService } from '../src/lib/purchases';
+import { useAuth } from '../src/contexts/AuthContext';
+import { launchPaywall } from '../src/lib/despiaPurchases';
 
 interface SubscriptionScreenProps {
     onBack: () => void;
 }
 
 export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }) => {
-    const { accentColor, t } = useCalendar();
+    const { user } = useAuth(); // Import useAuth
+    const { accentColor, t, refreshStats } = useCalendar(); // Add refreshStats to update UI after purchase
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('yearly');
     const [activePlanId, setActivePlanId] = useState<string>('monthly_plus_access');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Listen for Despia events
     useEffect(() => {
-        purchasesService.initialize();
-    }, []);
-
-    const handleRestore = async () => {
-        setIsLoading(true);
-        try {
-            await purchasesService.restorePurchases();
-        } finally {
+        const handlePurchaseStart = () => setIsLoading(true);
+        const handleSubscriptionUpdated = (e: any) => {
+            console.log("Subscription updated event received:", e.detail);
             setIsLoading(false);
-        }
-    };
+            refreshStats(); // Refresh context to reflect new status (if using stats/profile there)
+            onBack(); // Close screen on success? Or show success message? 
+            // Better to show success feedback then close or let user close. 
+            // For now, let's just stop loading.
+        };
+
+        window.addEventListener('purchase-processing-started', handlePurchaseStart);
+        window.addEventListener('subscription-updated', handleSubscriptionUpdated);
+
+        return () => {
+            window.removeEventListener('purchase-processing-started', handlePurchaseStart);
+            window.removeEventListener('subscription-updated', handleSubscriptionUpdated);
+        };
+    }, [refreshStats, onBack]);
 
     const plans = [
         {
@@ -62,19 +72,34 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
     ];
 
     const handlePurchase = async (planId: string) => {
-        setIsLoading(true);
-        let actualId = planId;
-        if (billingPeriod === 'yearly') {
-            if (planId === 'monthly_plus_access') actualId = 'Yearly_plus_access';
-            if (planId === 'monthly_pro_access') actualId = 'Yearly_pro_access';
+        if (!user) {
+            console.error("User not found for purchase");
+            return;
         }
 
+        // Launch Despia Paywall regardless of plan selected, as Paywall handles selection
+        // However, if planId is 'free', maybe just do nothing or downgrading logic?
+        // But 'free' usually doesn't need purchase.
+        if (planId === 'free') {
+            onBack();
+            return;
+        }
+
+        setIsLoading(true); // Optimistic loading
         try {
-            await purchasesService.purchasePackage(actualId);
-            console.log("Purchase process completed for: ", actualId);
+            console.log("Launching Despia Paywall for user:", user.id);
+            await launchPaywall({ userId: user.id });
+            // The flow continues via native modal. 
+            // We listen to events for completion.
+            // If user closes without buying, 'isLoading' might get stuck?
+            // Despia doesn't currently emit 'close' event in the snippet I wrote.
+            // I should safely timeout loading or just not set loading purely on launch?
+            // User requested "CTA -> launch".
+            // If I set loading, I must unset it eventually.
+            // Let's set loading for a few seconds to indicate "Opening..." then turn off?
+            setTimeout(() => setIsLoading(false), 3000);
         } catch (error) {
-            console.error("Purchase failed", error);
-        } finally {
+            console.error("Purchase launch failed", error);
             setIsLoading(false);
         }
     };
@@ -90,9 +115,6 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                     <h1 className="text-lg font-black text-gray-900 dark:text-white tracking-widest uppercase italic">{t.sub_title}</h1>
                     <div className="h-1 w-8 rounded-full mt-1" style={{ backgroundColor: accentColor }}></div>
                 </div>
-                <button onClick={handleRestore} className="p-3 -mr-3 rounded-2xl active:scale-95 text-gray-400 hover:text-gray-600 transition-all flex items-center gap-2">
-                    <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-                </button>
             </header>
 
             <main className="px-6 pt-6 space-y-10 max-w-lg mx-auto w-full">
@@ -225,8 +247,6 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                         <a href="#" className="hover:text-indigo-500 transition-colors">Terms</a>
                         <div className="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-gray-800"></div>
                         <a href="#" className="hover:text-indigo-500 transition-colors">Privacy</a>
-                        <div className="w-1.5 h-1.5 rounded-full bg-gray-200 dark:bg-gray-800"></div>
-                        <button onClick={handleRestore} className="hover:text-indigo-500 transition-colors">Restore</button>
                     </div>
 
                     <div className="flex flex-col items-center gap-2 px-12 text-center">

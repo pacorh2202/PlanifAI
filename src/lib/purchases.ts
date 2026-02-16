@@ -118,13 +118,20 @@ class PurchasesService {
                 return { success: true, customerInfo: result.customerInfo };
             } else {
                 console.warn(`Package ${packageId} not found in current offerings.`);
+                alert(`Error: Package ${packageId} not found in RevenueCat Offerings. Check your Dashboard.`);
             }
         } catch (e: any) {
             console.error('Purchase failed', e);
             const errorMessage = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
+
+            // Debugging Alert for Device
+            if (!this.useMock) {
+                alert(`Error Native: ${errorMessage}`);
+            }
+
             if (errorMessage.includes('Web not supported')) {
                 this.useMock = true;
-                return { success: true }; // Fallback to success on this error? Or just mock behaviour
+                return { success: true };
             }
             if (e.userCancelled) return { success: false, cancelled: true };
         }
