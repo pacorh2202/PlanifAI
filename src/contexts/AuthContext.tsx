@@ -125,10 +125,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Sign in with Google OAuth
     const signInWithGoogle = async (): Promise<{ error: AuthError | null }> => {
         try {
+            // Determine the best redirect URL
+            // On native (Capacitor), window.location.origin is 'capacitor://localhost'
+            // which is not always whitelisted or looks "untrusted" to Google.
+            // Using the production web URL ensures a clean sign-in screen.
+            const isNative = window.location.origin.includes('capacitor://');
+            const redirectTo = isNative
+                ? 'https://planifai-bilingue.pages.dev'
+                : window.location.origin;
+
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}`,
+                    redirectTo: redirectTo,
+                    queryParams: {
+                        prompt: 'select_account'
+                    }
                 },
             });
 
