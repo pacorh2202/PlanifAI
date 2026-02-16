@@ -59,7 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Listen for auth changes
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        } = supabase.auth.onAuthStateChange((event, session) => {
+            console.log('Auth state change:', event, !!session);
             setSession(session);
             setUser(session?.user ?? null);
             if (session?.user) {
@@ -67,11 +68,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else {
                 setProfile(null);
             }
-            setLoading(false);
+            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+                setLoading(false);
+            }
         });
 
-        return () => subscription.unsubscribe();
-    }, []);
+        // Safety timeout for loading state (e.g. if OAuth fragment fails to trigger state change)
+        const timeout = setTimeout(() => {
+            if (loading) {
+                console.log('Auth timeout reached, forcing loading false');
+                setLoading(false);
+            }
+        }, 5000);
+
+        return () => {
+            subscription.unsubscribe();
+            clearTimeout(timeout);
+        };
+    }, [loading]);
 
     // Sign up new user
     const signUp = async (

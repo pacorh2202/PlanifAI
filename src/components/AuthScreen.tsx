@@ -113,7 +113,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     };
 
     return (
-        <div className="h-[100dvh] w-full flex items-center justify-center bg-white dark:bg-gray-950 p-6">
+        <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-white dark:bg-gray-950 p-6 pt-[calc(env(safe-area-inset-top)+24px)] overflow-y-auto">
             <div className="w-full max-w-md">
                 {/* Header with Logo */}
                 <div className="text-center mb-10">
