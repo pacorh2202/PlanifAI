@@ -144,7 +144,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 provider: 'google',
                 options: {
                     redirectTo: redirectTo,
-                    // Removing prompt: 'select_account' as it can cause 400 errors in some webviews
+                    queryParams: {
+                        prompt: 'select_account'
+                    }
                 },
             });
 
