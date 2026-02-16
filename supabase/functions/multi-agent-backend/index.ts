@@ -5,6 +5,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 import { validateEvent } from "./agents/validator.ts";
 import { detectConflicts } from "./agents/conflict.ts";
 import { processNotifications } from "./agents/notifier.ts";
+import { calculateKPIs } from "./agents/kpi.ts";
 
 console.log("🤖 Multi-Agent Backend Initialized");
 
@@ -65,16 +66,23 @@ serve(async (req) => {
         const notificationResult = processNotifications(processedData);
 
         // ---------------------------------------------------------
+        // AGENT 6: KPI ANALYST (Stats calculation)
+        // ---------------------------------------------------------
+        const kpiResult = await calculateKPIs(supabaseClient, userId, processedData);
+
+        // ---------------------------------------------------------
         // SUCCESS: Retornar datos procesados/saneados
         // ---------------------------------------------------------
         return new Response(
             JSON.stringify({
                 success: true,
                 data: processedData,
+                kpi: kpiResult,
                 agentLogs: [
                     "Agent 3 (Validator): OK",
                     "Agent 9 (Conflict): OK",
-                    notificationResult.needsNotification ? "Agent 5 (Notifier): Triggered" : "Agent 5 (Notifier): Idle"
+                    notificationResult.needsNotification ? "Agent 5 (Notifier): Triggered" : "Agent 5 (Notifier): Idle",
+                    "Agent 6 (KPI Analyst): Metrics updated"
                 ]
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
