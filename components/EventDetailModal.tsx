@@ -24,7 +24,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
 // MOCK_FRIENDS removed - using real data from context
 
 export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCreating, initialDate, onClose }) => {
-  const { updateEvent, deleteEvent, addEvent, activeTemplate, accentColor, t, language, friends, events } = useCalendar();
+  const { updateEvent, deleteEvent, addEvent, activeTemplate, accentColor, t, language, friends, events, executeAction } = useCalendar();
   const [isEditing, setIsEditing] = useState(isCreating || false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -182,39 +182,54 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
     }
 
     if (isCreating && isRecurring && selectedDays.length > 0) {
+      const recurrenceId = crypto.randomUUID();
+      const eventToCreate = {
+        ...editedEvent,
+        participantIds,
+        recurrenceId,
+        isRecurring: true // Flag for Agent 5
+      };
+
+      // We use executeAction for the FIRST event to trigger agent logic (validation, conflicts, etc.)
+      const result = await executeAction({
+        actionType: 'create',
+        eventData: eventToCreate
+      });
+
+      // If Agent 3 or 9 rejected it, we stop
+      if (result.startsWith('⛔') || result.startsWith('CONFLICTO')) {
+        alert(result);
+        return;
+      }
+
+      // Then generate the rest of the series silently using the SAME recurrenceId
+      const promises: Promise<string>[] = [];
       const start = new Date(editedEvent.start);
       const endOfMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0);
       endOfMonth.setHours(23, 59, 59, 999);
-
       const eventDuration = new Date(editedEvent.end).getTime() - new Date(editedEvent.start).getTime();
-      const current = new Date(start);
 
-      const promises: Promise<string>[] = [];
-      const recurrenceId = crypto.randomUUID(); // Generate unique ID for this series
+      const current = new Date(start);
+      // Skip the first day as it was already handled by executeAction
+      current.setDate(current.getDate() + 1);
 
       while (current <= endOfMonth) {
         if (selectedDays.includes(current.getDay())) {
           const newStart = new Date(current);
           const newEnd = new Date(newStart.getTime() + eventDuration);
 
-          const eventToCreate = {
-            ...editedEvent,
+          promises.push(addEvent({
+            ...eventToCreate,
             start: newStart.toISOString(),
-            end: newEnd.toISOString(),
-            participantIds, // Pass participant IDs for sharing
-            recurrenceId, // Link all events in this series
-          };
-          promises.push(addEvent(eventToCreate));
+            end: newEnd.toISOString()
+          }));
         }
         current.setDate(current.getDate() + 1);
       }
 
-      if (promises.length === 0) {
-        addEvent({ ...editedEvent, participantIds });
-      } else {
+      if (promises.length > 0) {
         await Promise.all(promises);
       }
-
     } else {
       if (isCreating) addEvent({ ...editedEvent, participantIds });
       else if (event) updateEvent(event.id, editedEvent);

@@ -76,7 +76,7 @@ BEGIN
     event_record.title,
     CASE 
       WHEN event_record.recurrence_id IS NOT NULL THEN 
-        '@' || event_record.handle || ' te ha invitado a una serie de eventos'
+        '@' || event_record.handle || ' te ha invitado a una tarea automatizada'
       ELSE 
         '@' || event_record.handle || ' te ha invitado a esta tarea'
     END,
