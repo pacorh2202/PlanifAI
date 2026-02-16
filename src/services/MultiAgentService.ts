@@ -22,17 +22,36 @@ export const MultiAgentService = {
         try {
             console.log('[MultiAgentService] 📤 Sending request to backend:', { actionType });
 
+            // FORCE SESSION REFRESH CHECK
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError || !session) {
+                console.warn('[MultiAgentService] ⚠️ No active session found. Request might fail.', sessionError);
+            } else {
+                console.log('[MultiAgentService] 🔑 Authorized as:', session.user.id);
+            }
+
             const { data, error } = await supabase.functions.invoke('multi-agent-backend', {
                 body: {
                     actionType,
                     eventData,
                     userId,
                     replaceEventId
-                }
+                },
+                // Explicitly pass the token to be safe, though invoke does it automatically
+                headers: session ? {
+                    Authorization: `Bearer ${session.access_token}`
+                } : undefined
             });
 
             if (error) {
                 console.error('[MultiAgentService] 🚨 Supabase Function Error:', error);
+
+                // Detailed 401 logging
+                if (error.code === '401' || error.message?.includes('401')) {
+                    console.error('[MultiAgentService] 🚫 401 Unauthorized. Token might be expired or missing.');
+                }
+
                 return { success: false, error: error.message };
             }
 
