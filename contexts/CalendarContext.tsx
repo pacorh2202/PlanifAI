@@ -46,14 +46,10 @@ interface CalendarContextType {
   addEvent: (event: Omit<CalendarEvent, 'id'>) => Promise<string>;
   updateEvent: (id: string, data: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
-  executeAction: (action: CalendarAction) => Promise<string>;
-  // Notification State
   unreadCount: number;
   hasUnread: boolean;
   refreshNotifications: () => Promise<void>;
-  // Multi-Agent State
-  useMultiAgent: boolean;
-  toggleMultiAgent: () => void;
+  executeAction: (action: CalendarAction) => Promise<string>;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -87,12 +83,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasUnread, setHasUnread] = useState(false);
 
-  const [useMultiAgent, setUseMultiAgent] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('planifai_use_multi_agent') === 'true';
-    }
-    return false;
-  });
+  const useMultiAgent = true; // Always enabled
 
   // Initial Data Load & Realtime Subscriptions
   useEffect(() => {
@@ -450,13 +441,6 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
-  const toggleMultiAgent = () => {
-    setUseMultiAgent(prev => {
-      const newState = !prev;
-      localStorage.setItem('planifai_use_multi_agent', String(newState));
-      return newState;
-    });
-  };
 
   const executeAction = async (action: CalendarAction): Promise<string> => {
     try {
@@ -728,9 +712,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       refreshFriends, addEvent, updateEvent, deleteEvent, executeAction,
       refreshEvents, // Exportar para uso en otros componentes
       // Notification Exports
-      unreadCount, hasUnread, refreshNotifications,
-      // Multi-Agent Exports
-      useMultiAgent, toggleMultiAgent
+      unreadCount, hasUnread, refreshNotifications
     }}>
       {children}
     </CalendarContext.Provider>
