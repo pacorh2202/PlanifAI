@@ -632,8 +632,8 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
               if (friend) {
                 // Evitar duplicados
-                if (!participantIds.includes(friend.id)) {
-                  participantIds.push(friend.id);
+                if (!participantIds.includes(friend.friend_id)) {
+                  participantIds.push(friend.friend_id);
                 }
               } else {
                 console.warn(`[executeAction] No se encontró amigo: "${nameOrHandle}"`);
