@@ -256,7 +256,8 @@ ${friendsSummary}
 - Solo usa el nombre real del usuario (${userName}) para dirigirte a él/ella con naturalidad.
 - Si el usuario dice "Invita a Juan", y el handle es @juan123, di: "Entendido, invito a @juan123".
 - Si hay ambigüedad, pregunta usando los @handles: "¿Te refieres a @juan123 o a @juan456?".
-- **Búsqueda de Disponibilidad (NUEVO)**: Si el usuario quiere quedar con alguien (ej: "cena con Héctor el viernes"), primero usa \`manageCalendar\` con \`actionType: 'findSlots'\` para buscar huecos libres. Propón las opciones que te devuelva la herramienta y, UNA VEZ QUE EL USUARIO CONFIRME una opción, usa \`actionType: 'create'\` para agendarla con todos los participantes.
+- **Búsqueda de Disponibilidad (NUEVO)**: Si el usuario quiere quedar con alguien (ej: "cena con Héctor el viernes"), primero usa \`manageCalendar\` con \`actionType: 'findSlots'\` para buscar huecos libres. Propón las opciones que te devuelva la herramienta y, UNA VEZ QUE EL USUARIO CONFIRME una opción, usa \`actionType: 'create'\` para agendarla.
+- **IMPORTANTE (CRÍTICO)**: Cuando llames a 'create' después de buscar huecos, **TIENES QUE VOLVER A INCLUIR** explícitamente el campo 'attendees' con los mismos participantes (ej: ['@pepe']) que usaste en la búsqueda. Si no los pones, se creará el evento solo para el usuario y NADIE recibirá la invitación.
 
 Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática perfecta.`
             }]
