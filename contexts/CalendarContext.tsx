@@ -486,15 +486,17 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // Special handling for findSlots: The agent returns slots in the data field
         if (action.actionType === 'findSlots' && agentResponse.success) {
           if (!agentResponse.data || agentResponse.data.length === 0) {
-            return agentResponse.message || "No pude encontrar huecos libres para todos.";
+            return (agentResponse as any).message || "No pude encontrar huecos libres para todos.";
           }
+
+          const currentParticipantIds = action.eventData.participantIds || [];
 
           // Format slots for the AI to read
           const slots = agentResponse.data.map((s: any, i: number) => {
             const start = new Date(s.start).toLocaleTimeString(language === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' });
             const end = new Date(s.end).toLocaleTimeString(language === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' });
             const available = s.availableParticipants.length;
-            return `Opción ${i + 1}: ${start} a ${end} (${available}/${participantIds.length + 1} personas libres)`;
+            return `Opción ${i + 1}: ${start} a ${end} (${available}/${currentParticipantIds.length + 1} personas libres)`;
           }).join('\n');
 
           return `He encontrado estos huecos disponibles:\n${slots}\n\n¿Cuál prefieres?`;
@@ -669,13 +671,15 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               if (friend) {
                 // Evitar duplicados
                 if (!participantIds.includes(friend.friend_id)) {
+                  console.log(`[executeAction] Found friend for "${nameOrHandle}": ${friend.name} (${friend.friend_id})`);
                   participantIds.push(friend.friend_id);
                 }
               } else {
-                console.warn(`[executeAction] No se encontró amigo: "${nameOrHandle}"`);
+                console.warn(`[executeAction] No se encontró amigo: "${nameOrHandle}" en lista de ${friends.length} amigos.`);
                 notFoundAttendees.push(nameOrHandle);
               }
             });
+            console.log(`[executeAction] Final participantIds:`, participantIds);
             safeEventData.participantIds = participantIds;
           }
 

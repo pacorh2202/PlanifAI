@@ -151,6 +151,7 @@ export async function createEvent(event: any, userId: string) {
 
     // Handle participants if provided (handles/IDs passed in event.participantIds)
     if (event.participantIds && Array.isArray(event.participantIds) && event.participantIds.length > 0) {
+        console.log('[createEvent] Adding participants:', event.participantIds);
         const participants = event.participantIds.map((pId: string) => ({
             event_id: data.id,
             user_id: pId,
@@ -165,7 +166,11 @@ export async function createEvent(event: any, userId: string) {
         if (partError) {
             console.error('Error adding participants:', partError);
             alert(`Error al invitar amigos: ${partError.message}`);
+        } else {
+            console.log('[createEvent] Participants added successfully');
         }
+    } else {
+        console.log('[createEvent] No participants to add');
     }
 
     return dbEventToFrontend(data);
