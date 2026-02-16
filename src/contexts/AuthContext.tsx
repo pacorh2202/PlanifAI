@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase, Tables } from '../lib/supabase';
+import { Capacitor } from '@capacitor/core';
 
 interface Profile extends Tables<'profiles'> { }
 
@@ -126,21 +127,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const signInWithGoogle = async (): Promise<{ error: AuthError | null }> => {
         try {
             // Determine the best redirect URL
-            // On native (Capacitor), window.location.origin is 'capacitor://localhost'
-            // which is not always whitelisted or looks "untrusted" to Google.
-            // Using the production web URL ensures a clean sign-in screen.
-            const isNative = window.location.origin.includes('capacitor://');
-            const redirectTo = isNative
-                ? 'https://planifai-bilingue.pages.dev'
-                : window.location.origin;
+            // On Despia/Native, window.location.origin might be non-standard
+            // We force the production URL for all non-standard environments
+            const origin = window.location.origin;
+            const isProduction = origin.includes('planifai-bilingue.pages.dev');
+            const isLocalhost = origin.includes('localhost');
+
+            // If we're not on production or localhost, we force production redirect
+            const redirectTo = (isProduction || isLocalhost)
+                ? origin
+                : 'https://planifai-bilingue.pages.dev';
+
+            console.log('SignInWithGoogle - Origin:', origin, 'RedirectTo:', redirectTo);
 
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
                     redirectTo: redirectTo,
-                    queryParams: {
-                        prompt: 'select_account'
-                    }
+                    // Removing prompt: 'select_account' as it can cause 400 errors in some webviews
                 },
             });
 
