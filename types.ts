@@ -18,6 +18,7 @@ export interface CalendarEvent {
   creationSource?: 'manual' | 'voice' | 'ai_suggestion' | 'automation';
   emotionalImpact?: 'stress' | 'relief' | 'neutral';
   recurrenceId?: string;
+  participantIds?: string[]; // Added for social features
 }
 
 export interface CategoryStyle {
@@ -71,8 +72,12 @@ export interface Friend {
 
 // Action structure for the Tool
 export interface CalendarAction {
-  actionType: 'create' | 'update' | 'delete' | 'move';
+  actionType: 'create' | 'update' | 'delete' | 'move' | 'findSlots';
   eventId?: string; // Required for update, delete, move
   replaceEventId?: string; // NUEVO: Para resolver conflictos, ID del evento a reemplazar
-  eventData?: Partial<CalendarEvent>;
+  eventData?: Partial<CalendarEvent & {
+    searchStart?: string;
+    searchEnd?: string;
+    durationMinutes?: number;
+  }>;
 }

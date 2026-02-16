@@ -6,6 +6,7 @@ import { validateEvent } from "./agents/validator.ts";
 import { detectConflicts } from "./agents/conflict.ts";
 import { processNotifications } from "./agents/notifier.ts";
 import { calculateKPIs } from "./agents/kpi.ts";
+import { findAvailableSlots } from "./agents/availability.ts";
 
 console.log("🤖 Multi-Agent Backend Initialized");
 
@@ -24,6 +25,39 @@ serve(async (req) => {
         const { actionType, eventData, userId, replaceEventId } = await req.json();
 
         console.log(`[Request] Action: ${actionType} User: ${userId}`);
+
+        // ---------------------------------------------------------
+        // NEW ACTION: findSlots (Availability Agent)
+        // ---------------------------------------------------------
+        if (actionType === 'findSlots') {
+            const { participantIds, searchStart, searchEnd, durationMinutes } = eventData || {};
+
+            if (!searchStart || !searchEnd) {
+                return new Response(
+                    JSON.stringify({ success: false, denialReason: "Faltan fechas para buscar disponibilidad." }),
+                    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                );
+            }
+
+            const availabilityResult = await findAvailableSlots(
+                supabaseClient,
+                userId,
+                participantIds || [],
+                searchStart,
+                searchEnd,
+                durationMinutes || 60
+            );
+
+            return new Response(
+                JSON.stringify({
+                    success: true,
+                    data: availabilityResult.slots,
+                    message: availabilityResult.message,
+                    agentLogs: ["Agent Availability: Search complete"]
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
 
         // ---------------------------------------------------------
         // AGENT 3: VALIDATOR (Rule-based consistency check)

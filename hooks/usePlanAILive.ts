@@ -35,8 +35,8 @@ export const usePlanAILive = () => {
       properties: {
         actionType: {
           type: Type.STRING,
-          enum: ['create', 'update', 'delete', 'move'],
-          description: "Tipo de operación a realizar en el calendario."
+          enum: ['create', 'update', 'delete', 'move', 'findSlots'],
+          description: "Tipo de operación. Usa 'findSlots' para buscar huecos libres con amigos."
         },
         eventId: {
           type: Type.STRING,
@@ -56,9 +56,12 @@ export const usePlanAILive = () => {
             location: { type: Type.STRING, description: "Ubicación o dirección física, si se menciona." },
             descriptionPoints: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Lista de detalles, notas, o subtareas mencionadas." },
             allDay: { type: Type.BOOLEAN },
-            attendees: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Nombres EXACTOS de los amigos invitados." }
+            attendees: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Nombres EXACTOS de los amigos invitados." },
+            searchStart: { type: Type.STRING, description: "Inicio del rango de búsqueda (ISO) para 'findSlots'." },
+            searchEnd: { type: Type.STRING, description: "Fin del rango de búsqueda (ISO) para 'findSlots'." },
+            durationMinutes: { type: Type.NUMBER, description: "Duración deseada en minutos para 'findSlots' (defecto 60)." }
           },
-          description: "Para 'create': title, start, end, type son obligatorios. Para 'update': envía SOLO los campos que cambian."
+          description: "Para 'create': title, start, end, type obligatorios. Para 'findSlots': attendees, searchStart, searchEnd obligatorios."
         }
       },
       required: ['actionType']
@@ -253,6 +256,7 @@ ${friendsSummary}
 - Solo usa el nombre real del usuario (${userName}) para dirigirte a él/ella con naturalidad.
 - Si el usuario dice "Invita a Juan", y el handle es @juan123, di: "Entendido, invito a @juan123".
 - Si hay ambigüedad, pregunta usando los @handles: "¿Te refieres a @juan123 o a @juan456?".
+- **Búsqueda de Disponibilidad (NUEVO)**: Si el usuario quiere quedar con alguien (ej: "cena con Héctor el viernes"), primero usa \`manageCalendar\` con \`actionType: 'findSlots'\` para buscar huecos libres. Propón las opciones que te devuelva la herramienta y, UNA VEZ QUE EL USUARIO CONFIRME una opción, usa \`actionType: 'create'\` para agendarla con todos los participantes.
 
 Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática perfecta.`
             }]

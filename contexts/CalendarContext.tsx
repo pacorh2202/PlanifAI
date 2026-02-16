@@ -449,6 +449,28 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // --- MULTI-AGENT INTERCEPTION ---
       if (useMultiAgent && user) {
         console.log('[executeAction] 🤖 Multi-Agent Mode ENABLED');
+
+        // PRE-PROCESSING: Map attendees to IDs for 'findSlots' or other social actions
+        if ((action.actionType === 'findSlots' || action.actionType === 'create') && action.eventData?.attendees) {
+          const participantIds: string[] = [];
+          const attendeesArray = action.eventData.attendees;
+
+          attendeesArray.forEach((nameOrHandle: string) => {
+            const cleanInput = nameOrHandle.replace(/^@/, '').toLowerCase().trim();
+            if (cleanInput === userName.toLowerCase().trim() || cleanInput === userHandle.toLowerCase()) return;
+
+            let friend = friends.find(f => f.handle.toLowerCase().replace(/^@/, '') === cleanInput.replace(/^@/, ''));
+            if (!friend) {
+              const nameMatches = friends.filter(f => f.name.toLowerCase().trim().includes(cleanInput));
+              if (nameMatches.length === 1) friend = nameMatches[0];
+            }
+            if (friend && !participantIds.includes(friend.friend_id)) {
+              participantIds.push(friend.friend_id);
+            }
+          });
+          action.eventData.participantIds = participantIds;
+        }
+
         const agentResponse = await MultiAgentService.validateAndProcess(
           action.actionType,
           action.eventData || {},
@@ -457,15 +479,29 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         );
 
         if (!agentResponse.success) {
-          // Si el agente rechaza la acción (ej: conflicto, fecha inválida)
           console.warn('[executeAction] 🛑 Agent Denied:', agentResponse.denialReason);
           return `⛔ ${agentResponse.denialReason || agentResponse.error || "Acción rechazada por el asistente."}`;
         }
 
-        // Si hay datos modificados/saneados por los agentes (ej: fechas corregidas), usarlos
+        // Special handling for findSlots: The agent returns slots in the data field
+        if (action.actionType === 'findSlots' && agentResponse.success) {
+          if (!agentResponse.data || agentResponse.data.length === 0) {
+            return agentResponse.message || "No pude encontrar huecos libres para todos.";
+          }
+
+          // Format slots for the AI to read
+          const slots = agentResponse.data.map((s: any, i: number) => {
+            const start = new Date(s.start).toLocaleTimeString(language === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+            const end = new Date(s.end).toLocaleTimeString(language === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+            const available = s.availableParticipants.length;
+            return `Opción ${i + 1}: ${start} a ${end} (${available}/${participantIds.length + 1} personas libres)`;
+          }).join('\n');
+
+          return `He encontrado estos huecos disponibles:\n${slots}\n\n¿Cuál prefieres?`;
+        }
+
         if (agentResponse.data) {
           console.log('[executeAction] 🔄 Applying Agent changes:', agentResponse.data);
-          // Mezclamos con cuidado para no perder datos que el backend no devuelve
           action.eventData = { ...action.eventData, ...agentResponse.data };
         }
       }
@@ -680,6 +716,10 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             calendarApi.logActivity(user.id, 'reorganized', { eventId: action.eventId, action: 'delete' });
           }
           return "Evento eliminado correctamente.";
+
+        case 'findSlots':
+          // findSlots is handled in the Multi-Agent interception block above
+          return "Búsqueda de huecos completada.";
 
         default:
           return "Acción desconocida.";
