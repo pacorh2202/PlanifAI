@@ -21,11 +21,11 @@ BEGIN
   -- target_user_ids are friends of the requester before calling this.
   
   RETURN QUERY
-  SELECT e.user_id, e.start, e.end
-  FROM events e
+  SELECT e.user_id, e.start_time, e.end_time
+  FROM calendar_events e
   WHERE e.user_id = ANY(target_user_ids)
-    AND e.start < search_end
-    AND e.end > search_start
+    AND e.start_time < search_end
+    AND e.end_time > search_start
     AND e.status != 'cancelled'; -- Don't count cancelled events as busy
 END;
 $$;

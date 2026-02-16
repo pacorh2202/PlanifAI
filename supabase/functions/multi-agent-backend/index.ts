@@ -16,11 +16,31 @@ serve(async (req) => {
     }
 
     try {
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader) {
+            console.error("[Auth] Missing Authorization header");
+            return new Response(
+                JSON.stringify({ success: false, error: "Missing Authorization header" }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+            );
+        }
+
         const supabaseClient = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+            { global: { headers: { Authorization: authHeader } } }
         );
+
+        // MANUAL AUTH VERIFICATION
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+        if (authError || !user) {
+            console.error("[Auth] Token validation failed:", authError);
+            return new Response(
+                JSON.stringify({ success: false, error: "Invalid Token", details: authError }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+            );
+        }
+
 
         const { actionType, eventData, userId, replaceEventId } = await req.json();
 
@@ -30,7 +50,7 @@ serve(async (req) => {
         // NEW ACTION: findSlots (Availability Agent)
         // ---------------------------------------------------------
         if (actionType === 'findSlots') {
-            const { participantIds, searchStart, searchEnd, durationMinutes } = eventData || {};
+            const { participantIds, searchStart, searchEnd, durationMinutes, attendees } = eventData || {};
 
             if (!searchStart || !searchEnd) {
                 return new Response(
@@ -39,14 +59,53 @@ serve(async (req) => {
                 );
             }
 
+            // RESOLVE ATTENDEES (HANDLES) TO UUIDs
+            let targetUserIds: string[] = participantIds || [];
+            const debugLogs: string[] = [];
+
+            if ((!targetUserIds || targetUserIds.length === 0) && attendees && Array.isArray(attendees)) {
+                console.log(`[Availability] Resolving handles: ${attendees.join(', ')}`);
+                const handles = attendees
+                    .map((h: string) => h.replace('@', '').trim())
+                    .filter((h: string) => h.length > 0);
+
+                if (handles.length > 0) {
+                    const { data: profiles, error: profileError } = await supabaseClient
+                        .from('profiles')
+                        .select('id, handle')
+                        .in('handle', handles);
+
+                    if (profileError) {
+                        console.error('[Availability] Error resolving handles:', profileError);
+                        debugLogs.push(`Error resolving handles: ${profileError.message}`);
+                    } else if (profiles) {
+                        targetUserIds = profiles.map((p: any) => p.id);
+                        console.log(`[Availability] Resolved ${handles.length} handles to ${targetUserIds.length} UUIDs`);
+                        debugLogs.push(`Resolved handles: ${handles.join(', ')} -> ${targetUserIds.length} UUIDs`);
+
+                        // Check if any handle wasn't found
+                        const foundHandles = profiles.map((p: any) => p.handle);
+                        const missingHandles = handles.filter((h: string) => !foundHandles.includes(h));
+                        if (missingHandles.length > 0) {
+                            debugLogs.push(`Warning: Could not find users: @${missingHandles.join(', @')}`);
+                        }
+                    }
+                }
+            }
+
             const availabilityResult = await findAvailableSlots(
                 supabaseClient,
                 userId,
-                participantIds || [],
+                targetUserIds,
                 searchStart,
                 searchEnd,
                 durationMinutes || 60
             );
+
+            // Add our debug logs to the agent logs
+            if (availabilityResult.message && debugLogs.length > 0) {
+                availabilityResult.message += ` (${debugLogs.join('; ')})`;
+            }
 
             return new Response(
                 JSON.stringify({

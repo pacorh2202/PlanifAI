@@ -33,7 +33,11 @@ export async function findAvailableSlots(
 
     if (error) {
         console.error('[Availability Agent] RPC Error:', error);
-        return { success: false, slots: [], message: "Error fetching availability data." };
+        return {
+            success: false,
+            slots: [],
+            message: `Error al buscar disponibilidad: ${error.message || JSON.stringify(error)}`
+        };
     }
 
     // 2. Simple slot search (every 30 mins)
