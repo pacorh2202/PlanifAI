@@ -9,7 +9,7 @@ interface AccountConfigScreenProps {
 }
 
 export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack }) => {
-  const { accentColor, setProfileImage, profileImage, t } = useCalendar();
+  const { accentColor, setProfileImage, profileImage, t, useMultiAgent, toggleMultiAgent } = useCalendar();
   const { user, profile, updateProfile, updateEmail, updatePassword, signOut } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -243,6 +243,29 @@ export const AccountConfigScreen: React.FC<AccountConfigScreenProps> = ({ onBack
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Multi-Agent Toggle */}
+          <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center justify-between mx-4">
+              <div className="flex flex-col">
+                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                  Agentes Inteligentes (Beta)
+                </label>
+                <p className="text-[10px] text-gray-400 font-medium mt-1 max-w-[200px]">
+                  Activa el sistema de 10 agentes para validación experta y resolución de conflictos.
+                </p>
+              </div>
+              <button
+                onClick={toggleMultiAgent}
+                type="button"
+                className={`relative w-12 h-7 rounded-full transition-colors duration-300 ease-in-out focus:outline-none ${useMultiAgent ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+              >
+                <span
+                  className={`absolute top-1 left-1 bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${useMultiAgent ? 'translate-x-5' : 'translate-x-0'}`}
+                />
               </button>
             </div>
           </div>

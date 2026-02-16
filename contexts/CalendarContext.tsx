@@ -9,6 +9,8 @@ import * as notificationsApi from '../src/lib/notifications-api'; // Import noti
 import { fetchUserStats, UserStats } from '../src/lib/stats-api';
 import { supabase } from '../src/lib/supabase';
 import { Friend } from '../types';
+import { MultiAgentService } from '../src/services/MultiAgentService';
+
 
 interface CalendarContextType {
   events: CalendarEvent[];
@@ -49,6 +51,9 @@ interface CalendarContextType {
   unreadCount: number;
   hasUnread: boolean;
   refreshNotifications: () => Promise<void>;
+  // Multi-Agent State
+  useMultiAgent: boolean;
+  toggleMultiAgent: () => void;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -81,6 +86,13 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Notification State
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasUnread, setHasUnread] = useState(false);
+
+  const [useMultiAgent, setUseMultiAgent] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('planifai_use_multi_agent') === 'true';
+    }
+    return false;
+  });
 
   // Initial Data Load & Realtime Subscriptions
   useEffect(() => {
@@ -438,9 +450,42 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
+  const toggleMultiAgent = () => {
+    setUseMultiAgent(prev => {
+      const newState = !prev;
+      localStorage.setItem('planifai_use_multi_agent', String(newState));
+      return newState;
+    });
+  };
+
   const executeAction = async (action: CalendarAction): Promise<string> => {
     try {
       console.log('[executeAction] Received action:', action.actionType, action);
+
+      // --- MULTI-AGENT INTERCEPTION ---
+      if (useMultiAgent && user) {
+        console.log('[executeAction] 🤖 Multi-Agent Mode ENABLED');
+        const agentResponse = await MultiAgentService.validateAndProcess(
+          action.actionType,
+          action.eventData || {},
+          user.id,
+          action.replaceEventId
+        );
+
+        if (!agentResponse.success) {
+          // Si el agente rechaza la acción (ej: conflicto, fecha inválida)
+          console.warn('[executeAction] 🛑 Agent Denied:', agentResponse.denialReason);
+          return `⛔ ${agentResponse.denialReason || agentResponse.error || "Acción rechazada por el asistente."}`;
+        }
+
+        // Si hay datos modificados/saneados por los agentes (ej: fechas corregidas), usarlos
+        if (agentResponse.data) {
+          console.log('[executeAction] 🔄 Applying Agent changes:', agentResponse.data);
+          // Mezclamos con cuidado para no perder datos que el backend no devuelve
+          action.eventData = { ...action.eventData, ...agentResponse.data };
+        }
+      }
+      // -------------------------------
 
       switch (action.actionType) {
         case 'create': {
@@ -683,7 +728,9 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       refreshFriends, addEvent, updateEvent, deleteEvent, executeAction,
       refreshEvents, // Exportar para uso en otros componentes
       // Notification Exports
-      unreadCount, hasUnread, refreshNotifications
+      unreadCount, hasUnread, refreshNotifications,
+      // Multi-Agent Exports
+      useMultiAgent, toggleMultiAgent
     }}>
       {children}
     </CalendarContext.Provider>

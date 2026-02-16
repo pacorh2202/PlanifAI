@@ -165,33 +165,6 @@ export async function createEvent(event: any, userId: string) {
         if (partError) {
             console.error('Error adding participants:', partError);
             alert(`Error al invitar amigos: ${partError.message}`);
-        } else {
-            // Manual Notification via Secure RPC
-            // Fetch inviter name
-            const { name: inviterName } = await getInviterDetails(userId);
-
-            // Send notification to each participant
-            for (const pId of event.participantIds) {
-                // @ts-ignore - RPC not yet in types
-                const { error: notifError } = await supabase.rpc('send_event_invitation', {
-                    p_user_id: pId,
-                    p_event_id: data.id,
-                    p_title: 'Nueva Invitación 📅',
-                    p_message: `${inviterName} te ha invitado a "${event.title}"`,
-                    p_metadata: {
-                        eventId: data.id,
-                        role: 'viewer',
-                        invitedBy: userId,
-                        eventTitle: event.title,
-                        categoryType: event.type,
-                        categoryLabel: event.categoryLabel,
-                        startTime: event.start,
-                        endTime: event.end
-                    }
-                });
-
-                if (notifError) console.error('Error sending notification RPC:', notifError);
-            }
         }
     }
 
@@ -276,34 +249,6 @@ export async function updateEvent(eventId: string, updates: any, userId: string)
             if (insertError) {
                 console.error('Error adding new participants:', insertError);
                 alert(`Error al invitar nuevos participantes: ${insertError.message}`);
-            } else {
-                // Manual Notification via Secure RPC
-                const { name: inviterName } = await getInviterDetails(userId);
-
-                // Use the updated event title if available, otherwise fallback (though update returns it)
-                const eventTitle = updatedEvent.title;
-
-                for (const pId of toAdd) {
-                    // @ts-ignore - RPC not yet in types
-                    const { error: notifError } = await supabase.rpc('send_event_invitation', {
-                        p_user_id: pId,
-                        p_event_id: eventId,
-                        p_title: 'Nueva Invitación 📅',
-                        p_message: `${inviterName} te ha invitado a "${eventTitle}"`,
-                        p_metadata: {
-                            eventId: eventId,
-                            role: 'viewer',
-                            invitedBy: userId,
-                            eventTitle: eventTitle,
-                            categoryType: updatedEvent.event_type,
-                            categoryLabel: updatedEvent.category_label,
-                            startTime: updatedEvent.start_time,
-                            endTime: updatedEvent.end_time
-                        }
-                    });
-
-                    if (notifError) console.error('Error sending notification RPC:', notifError);
-                }
             }
         }
     }

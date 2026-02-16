@@ -223,8 +223,9 @@ export const usePlanAILive = () => {
 
 ## Protocolo de Acción (CRÍTICO)
 1. **Ejecución Directa**: Cuando el usuario pida algo, llama a la herramienta manageCalendar INMEDIATAMENTE. No pidas permiso ni digas "vale, lo hago".
-2. **Confirmación Única**: Tras una acción EXITOSA, di EXACTAMENTE: "${confirmationPhrase}". Esa frase se pronuncia UNA ÚNICA VEZ. Después de decirla, CALLA y espera al usuario. PROHIBIDO repetirla o añadir variaciones.
-3. **Manejo de Errores**: Si algo falla, explica brevemente por qué y pregunta qué quieres hacer.
+2. **Extracción de Títulos Limpios (ESTRICTO)**: NUNCA incluyas nombres de personas en el título de la tarea (ej. "con Pepe", "y María"). El título debe ser solo la actividad. El nombre debe ir EXCLUSIVAMENTE al campo \`attendees\`. Ejemplo: "Inglés con Pepe" -> title: "Inglés", attendees: ["Pepe"].
+3. **Confirmación Única**: Tras una acción EXITOSA, di EXACTAMENTE: "${confirmationPhrase}". Esa frase se pronuncia UNA ÚNICA VEZ. Después de decirla, CALLA y espera al usuario. PROHIBIDO repetirla o añadir variaciones.
+4. **Manejo de Errores**: Si algo falla, explica brevemente por qué y pregunta qué quieres hacer.
 
 ## Zona Horaria (MUY IMPORTANTE)
 - Zona horaria del usuario: ${userTZ} (UTC${isoOffset}).
