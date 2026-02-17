@@ -8,11 +8,29 @@ export interface OfferingPackage {
         description: string;
         priceString: string;
     };
+    // Keep the original RC package so we can pass it to purchasePackage
+    _rcPackage?: any;
 }
+
+const OFFERING_ID = 'planif_ai';
+
+// Map RevenueCat package identifiers to plan keys used by the UI
+const PACKAGE_MAP: Record<string, { plan: 'plus' | 'pro'; period: 'monthly' | 'yearly' }> = {
+    'Monthly_plus_access': { plan: 'plus', period: 'monthly' },
+    'monthly_plus_access': { plan: 'plus', period: 'monthly' },
+    'Monthly_pro_access': { plan: 'pro', period: 'monthly' },
+    'monthly_pro_access': { plan: 'pro', period: 'monthly' },
+    'Yearly_plus_access': { plan: 'plus', period: 'yearly' },
+    'yearly_plus_access': { plan: 'plus', period: 'yearly' },
+    'Yearly_pro_access': { plan: 'pro', period: 'yearly' },
+    'yearly_pro_access': { plan: 'pro', period: 'yearly' },
+};
 
 class PurchasesService {
     private isInitialized = false;
     private useMock = false;
+    // Cache the raw offerings to avoid refetching
+    private cachedOfferings: any = null;
 
     async initialize() {
         if (this.isInitialized) return;
@@ -20,9 +38,8 @@ class PurchasesService {
         const platform = Capacitor.getPlatform();
         console.log('Current Framework Platform:', platform);
 
-        // 1. Explicit Web Check
         if (platform === 'web') {
-            console.log('Platform is Web. enabling mock mode.');
+            console.log('Platform is Web. Enabling mock mode.');
             this.useMock = true;
             this.isInitialized = true;
             return;
@@ -37,30 +54,44 @@ class PurchasesService {
             console.log('RevenueCat SDK Initialized');
         } catch (e: any) {
             console.error('Failed to initialize RevenueCat', e);
-
-            // 2. Fallback check - handles both Error objects and strings
             const errorMessage = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
             if (errorMessage.includes('Web not supported') || errorMessage.includes('Exclude') || e?.code === 'Exclude') {
-                console.warn('RevenueCat initialization failed due to platform support. Falling back to mocks.');
+                console.warn('RevenueCat init failed (platform). Falling back to mocks.');
                 this.useMock = true;
             }
         }
         this.isInitialized = true;
     }
 
-    async getOfferings() {
+    /**
+     * Get all packages from the "planif_ai" offering.
+     * Returns typed packages with plan/period info for easy UI mapping.
+     */
+    async getOfferings(): Promise<OfferingPackage[]> {
         if (!this.isInitialized) await this.initialize();
 
-        // Native Path
+        // Native path
         if (!this.useMock) {
             try {
                 const offerings = await Purchases.getOfferings();
-                if (offerings.current !== null && offerings.current.availablePackages.length !== 0) {
-                    return offerings.current.availablePackages;
+
+                // Try to find our specific offering first, fall back to current
+                const offering = offerings.all?.[OFFERING_ID] || offerings.current;
+
+                if (offering && offering.availablePackages.length > 0) {
+                    this.cachedOfferings = offering;
+                    return offering.availablePackages.map((pkg: any) => ({
+                        identifier: pkg.identifier,
+                        product: {
+                            title: pkg.product?.title ?? pkg.identifier,
+                            description: pkg.product?.description ?? '',
+                            priceString: pkg.product?.priceString ?? pkg.product?.price?.formatted ?? '—',
+                        },
+                        _rcPackage: pkg,
+                    }));
                 }
             } catch (e: any) {
                 console.error('Error fetching offerings', e);
-                // If it fails here with "Web not supported", switch to mock for future calls
                 const errorMessage = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
                 if (errorMessage.includes('Web not supported')) {
                     this.useMock = true;
@@ -68,72 +99,79 @@ class PurchasesService {
             }
         }
 
-        // Web / Fallback Data (Run if mock is enabled OR if native failed above)
-        // If native failed just now (and switched useMock), we want to return mocks immediately
+        // Mock / fallback
         if (this.useMock) {
             console.log('Using Mock Data for Offerings');
             return [
-                {
-                    identifier: 'free',
-                    product: { title: 'Free', description: 'Essential features', priceString: '0€' }
-                },
-                {
-                    identifier: 'monthly_plus_access',
-                    product: { title: 'Plus', description: 'Power up your life', priceString: '5.99€' }
-                },
-                {
-                    identifier: 'monthly_pro_access',
-                    product: { title: 'Pro', description: 'The ultimate assistant', priceString: '12.99€' }
-                },
-                {
-                    identifier: 'Yearly_plus_access',
-                    product: { title: 'Plus (Yearly)', description: 'Power up your life', priceString: '59.90€' }
-                },
-                {
-                    identifier: 'Yearly_pro_access',
-                    product: { title: 'Pro (Yearly)', description: 'The ultimate assistant', priceString: '129.90€' }
-                }
+                { identifier: 'Monthly_plus_access', product: { title: 'Plus', description: 'Power up your life', priceString: '5,99 €' } },
+                { identifier: 'Monthly_pro_access', product: { title: 'Pro', description: 'The ultimate assistant', priceString: '12,99 €' } },
+                { identifier: 'Yearly_plus_access', product: { title: 'Plus (Yearly)', description: 'Power up your life', priceString: '59,90 €' } },
+                { identifier: 'Yearly_pro_access', product: { title: 'Pro (Yearly)', description: 'The ultimate assistant', priceString: '129,90 €' } },
             ];
         }
         return [];
     }
 
-    async purchasePackage(packageId: string) {
+    /**
+     * Get the plan/period info for a package identifier.
+     */
+    getPackageInfo(identifier: string): { plan: 'plus' | 'pro'; period: 'monthly' | 'yearly' } | null {
+        return PACKAGE_MAP[identifier] ?? null;
+    }
+
+    /**
+     * Purchase a specific package by its identifier.
+     * NO paywall — triggers the native Apple/Google payment sheet directly.
+     */
+    async purchasePackage(packageId: string): Promise<{ success: boolean; customerInfo?: any; cancelled?: boolean }> {
         if (!this.isInitialized) await this.initialize();
 
-        // Web / Fallback Path
         if (this.useMock) {
             console.log(`[MOCK] Purchase Successful for: ${packageId}`);
             return { success: true };
         }
 
-        // Native Path
         try {
-            console.log(`Executing purchase for: ${packageId}`);
-            const offerings = await Purchases.getOfferings();
-            const pkg = offerings.current?.availablePackages.find(p => p.identifier === packageId);
+            console.log(`Executing direct purchase for: ${packageId}`);
+
+            // Try cached offerings first, otherwise refetch
+            let offering = this.cachedOfferings;
+            if (!offering) {
+                const offerings = await Purchases.getOfferings();
+                offering = offerings.all?.[OFFERING_ID] || offerings.current;
+                this.cachedOfferings = offering;
+            }
+
+            const pkg = offering?.availablePackages.find((p: any) => p.identifier === packageId);
 
             if (pkg) {
                 const result = await Purchases.purchasePackage({ aPackage: pkg });
                 return { success: true, customerInfo: result.customerInfo };
             } else {
-                console.warn(`Package ${packageId} not found in current offerings.`);
-                alert(`Error: Package ${packageId} not found in RevenueCat Offerings. Check your Dashboard.`);
+                console.warn(`Package ${packageId} not found in offering "${OFFERING_ID}".`);
+                // Try case-insensitive match as fallback
+                const pkgFallback = offering?.availablePackages.find(
+                    (p: any) => p.identifier.toLowerCase() === packageId.toLowerCase()
+                );
+                if (pkgFallback) {
+                    const result = await Purchases.purchasePackage({ aPackage: pkgFallback });
+                    return { success: true, customerInfo: result.customerInfo };
+                }
+                alert(`Error: Package "${packageId}" not found. Please contact support.`);
             }
         } catch (e: any) {
             console.error('Purchase failed', e);
             const errorMessage = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
-
-            // Debugging Alert for Device
-            if (!this.useMock) {
-                alert(`Error Native: ${errorMessage}`);
-            }
 
             if (errorMessage.includes('Web not supported')) {
                 this.useMock = true;
                 return { success: true };
             }
             if (e.userCancelled) return { success: false, cancelled: true };
+
+            if (!this.useMock) {
+                alert(`Purchase error: ${errorMessage}`);
+            }
         }
         return { success: false };
     }
@@ -141,13 +179,11 @@ class PurchasesService {
     async restorePurchases() {
         if (!this.isInitialized) await this.initialize();
 
-        // Web / Fallback Path
         if (this.useMock) {
             console.log('[MOCK] Restore Successful');
             return { success: true };
         }
 
-        // Native Path
         try {
             console.log('Restoring purchases...');
             const customerInfo = await Purchases.restorePurchases();

@@ -1,31 +1,75 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Check, Sparkles, CreditCard, ShieldCheck, Zap, RefreshCw } from 'lucide-react';
 import { useCalendar } from '../contexts/CalendarContext';
 import { useAuth } from '../src/contexts/AuthContext';
-import { launchPaywall } from '../src/lib/despiaPurchases';
+import { purchasesService, OfferingPackage } from '../src/lib/purchases';
+import { waitForSubscriptionStatus } from '../src/lib/despiaPurchases';
 
 interface SubscriptionScreenProps {
     onBack: () => void;
 }
 
 export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }) => {
-    const { user } = useAuth(); // Import useAuth
-    const { accentColor, t, refreshStats } = useCalendar(); // Add refreshStats to update UI after purchase
+    const { user } = useAuth();
+    const { accentColor, t, refreshStats } = useCalendar();
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('yearly');
-    const [activePlanId, setActivePlanId] = useState<string>('monthly_plus_access');
+    const [activePlanId, setActivePlanId] = useState<string>('plus');
     const [isLoading, setIsLoading] = useState(false);
+    const [isPurchasing, setIsPurchasing] = useState(false);
 
-    // Listen for Despia events
+    // Dynamic pricing from RevenueCat
+    const [packages, setPackages] = useState<OfferingPackage[]>([]);
+    const [pricesLoaded, setPricesLoaded] = useState(false);
+
+    // Fetch real prices on mount
+    useEffect(() => {
+        const loadPrices = async () => {
+            try {
+                const offerings = await purchasesService.getOfferings();
+                if (offerings.length > 0) {
+                    setPackages(offerings);
+                }
+            } catch (e) {
+                console.error('Failed to load offerings', e);
+            }
+            setPricesLoaded(true);
+        };
+        loadPrices();
+    }, []);
+
+    // Helper: get the price string for a given plan+period from RevenueCat packages
+    const getDynamicPrice = useCallback((plan: 'plus' | 'pro', period: 'monthly' | 'yearly'): string => {
+        const match = packages.find(pkg => {
+            const info = purchasesService.getPackageInfo(pkg.identifier);
+            return info?.plan === plan && info?.period === period;
+        });
+        if (match) return match.product.priceString;
+        // Fallback hardcoded (only used if RevenueCat hasn't loaded yet)
+        const fallbacks: Record<string, Record<string, string>> = {
+            plus: { monthly: '5,99 €', yearly: '59,90 €' },
+            pro: { monthly: '12,99 €', yearly: '129,90 €' },
+        };
+        return fallbacks[plan]?.[period] ?? '—';
+    }, [packages]);
+
+    // Helper: get the RevenueCat package identifier for a plan+period
+    const getPackageId = useCallback((plan: 'plus' | 'pro', period: 'monthly' | 'yearly'): string | null => {
+        const match = packages.find(pkg => {
+            const info = purchasesService.getPackageInfo(pkg.identifier);
+            return info?.plan === plan && info?.period === period;
+        });
+        return match?.identifier ?? null;
+    }, [packages]);
+
+    // Listen for Despia purchase events (kept for backward compat)
     useEffect(() => {
         const handlePurchaseStart = () => setIsLoading(true);
         const handleSubscriptionUpdated = (e: any) => {
             console.log("Subscription updated event received:", e.detail);
             setIsLoading(false);
-            refreshStats(); // Refresh context to reflect new status (if using stats/profile there)
-            onBack(); // Close screen on success? Or show success message? 
-            // Better to show success feedback then close or let user close. 
-            // For now, let's just stop loading.
+            setIsPurchasing(false);
+            refreshStats();
+            onBack();
         };
 
         window.addEventListener('purchase-processing-started', handlePurchaseStart);
@@ -39,36 +83,30 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
 
     const plans = [
         {
-            id: 'free',
+            id: 'free' as const,
+            plan: null as null,
             name: t.sub_plan_free,
-            monthlyPrice: '0€',
-            yearlyPrice: '0€',
             icon: Zap,
             features: t.sub_features_basic,
             buttonText: t.sub_choose_free,
-            premiumLink: false
         },
         {
-            id: 'monthly_plus_access',
+            id: 'plus' as const,
+            plan: 'plus' as const,
             name: t.sub_plan_plus,
-            monthlyPrice: '5.99€',
-            yearlyPrice: '59.90€',
             icon: Sparkles,
             features: t.sub_features_plus,
             buttonText: t.sub_choose_plus,
             recommended: true,
-            premiumLink: true
         },
         {
-            id: 'monthly_pro_access',
+            id: 'pro' as const,
+            plan: 'pro' as const,
             name: t.sub_plan_pro,
-            monthlyPrice: '12.99€',
-            yearlyPrice: '129.90€',
             icon: CreditCard,
             features: t.sub_features_premium,
             buttonText: t.sub_choose_pro,
-            premiumLink: true
-        }
+        },
     ];
 
     const handlePurchase = async (planId: string) => {
@@ -77,30 +115,49 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
             return;
         }
 
-        // Launch Despia Paywall regardless of plan selected, as Paywall handles selection
-        // However, if planId is 'free', maybe just do nothing or downgrading logic?
-        // But 'free' usually doesn't need purchase.
         if (planId === 'free') {
             onBack();
             return;
         }
 
-        setIsLoading(true); // Optimistic loading
+        const plan = planId as 'plus' | 'pro';
+        const packageId = getPackageId(plan, billingPeriod);
+
+        if (!packageId) {
+            console.error(`No package found for plan=${plan}, period=${billingPeriod}`);
+            alert('Error loading subscription package. Please try again.');
+            return;
+        }
+
+        setIsPurchasing(true);
+        setIsLoading(true);
+
         try {
-            console.log("Launching Despia Paywall for user:", user.id);
-            await launchPaywall({ userId: user.id });
-            // The flow continues via native modal. 
-            // We listen to events for completion.
-            // If user closes without buying, 'isLoading' might get stuck?
-            // Despia doesn't currently emit 'close' event in the snippet I wrote.
-            // I should safely timeout loading or just not set loading purely on launch?
-            // User requested "CTA -> launch".
-            // If I set loading, I must unset it eventually.
-            // Let's set loading for a few seconds to indicate "Opening..." then turn off?
-            setTimeout(() => setIsLoading(false), 3000);
+            console.log(`Direct purchase: ${packageId} (plan=${plan}, period=${billingPeriod})`);
+            const result = await purchasesService.purchasePackage(packageId);
+
+            if (result.success) {
+                console.log('Purchase successful!', result.customerInfo);
+                // Start polling for backend confirmation
+                if (user.id) {
+                    window.dispatchEvent(new CustomEvent('purchase-processing-started'));
+                    waitForSubscriptionStatus(user.id, (status) => {
+                        window.dispatchEvent(new CustomEvent('subscription-updated', { detail: status }));
+                    });
+                }
+            } else if (result.cancelled) {
+                console.log('Purchase cancelled by user');
+                setIsLoading(false);
+                setIsPurchasing(false);
+            } else {
+                console.error('Purchase failed');
+                setIsLoading(false);
+                setIsPurchasing(false);
+            }
         } catch (error) {
-            console.error("Purchase launch failed", error);
+            console.error("Purchase error", error);
             setIsLoading(false);
+            setIsPurchasing(false);
         }
     };
 
@@ -159,6 +216,11 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                         const isSelected = activePlanId === plan.id;
                         const PlanIcon = plan.icon;
 
+                        // Dynamic price from RevenueCat
+                        const displayPrice = plan.plan
+                            ? getDynamicPrice(plan.plan, billingPeriod)
+                            : '0€';
+
                         return (
                             <div
                                 key={plan.id}
@@ -192,7 +254,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                                             <h3 className="font-black text-gray-900 dark:text-white text-2xl tracking-tight leading-none mb-1">{plan.name}</h3>
                                             <div className="flex items-baseline gap-1">
                                                 <span className="text-xl font-black text-gray-900 dark:text-white leading-none tracking-tighter" style={{ color: isSelected ? accentColor : undefined }}>
-                                                    {billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
+                                                    {!pricesLoaded && plan.plan ? '...' : displayPrice}
                                                 </span>
                                                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                                                     / {billingPeriod === 'monthly' ? t.sub_per_month.split(' ')[1] : t.sub_per_year.split(' ')[1]}
@@ -219,12 +281,12 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                                             e.stopPropagation();
                                             handlePurchase(plan.id);
                                         }}
-                                        disabled={isLoading}
+                                        disabled={isLoading || isPurchasing}
                                         className="w-full relative overflow-hidden group/btn py-6 rounded-[2rem] text-white font-black text-sm uppercase tracking-[0.25em] shadow-2xl active:scale-[0.97] transition-all duration-500"
                                         style={{ backgroundColor: isSelected ? accentColor : '#334155' }}
                                     >
                                         <span className="relative z-10 flex items-center justify-center gap-3">
-                                            {isLoading && activePlanId === plan.id ? (
+                                            {(isLoading || isPurchasing) && activePlanId === plan.id ? (
                                                 <RefreshCw size={18} className="animate-spin" />
                                             ) : (
                                                 <>
