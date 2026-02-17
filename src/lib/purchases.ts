@@ -198,6 +198,30 @@ class PurchasesService {
             return { success: false };
         }
     }
+
+    /**
+     * Get latest customer info from RevenueCat.
+     * Useful for checking active entitlements and management URL.
+     */
+    async getCustomerInfo() {
+        if (!this.isInitialized) await this.initialize();
+
+        if (this.useMock) {
+            return {
+                entitlements: { active: {} },
+                activeSubscriptions: [],
+                managementURL: null
+            };
+        }
+
+        try {
+            const info = await Purchases.getCustomerInfo();
+            return info.customerInfo;
+        } catch (e) {
+            console.error('Error fetching customer info:', e);
+            return null;
+        }
+    }
 }
 
 export const purchasesService = new PurchasesService();

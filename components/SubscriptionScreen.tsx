@@ -308,19 +308,53 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                         {t.sub_manage_desc}
                     </p>
                     <button
-                        onClick={() => {
-                            // iOS: opens App Store subscription management
-                            // Android: opens Google Play subscription management
-                            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                            if (isIOS) {
-                                window.open('https://apps.apple.com/account/subscriptions', '_blank');
-                            } else {
+                        onClick={async () => {
+                            // Smart Deep Linking for Subscription Management
+                            setIsLoading(true);
+                            try {
+                                const customerInfo: any = await purchasesService.getCustomerInfo();
+                                console.log('[SubscriptionScreen] Customer Info for management:', customerInfo);
+
+                                // 1. iOS: Use RevenueCat's managementURL if available (usually works well)
+                                if (customerInfo?.managementURL) {
+                                    window.open(customerInfo.managementURL, '_blank');
+                                    setIsLoading(false);
+                                    return;
+                                }
+
+                                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                                const isAndroid = /Android/.test(navigator.userAgent);
+
+                                // 2. Android: Construct deep link with SKU if we have an active subscription
+                                if (isAndroid && customerInfo?.activeSubscriptions && customerInfo.activeSubscriptions.length > 0) {
+                                    // Get the most recent active subscription SKU
+                                    const activeSku = customerInfo.activeSubscriptions[0]; // e.g., "monthly_pro_access"
+                                    // Deep link format: https://play.google.com/store/account/subscriptions?sku=your-sub-product-id&package=your-app-package
+                                    const playStoreUrl = `https://play.google.com/store/account/subscriptions?sku=${activeSku}&package=com.planifai.app`;
+                                    window.open(playStoreUrl, '_blank');
+                                    setIsLoading(false);
+                                    return;
+                                }
+
+                                // 3. Fallback: Generic Store Links
+                                if (isIOS) {
+                                    // Opens App Store Subscriptions section
+                                    window.open('https://apps.apple.com/account/subscriptions', '_blank');
+                                } else {
+                                    // Opens Google Play Subscriptions section
+                                    window.open('https://play.google.com/store/account/subscriptions', '_blank');
+                                }
+                            } catch (e) {
+                                console.error('Error opening management URL', e);
+                                // Absolute fallback
                                 window.open('https://play.google.com/store/account/subscriptions', '_blank');
+                            } finally {
+                                setIsLoading(false);
                             }
                         }}
                         className="w-full py-4 rounded-[1.5rem] border-2 border-red-200 dark:border-red-900/50 text-red-500 dark:text-red-400 font-black text-xs uppercase tracking-[0.2em] active:scale-[0.97] transition-all hover:bg-red-50 dark:hover:bg-red-950/30"
                     >
-                        {t.sub_manage_button}
+                        {isLoading ? '...' : t.sub_manage_button}
                     </button>
                 </div>
 
