@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase, Tables } from '../lib/supabase';
 import { Capacitor } from '@capacitor/core';
+import { registerPushToken, deactivatePushToken } from '../lib/pushNotifications';
 
 interface Profile extends Tables<'profiles'> { }
 
@@ -65,6 +66,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(session?.user ?? null);
             if (session?.user) {
                 fetchProfile(session.user.id);
+                // Register push token for notifications
+                if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+                    registerPushToken(session.user.id).catch(e =>
+                        console.warn('Push token registration failed:', e)
+                    );
+                }
             } else {
                 setProfile(null);
             }
@@ -174,6 +181,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Sign out current user
     const signOut = async () => {
         try {
+            // Deactivate push tokens before signing out
+            if (user) {
+                await deactivatePushToken(user.id).catch(e =>
+                    console.warn('Push token deactivation failed:', e)
+                );
+            }
             await supabase.auth.signOut();
             setUser(null);
             setProfile(null);
