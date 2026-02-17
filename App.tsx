@@ -1,6 +1,7 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { CalendarProvider, useCalendar } from './contexts/CalendarContext';
+import { useNotificationHandler } from './src/hooks/useNotificationHandler';
 import { useAuth } from './src/contexts/AuthContext';
 import { AuthScreen } from './src/components/AuthScreen';
 import { ChatScreen } from './components/ChatScreen';
@@ -66,6 +67,25 @@ const AppContent: React.FC = () => {
     setActiveTab(tabId);
     if (tabId !== 'settings') setSettingsView('main');
   };
+
+  // Notification Handler Integration
+  useNotificationHandler((targetTab, view, data) => {
+    console.log('Navigating from notification:', targetTab, view, data);
+    if (TABS.find(t => t.id === targetTab)) {
+      setActiveTab(targetTab as TabType);
+    }
+
+    // Check if we need to open a specific view (e.g. event detail)
+    // For V1, we just switch tabs. 
+    // Ideally, we would update context states like 'selectedEventId' here.
+    if (targetTab === 'calendar' && data?.eventId) {
+      // We might need to expose a method from CalendarContext to open detail
+      // For now, simpler is creating a CustomEvent that CalendarScreen listens to, 
+      // or just letting the user open it manually from the agenda.
+      // Let's dispatch a local event for CalendarScreen to pick up?
+      window.dispatchEvent(new CustomEvent('open-event-detail', { detail: data.eventId }));
+    }
+  });
 
   return (
     <div className="h-[100dvh] w-full overflow-hidden bg-[#F8FAFC] dark:bg-black relative text-gray-900 dark:text-white font-sans flex flex-col transition-colors duration-300">
