@@ -76,52 +76,58 @@ export async function fetchFriends(userId: string): Promise<Friend[]> {
     // However, the current schema is a bit limited. Let's optimize it.
     // Actually, let's just fetch the data and map it correctly.
 
+
+
+    // 1. Collect all friend IDs we need to fetch
+    const friendIdsToFetch = new Set<string>();
+
+    data.forEach(friendship => {
+        if (friendship.user_id !== userId && friendship.status === 'friend') {
+            friendIdsToFetch.add(friendship.user_id);
+        } else if (friendship.user_id !== userId && friendship.status !== 'friend') {
+            friendIdsToFetch.add(friendship.user_id);
+        }
+        // If user_id === userId, we already have the info in friend_name/handle columns
+    });
+
+    // 2. Batch fetch profiles
+    const profilesMap = new Map();
+    if (friendIdsToFetch.size > 0) {
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, user_name, handle, profile_image')
+            .in('id', Array.from(friendIdsToFetch));
+
+        if (profiles) {
+            profiles.forEach(p => profilesMap.set(p.id, p));
+        }
+    }
+
     const friendships: Friend[] = [];
 
     for (const friendship of data as DBFriend[]) {
         if (friendship.user_id === userId) {
-            // Outgoing request or accepted friend
+            // Outgoing request or accepted friend (Data is in the row)
             friendships.push({
                 id: friendship.friend_id,
                 name: friendship.friend_name,
                 handle: friendship.friend_handle,
                 avatar: friendship.friend_avatar || undefined,
-                status: friendship.status === 'friend' ? 'friend' : 'pending', // 'pending' means I followed them
+                status: friendship.status === 'friend' ? 'friend' : 'pending',
                 friendshipId: friendship.id,
             });
         } else {
-            // Incoming request or accepted friend
-            // For incoming requests, we need the sender's info. 
-            // The cache currently only stores the friend (receiver) info.
-            // Let's do a quick fetch for the sender info if it's an incoming request.
-
-            if (friendship.status === 'friend') {
-                // If accepted, we can assume the cache is okay if we store it on both sides,
-                // but currently it's one row. Let's just fetch the profile.
-                const { data: profile } = await supabase.from('profiles').select('user_name, handle, profile_image').eq('id', friendship.user_id).single();
-                if (profile) {
-                    friendships.push({
-                        id: friendship.user_id,
-                        name: profile.user_name,
-                        handle: profile.handle,
-                        avatar: profile.profile_image || undefined,
-                        status: 'friend',
-                        friendshipId: friendship.id,
-                    });
-                }
-            } else {
-                // Incoming pending request
-                const { data: profile } = await supabase.from('profiles').select('user_name, handle, profile_image').eq('id', friendship.user_id).single();
-                if (profile) {
-                    friendships.push({
-                        id: friendship.user_id,
-                        name: profile.user_name,
-                        handle: profile.handle,
-                        avatar: profile.profile_image || undefined,
-                        status: 'suggested', // We'll use suggested or a new type for "incoming" in the context
-                        friendshipId: friendship.id,
-                    });
-                }
+            // Incoming request or accepted friend (Data is in profilesMap)
+            const profile = profilesMap.get(friendship.user_id);
+            if (profile) {
+                friendships.push({
+                    id: friendship.user_id,
+                    name: profile.user_name,
+                    handle: profile.handle,
+                    avatar: profile.profile_image || undefined,
+                    status: friendship.status === 'friend' ? 'friend' : 'suggested',
+                    friendshipId: friendship.id,
+                });
             }
         }
     }

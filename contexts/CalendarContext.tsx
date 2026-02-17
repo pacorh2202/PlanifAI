@@ -650,7 +650,10 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           if (safeEventData.attendees.length > 0) {
             const participantIds: string[] = [];
             safeEventData.attendees.forEach((nameOrHandle: string) => {
-              if (!nameOrHandle) return; // Skip if null/undefined
+              if (!nameOrHandle) return;
+
+              console.log(`[executeAction] Resolving attendee: "${nameOrHandle}" against ${friends.length} friends`);
+              if (friends.length === 0) console.warn('[executeAction] WARNING: Friends list is empty! Network request might still be pending.');
 
               const cleanInput = (nameOrHandle || '').replace(/^@/, '').toLowerCase().trim();
 
