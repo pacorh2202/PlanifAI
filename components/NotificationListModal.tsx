@@ -116,7 +116,30 @@ export const NotificationListModal: React.FC<NotificationListModalProps> = ({ on
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user) loadNotifications();
+        if (!user) return;
+
+        loadNotifications();
+
+        // Subscribe to realtime changes
+        const unsubscribe = supabase
+            .channel('public:notifications:modal')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `user_id=eq.${user.id}`
+                },
+                (payload) => {
+                    loadNotifications();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(unsubscribe);
+        };
     }, [user]);
 
     const loadNotifications = async () => {

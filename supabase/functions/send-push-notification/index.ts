@@ -260,7 +260,7 @@ serve(async (req: Request) => {
             .eq('is_active', true) // improved query
 
         if (tokensError || !tokens || tokens.length === 0) {
-            return new Response(JSON.stringify({ success: true, recipients: 0, message: 'No devices found' }), { headers: corsHeaders })
+            return new Response(JSON.stringify({ success: true, recipients: 0, message: 'Notification logged, but no devices found' }), { headers: corsHeaders })
         }
 
         // Remove duplicates in tokens (same token for multiple user_ids is rare but possible if shared device?)
@@ -293,7 +293,7 @@ serve(async (req: Request) => {
 
         // --- LOGGING & STATE UPDATE ---
 
-        // Log to notifications table
+        // Log to notifications table FIRST (Reliability: Ensure it exists in App even if Push fails or no tokens)
         const { error: insertError } = await supabaseClient
             .from('notifications')
             .insert(
@@ -306,6 +306,8 @@ serve(async (req: Request) => {
                     is_read: false
                 }))
             )
+
+        if (insertError) console.error('Error logging notification:', insertError)
 
         if (insertError) console.error('Error logging notification:', insertError)
 
