@@ -3,7 +3,7 @@ import { ChevronLeft, Check, Sparkles, CreditCard, ShieldCheck, Zap, RefreshCw }
 import { useCalendar } from '../contexts/CalendarContext';
 import { useAuth } from '../src/contexts/AuthContext';
 import { purchasesService, OfferingPackage } from '../src/lib/purchases';
-import { waitForSubscriptionStatus } from '../src/lib/despiaPurchases';
+import { directPurchase, waitForSubscriptionStatus } from '../src/lib/despiaPurchases';
 
 interface SubscriptionScreenProps {
     onBack: () => void;
@@ -133,24 +133,22 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
         setIsLoading(true);
 
         try {
-            console.log(`Direct purchase: ${packageId} (plan=${plan}, period=${billingPeriod})`);
-            const result = await purchasesService.purchasePackage(packageId);
+            console.log(`Direct purchase via Despia: ${packageId} (plan=${plan}, period=${billingPeriod})`);
+            const result = await directPurchase({ userId: user.id, productId: packageId });
 
             if (result.success) {
-                console.log('Purchase successful!', result.customerInfo);
+                console.log('Purchase successful!', result);
                 // Start polling for backend confirmation
-                if (user.id) {
-                    window.dispatchEvent(new CustomEvent('purchase-processing-started'));
-                    waitForSubscriptionStatus(user.id, (status) => {
-                        window.dispatchEvent(new CustomEvent('subscription-updated', { detail: status }));
-                    });
-                }
+                window.dispatchEvent(new CustomEvent('purchase-processing-started'));
+                waitForSubscriptionStatus(user.id, (status) => {
+                    window.dispatchEvent(new CustomEvent('subscription-updated', { detail: status }));
+                });
             } else if (result.cancelled) {
                 console.log('Purchase cancelled by user');
                 setIsLoading(false);
                 setIsPurchasing(false);
             } else {
-                console.error('Purchase failed');
+                console.error('Purchase failed:', result);
                 setIsLoading(false);
                 setIsPurchasing(false);
             }
