@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { CalendarEvent, KPIStats, CalendarAction, PlannerTemplate, CategoryStyle, EventType } from '../types';
 import { Language, translations } from '../translations';
 import { useAuth } from '../src/contexts/AuthContext';
+import { useToast } from './ToastContext';
 import * as calendarApi from '../src/lib/calendar-api';
 import * as friendsApi from '../src/lib/friends-api';
 import * as notificationsApi from '../src/lib/notifications-api'; // Import notifications API
@@ -56,6 +57,7 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, profile, updateProfile } = useAuth();
+  const toast = useToast();
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [eventsLoaded, setEventsLoaded] = useState(false);
@@ -108,6 +110,12 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // Play sound or show toast here if desired
         setUnreadCount(prev => prev + 1);
         setHasUnread(true);
+
+        // Show Toast
+        toast.show(newNotification.message, {
+          title: newNotification.title,
+          type: 'notification'
+        });
       }
     });
 

@@ -1,6 +1,7 @@
 
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { CalendarProvider, useCalendar } from './contexts/CalendarContext';
+import { ToastProvider } from './contexts/ToastContext';
 import { useNotificationHandler } from './src/hooks/useNotificationHandler';
 import { useAuth } from './src/contexts/AuthContext';
 import { AuthScreen } from './src/components/AuthScreen';
@@ -166,9 +167,11 @@ const App: React.FC = () => {
 
   // User is authenticated - show main app
   return (
-    <CalendarProvider>
-      <AppContent />
-    </CalendarProvider>
+    <ToastProvider>
+      <CalendarProvider>
+        <AppContent />
+      </CalendarProvider>
+    </ToastProvider>
   );
 }
 
