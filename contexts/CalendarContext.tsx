@@ -468,8 +468,8 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               const nameMatches = friends.filter(f => (f.name || '').toLowerCase().trim().includes(cleanInput));
               if (nameMatches.length === 1) friend = nameMatches[0];
             }
-            if (friend && !participantIds.includes(friend.friend_id)) {
-              participantIds.push(friend.friend_id);
+            if (friend && !participantIds.includes(friend.id)) {
+              participantIds.push(friend.id);
             }
           });
           action.eventData.participantIds = participantIds;
@@ -676,9 +676,9 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
               if (friend) {
                 // Evitar duplicados
-                if (!participantIds.includes(friend.friend_id)) {
-                  console.log(`[executeAction] Found friend for "${nameOrHandle}": ${friend.name} (${friend.friend_id})`);
-                  participantIds.push(friend.friend_id);
+                if (!participantIds.includes(friend.id)) {
+                  console.log(`[executeAction] Found friend for "${nameOrHandle}": ${friend.name} (${friend.id})`);
+                  participantIds.push(friend.id);
                 }
               } else {
                 console.warn(`[executeAction] No se encontró amigo: "${nameOrHandle}" en lista de ${friends.length} amigos.`);
