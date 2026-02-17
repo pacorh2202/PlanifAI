@@ -172,11 +172,18 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
   };
 
   const performSave = async () => {
-    // Resolve attendee names → participant IDs for sharing
+    // Resolve attendee handles/names → participant IDs for sharing
+    // toggleAttendee stores as "@handle", so we must match by handle, @handle, and name
     let participantIds: string[] = [];
     if (editedEvent.attendees && editedEvent.attendees.length > 0) {
-      for (const name of editedEvent.attendees) {
-        const friend = friends.find(f => f.name === name && f.status === 'friend');
+      for (const attendee of editedEvent.attendees) {
+        const cleanHandle = attendee.startsWith('@') ? attendee.slice(1) : attendee;
+        const friend = friends.find(f =>
+          (f.handle === cleanHandle ||
+            f.name === attendee ||
+            f.name === cleanHandle) &&
+          f.status === 'friend'
+        );
         if (friend) participantIds.push(friend.id);
       }
     }
