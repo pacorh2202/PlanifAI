@@ -103,10 +103,10 @@ class PurchasesService {
         if (this.useMock) {
             console.log('Using Mock Data for Offerings');
             return [
-                { identifier: 'Monthly_plus_access', product: { title: 'Plus', description: 'Power up your life', priceString: '5,99 €' } },
-                { identifier: 'Monthly_pro_access', product: { title: 'Pro', description: 'The ultimate assistant', priceString: '12,99 €' } },
-                { identifier: 'Yearly_plus_access', product: { title: 'Plus (Yearly)', description: 'Power up your life', priceString: '59,90 €' } },
-                { identifier: 'Yearly_pro_access', product: { title: 'Pro (Yearly)', description: 'The ultimate assistant', priceString: '129,90 €' } },
+                { identifier: 'Monthly_plus_access', product: { title: 'Plus', description: 'Power up your life', priceString: '4,99 €' } },
+                { identifier: 'Monthly_pro_access', product: { title: 'Pro', description: 'The ultimate assistant', priceString: '9,99 €' } },
+                { identifier: 'Yearly_plus_access', product: { title: 'Plus (Yearly)', description: 'Power up your life', priceString: '49,99 €' } },
+                { identifier: 'Yearly_pro_access', product: { title: 'Pro (Yearly)', description: 'The ultimate assistant', priceString: '99,99 €' } },
             ];
         }
         return [];

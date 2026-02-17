@@ -44,10 +44,10 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
             return info?.plan === plan && info?.period === period;
         });
         if (match) return match.product.priceString;
-        // Fallback hardcoded (only used if RevenueCat hasn't loaded yet)
+        // Fallback hardcoded — must match App Store Connect prices
         const fallbacks: Record<string, Record<string, string>> = {
-            plus: { monthly: '5,99 €', yearly: '59,90 €' },
-            pro: { monthly: '12,99 €', yearly: '129,90 €' },
+            plus: { monthly: '4,99 €', yearly: '49,99 €' },
+            pro: { monthly: '9,99 €', yearly: '99,99 €' },
         };
         return fallbacks[plan]?.[period] ?? '—';
     }, [packages]);
@@ -160,7 +160,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar pb-32 transition-colors duration-500">
+        <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto overflow-x-hidden no-scrollbar pb-32 transition-colors duration-500" style={{ touchAction: 'pan-y' }}>
             {/* Elegant Header */}
             <header className="px-6 pt-12 pb-8 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/90 dark:bg-black/90 backdrop-blur-xl z-[100] border-b border-gray-100 dark:border-gray-900 transition-all">
                 <button onClick={onBack} className="p-3 -ml-3 rounded-2xl active:scale-95 bg-white dark:bg-gray-900 shadow-sm border border-gray-100 dark:border-gray-800 transition-all">
@@ -209,7 +209,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                 </div>
 
                 {/* Card Stack */}
-                <div className="space-y-6">
+                <div className="space-y-6" style={{ touchAction: 'pan-y', overflowX: 'hidden' }}>
                     {plans.map((plan) => {
                         const isSelected = activePlanId === plan.id;
                         const PlanIcon = plan.icon;
@@ -223,7 +223,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                             <div
                                 key={plan.id}
                                 onClick={() => setActivePlanId(plan.id)}
-                                className={`relative group cursor-pointer rounded-[3rem] p-1 transition-all duration-700 ${isSelected ? 'scale-[1.03]' : 'scale-100'}`}
+                                className={`relative group cursor-pointer rounded-[3rem] p-1 transition-all duration-700 ${isSelected ? 'scale-[1.02]' : 'scale-100'}`}
                                 style={{
                                     background: isSelected ? `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}66 100%)` : 'transparent'
                                 }}
@@ -299,6 +299,29 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                             </div>
                         );
                     })}
+                </div>
+
+                {/* Manage Subscription / Unsubscribe Section */}
+                <div className="mt-2 rounded-[2rem] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
+                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest mb-4 text-center">{t.sub_manage_title}</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-5 leading-relaxed">
+                        {t.sub_manage_desc}
+                    </p>
+                    <button
+                        onClick={() => {
+                            // iOS: opens App Store subscription management
+                            // Android: opens Google Play subscription management
+                            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                            if (isIOS) {
+                                window.open('https://apps.apple.com/account/subscriptions', '_blank');
+                            } else {
+                                window.open('https://play.google.com/store/account/subscriptions', '_blank');
+                            }
+                        }}
+                        className="w-full py-4 rounded-[1.5rem] border-2 border-red-200 dark:border-red-900/50 text-red-500 dark:text-red-400 font-black text-xs uppercase tracking-[0.2em] active:scale-[0.97] transition-all hover:bg-red-50 dark:hover:bg-red-950/30"
+                    >
+                        {t.sub_manage_button}
+                    </button>
                 </div>
 
                 {/* Compliance Footer */}
