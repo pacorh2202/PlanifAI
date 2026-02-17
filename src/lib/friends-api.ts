@@ -5,7 +5,7 @@
 
 import { supabase } from './supabase';
 import { Friend } from '../../types';
-import { createNotification } from './notifications-api';
+// Notifications are now handled by DB triggers — no manual createNotification needed
 
 // ============================================================================
 // Type Definitions
@@ -210,37 +210,7 @@ export async function acceptFriendRequest(
         console.error('Error accepting friend request:', error);
         throw error;
     }
-
-    // Trigger notification for the requester
-    const { data: friendship } = await supabase
-        .from('friends')
-        .select('user_id, friend_id')
-        .eq('id', friendshipId)
-        .single();
-
-    if (friendship) {
-        // Find who is the 'other' person (the requester)
-        // If I accepted, I am friend_id, the requester is user_id
-        const targetUserId = friendship.user_id === userId ? friendship.friend_id : friendship.user_id;
-
-        const { data: myProfile } = await supabase
-            .from('profiles')
-            .select('user_name, profile_image')
-            .eq('id', userId)
-            .single();
-
-        await createNotification(
-            targetUserId,
-            'friend_accepted',
-            'Solicitud aceptada',
-            `${myProfile?.user_name || 'Un usuario'} ha aceptado tu solicitud de amistad.`,
-            {
-                profileImage: myProfile?.profile_image,
-                friendshipId: friendshipId,
-                acceptedBy: userId
-            }
-        );
-    }
+    // Notification is now handled by the DB trigger (trigger_notify_friend_accepted)
 }
 
 /**
@@ -367,28 +337,8 @@ export async function shareEvent(
         throw error;
     }
 
-    // Fetch event details for notification metadata
-    const { data: eventData } = await supabase
-        .from('calendar_events')
-        .select('title, category_label')
-        .eq('id', eventId)
-        .single();
-
-    // Trigger notification for each friend
-    for (const friendId of friendIds) {
-        await createNotification(
-            friendId,
-            'event_shared',
-            'Nueva invitación de calendario',
-            `Te han invitado a un evento compartido: ${eventData?.title || ''}`,
-            {
-                eventId: eventId,
-                senderId: userId,
-                eventTitle: eventData?.title,
-                categoryLabel: eventData?.category_label
-            }
-        );
-    }
+    // Notification is handled by the DB trigger (trigger_notify_event_invite)
+    // which fires on event_participants INSERT
 
     console.log(`✅ Event ${eventId} shared with ${friendIds.length} friends`);
 }
