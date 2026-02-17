@@ -12,7 +12,7 @@ interface SubscriptionScreenProps {
 export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }) => {
     const { user } = useAuth();
     const { accentColor, t, refreshStats } = useCalendar();
-    const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('yearly');
+    const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
     const [activePlanId, setActivePlanId] = useState<string>('plus');
     const [isLoading, setIsLoading] = useState(false);
     const [isPurchasing, setIsPurchasing] = useState(false);
@@ -209,7 +209,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                 </div>
 
                 {/* Card Stack */}
-                <div className="space-y-6" style={{ touchAction: 'pan-y', overflowX: 'hidden' }}>
+                <div className="space-y-6" style={{ touchAction: 'pan-y' }}>
                     {plans.map((plan) => {
                         const isSelected = activePlanId === plan.id;
                         const PlanIcon = plan.icon;
@@ -223,7 +223,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
                             <div
                                 key={plan.id}
                                 onClick={() => setActivePlanId(plan.id)}
-                                className={`relative group cursor-pointer rounded-[3rem] p-1 transition-all duration-700 ${isSelected ? 'scale-[1.02]' : 'scale-100'}`}
+                                className={`relative group cursor-pointer rounded-[3rem] p-1 transition-all duration-700 ${isSelected ? 'scale-[1.03]' : 'scale-100'}`}
                                 style={{
                                     background: isSelected ? `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}66 100%)` : 'transparent'
                                 }}
