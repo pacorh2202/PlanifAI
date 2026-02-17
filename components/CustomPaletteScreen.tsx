@@ -5,6 +5,7 @@ import { ArrowLeft, Pencil, Plus, Star, GripVertical, Check, Sun } from 'lucide-
 import { CategoryStyle } from '../types';
 import { ICON_MAP } from '../constants';
 import { getLocalizedCategoryLabel } from '../src/utils/translationHelpers';
+import { ColorPicker } from './ColorPicker';
 
 interface CustomPaletteScreenProps {
   onBack: () => void;
@@ -15,39 +16,7 @@ const AVAILABLE_ICONS = Object.entries(ICON_MAP).map(([name, component]) => ({
   component
 }));
 
-const hexToHsl = (hex: string) => {
-  if (!hex) return { h: 0, s: 0, l: 0 };
-  let r = parseInt(hex.slice(1, 3), 16) / 255;
-  let g = parseInt(hex.slice(3, 5), 16) / 255;
-  let b = parseInt(hex.slice(5, 7), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h = 0, s, l = (max + min) / 2;
 
-  if (max === min) {
-    h = s = 0;
-  } else {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
-    }
-    h /= 6;
-  }
-  return { h: h * 360, s: s * 100, l: l * 100 };
-};
-
-const hslToHex = (h: number, s: number, l: number) => {
-  l /= 100;
-  const a = (s / 100) * Math.min(l, 1 - l);
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color).toString(16).padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
-};
 
 export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack }) => {
   const { customTemplate, saveCustomTemplate, accentColor, t, language } = useCalendar();
@@ -65,10 +34,7 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
     setCategories(newCategories);
   };
 
-  const handleColorChange = (index: number, h: number, l: number) => {
-    const hex = hslToHex(h, 85, l);
-    updateCategory(index, { color: hex });
-  };
+
 
   const addCategory = () => {
     const newCategory: CategoryStyle = {
@@ -98,7 +64,6 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
           {categories.map((cat, idx) => {
             const isEditing = editingIndex === idx;
             const IconComponent = ICON_MAP[cat.icon] || ICON_MAP.Star;
-            const currentHsl = hexToHsl(cat.color);
 
             return (
               <div
@@ -132,52 +97,42 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
                 </div>
 
                 {isEditing && (
-                  <div className="mt-8 space-y-10 animate-fade-in border-t border-gray-50 dark:border-gray-900 pt-8">
+                  <div className="mt-8 space-y-8 animate-fade-in border-t border-gray-50 dark:border-gray-900 pt-8">
+
+                    {/* --- ICONS --- */}
                     <div>
-                      <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-4">{t.symbol_label}</p>
-                      <div className="grid grid-cols-6 gap-4 max-h-[180px] overflow-y-auto no-scrollbar p-2 -m-2">
-                        {AVAILABLE_ICONS.map((icon) => (
-                          <button
-                            key={icon.name}
-                            onClick={() => updateCategory(idx, { icon: icon.name })}
-                            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${cat.icon === icon.name ? 'text-white shadow-lg scale-110' : 'bg-gray-50 dark:bg-[#1A1A1A] text-gray-300 hover:text-gray-400'
-                              }`}
-                            style={{ backgroundColor: cat.icon === icon.name ? cat.color : '' }}
-                          >
-                            <icon.component size={18} />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-8">
-                      <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-4">{t.category_color_label}</p>
-                      <div className="relative w-full h-5 rounded-full" style={{ background: 'linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)' }}>
-                        <input
-                          type="range" min="0" max="360" value={currentHsl.h}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                          onChange={(e) => handleColorChange(idx, parseInt(e.target.value), currentHsl.l)}
-                        />
-                        <div className="absolute top-1/2 w-6 h-6 bg-white rounded-full border-2 border-white shadow-md -translate-y-1/2 -translate-x-1/2 pointer-events-none" style={{ left: `${(currentHsl.h / 360) * 100}%` }}></div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center px-1">
-                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{t.intensity_label}</span>
-                          <Sun size={10} className="text-gray-400" />
-                        </div>
-                        <div className="relative w-full h-5 rounded-full" style={{
-                          background: `linear-gradient(to right, ${hslToHex(currentHsl.h, 100, 10)}, ${hslToHex(currentHsl.h, 100, 50)}, ${hslToHex(currentHsl.h, 100, 90)})`
-                        }}>
-                          <input
-                            type="range" min="15" max="85" value={currentHsl.l}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            onChange={(e) => handleColorChange(idx, currentHsl.h, parseInt(e.target.value))}
-                          />
-                          <div className="absolute top-1/2 w-6 h-6 bg-white rounded-full border-2 border-white shadow-md -translate-y-1/2 -translate-x-1/2 pointer-events-none" style={{ left: `${((currentHsl.l - 15) / 70) * 100}%` }}></div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-4 ml-1">{t.symbol_label}</p>
+                      <div className="bg-gray-50 dark:bg-black/50 rounded-[2rem] p-4 border border-gray-100 dark:border-gray-800">
+                        <div className="grid grid-cols-6 sm:grid-cols-8 gap-3 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                          {AVAILABLE_ICONS.map((icon) => (
+                            <button
+                              key={icon.name}
+                              onClick={() => updateCategory(idx, { icon: icon.name })}
+                              className={`aspect-square rounded-2xl flex items-center justify-center transition-all duration-300 ${cat.icon === icon.name
+                                ? 'text-white shadow-lg scale-110 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-[#121212]'
+                                : 'bg-white dark:bg-[#1A1A1A] text-gray-300 hover:text-gray-500 hover:scale-105'
+                                }`}
+                              style={{
+                                backgroundColor: cat.icon === icon.name ? cat.color : '',
+                                '--tw-ring-color': cat.color
+                              } as any}
+                            >
+                              <icon.component size={20} strokeWidth={cat.icon === icon.name ? 2.5 : 2} />
+                            </button>
+                          ))}
                         </div>
                       </div>
                     </div>
+
+                    {/* --- COLOR PICKER --- */}
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-4 ml-1">{t.category_color_label}</p>
+                      <ColorPicker
+                        color={cat.color}
+                        onChange={(newColor) => updateCategory(idx, { color: newColor })}
+                      />
+                    </div>
+
                   </div>
                 )}
               </div>
