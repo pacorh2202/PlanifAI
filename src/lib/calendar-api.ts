@@ -150,9 +150,12 @@ export async function createEvent(event: any, userId: string) {
     }
 
     // Handle participants if provided (handles/IDs passed in event.participantIds)
-    if (event.participantIds && Array.isArray(event.participantIds) && event.participantIds.length > 0) {
-        console.log('[createEvent] Adding participants:', event.participantIds);
-        const participants = event.participantIds.map((pId: string) => ({
+    const validParticipantIds = (event.participantIds || []).filter((pId: string | null | undefined) =>
+        pId && typeof pId === 'string' && pId.trim().length > 0
+    );
+    if (validParticipantIds.length > 0) {
+        console.log('[createEvent] Adding participants:', validParticipantIds);
+        const participants = validParticipantIds.map((pId: string) => ({
             event_id: data.id,
             user_id: pId,
             role: 'viewer' as const,

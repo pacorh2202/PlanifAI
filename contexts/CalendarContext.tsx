@@ -456,12 +456,16 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const attendeesArray = action.eventData.attendees;
 
           attendeesArray.forEach((nameOrHandle: string) => {
-            const cleanInput = nameOrHandle.replace(/^@/, '').toLowerCase().trim();
-            if (cleanInput === userName.toLowerCase().trim() || cleanInput === userHandle.toLowerCase()) return;
+            if (!nameOrHandle) return;
+            const cleanInput = (nameOrHandle || '').replace(/^@/, '').toLowerCase().trim();
+            if (!cleanInput) return;
+            const safeUserName = (userName || '').toLowerCase().trim();
+            const safeUserHandle = (userHandle || '').toLowerCase();
+            if (cleanInput === safeUserName || (safeUserHandle && cleanInput === safeUserHandle)) return;
 
-            let friend = friends.find(f => f.handle.toLowerCase().replace(/^@/, '') === cleanInput.replace(/^@/, ''));
+            let friend = friends.find(f => (f.handle || '').toLowerCase().replace(/^@/, '') === cleanInput.replace(/^@/, ''));
             if (!friend) {
-              const nameMatches = friends.filter(f => f.name.toLowerCase().trim().includes(cleanInput));
+              const nameMatches = friends.filter(f => (f.name || '').toLowerCase().trim().includes(cleanInput));
               if (nameMatches.length === 1) friend = nameMatches[0];
             }
             if (friend && !participantIds.includes(friend.friend_id)) {
