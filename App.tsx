@@ -1,5 +1,6 @@
 
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useMemo, useEffect, useTransition } from 'react';
+import { initCapacitorOneSignal } from './src/lib/pushNotifications';
 import { CalendarProvider, useCalendar } from './contexts/CalendarContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { useNotificationHandler } from './src/hooks/useNotificationHandler';
@@ -64,9 +65,13 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const [isPending, startTransition] = React.useTransition();
+
   const handleTabClick = (tabId: TabType) => {
-    setActiveTab(tabId);
-    if (tabId !== 'settings') setSettingsView('main');
+    startTransition(() => {
+      setActiveTab(tabId);
+      if (tabId !== 'settings') setSettingsView('main');
+    });
   };
 
   // Notification Handler Integration
@@ -147,6 +152,10 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    initCapacitorOneSignal();
+  }, []);
 
   // Show loading screen while checking auth
   if (loading) {

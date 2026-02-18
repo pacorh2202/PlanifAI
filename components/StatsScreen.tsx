@@ -114,6 +114,13 @@ export const StatsScreen: React.FC = () => {
 
   const [selectedArticle, setSelectedArticle] = useState<typeof localizedArticles[0] | null>(null);
   const [showStressInfo, setShowStressInfo] = useState(false);
+  const [isChartsReady, setIsChartsReady] = useState(false);
+
+  useEffect(() => {
+    // Delays chart rendering to let the screen transition finish smoothly
+    const timer = setTimeout(() => setIsChartsReady(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   // ─── Habit Builder State ──────────────────────────────────────────────
   const [habitChallenges, setHabitChallenges] = useState<HabitChallenge[]>(loadHabits);
@@ -422,29 +429,37 @@ export const StatsScreen: React.FC = () => {
               </div>
 
               <div className="flex-1 w-full relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={kpiStats.activityData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                    <XAxis
-                      dataKey="day"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10, fill: '#94A3B8', fontWeight: 700 }}
-                      dy={10}
-                    />
-                    <Tooltip
-                      cursor={{ fill: '#F1F5F9', opacity: 0.4 }}
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                    />
-                    <Bar dataKey="value" radius={[6, 6, 6, 6]} maxBarSize={40}>
-                      {kpiStats.activityData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={entry.value > 5 ? '#FF7566' : '#FFD2CC'} /* Highlight high activity days */
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                {isChartsReady ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={kpiStats.activityData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                      <XAxis
+                        dataKey="day"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 10, fill: '#94A3B8', fontWeight: 700 }}
+                        dy={10}
+                      />
+                      <Tooltip
+                        cursor={{ fill: '#F1F5F9', opacity: 0.4 }}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                      />
+                      <Bar dataKey="value" radius={[6, 6, 6, 6]} maxBarSize={40}>
+                        {kpiStats.activityData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={entry.value > 5 ? '#FF7566' : '#FFD2CC'} /* Highlight high activity days */
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="w-full h-full flex items-end justify-between px-2 pb-2 opacity-30 animate-pulse">
+                    {[40, 70, 30, 80, 50, 90, 60].map((h, i) => (
+                      <div key={i} className="w-8 bg-gray-200 dark:bg-gray-700 rounded-md" style={{ height: `${h}%` }} />
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 
@@ -454,22 +469,26 @@ export const StatsScreen: React.FC = () => {
 
               <div className="flex items-center gap-6">
                 <div className="w-32 h-32 relative shrink-0">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={kpiStats.distributionCharData}
-                        innerRadius={40}
-                        outerRadius={60}
-                        paddingAngle={5}
-                        dataKey="value"
-                        stroke="none"
-                      >
-                        {kpiStats.distributionCharData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {isChartsReady ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={kpiStats.distributionCharData}
+                          innerRadius={40}
+                          outerRadius={60}
+                          paddingAngle={5}
+                          dataKey="value"
+                          stroke="none"
+                        >
+                          {kpiStats.distributionCharData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="w-full h-full rounded-full border-[10px] border-gray-100 dark:border-gray-800 animate-pulse" />
+                  )}
                   {/* Center Text */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <span className="text-xl font-black text-gray-900 dark:text-white">
