@@ -153,9 +153,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   const { user, loading } = useAuth();
 
-  useEffect(() => {
-    initCapacitorOneSignal();
-  }, []);
+  // useEffect(() => {
+  //   initCapacitorOneSignal();
+  // }, []);
 
   // Show loading screen while checking auth
   if (loading) {
@@ -188,6 +188,7 @@ const App: React.FC = () => {
 const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () => void }> = ({ onViewChange, onClose }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { accentColor, userName, assistantName, profileImage, t, language } = useCalendar();
+  const { user } = useAuth(); // Get user for registration
 
   useEffect(() => {
     // Sync with actual OneSignal state on mount
@@ -195,10 +196,18 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
     setNotificationsEnabled(enabled);
   }, []);
 
-  const handleToggleNotifications = () => {
+  const handleToggleNotifications = async () => {
     const newState = !notificationsEnabled;
     setNotificationsEnabled(newState);
     setPushSubscription(newState);
+
+    // If enabling, ensure backend has the token (retry registration)
+    if (newState && user) {
+      console.log('User toggled notifications ON, retrying registration...');
+      import('./src/lib/pushNotifications').then(({ registerPushToken }) => {
+        registerPushToken(user.id);
+      });
+    }
   };
 
 

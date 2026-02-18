@@ -45,24 +45,53 @@ async function getOneSignalSubscriptionId(): Promise<string | null> {
             }
 
             // If not available immediately, wait a bit or return null
-            // For v5 there isn't a direct "getDeviceState" callback in the same way, 
-            // but we can check the state.
+            // For v5, we can listen for subscription changes.
             return new Promise((resolve) => {
-                // Creating a short polling mechanism as `getDeviceState` is gone
+                let resolved = false;
+                const resolveId = (id: string) => {
+                    if (resolved) return;
+                    resolved = true;
+                    // Cleanup
+                    clearInterval(checkInterval);
+                    OneSignal.User.pushSubscription.removeEventListener('change', changeListener);
+                    console.log('Got Subscription ID:', id);
+                    resolve(id);
+                };
+
+                // 1. Polling (Backup)
                 let attempts = 0;
                 const checkInterval = setInterval(() => {
                     attempts++;
                     const id = OneSignal.User.pushSubscription.id;
-                    if (id) {
-                        clearInterval(checkInterval);
-                        console.log('Got Subscription ID after polling:', id);
-                        resolve(id);
-                    } else if (attempts > 10) {
-                        clearInterval(checkInterval);
-                        console.warn('Timeout waiting for OneSignal Subscription ID');
-                        resolve(null);
+                    const optedIn = OneSignal.User.pushSubscription.optedIn;
+
+                    if (id && optedIn) { // Only resolve if opted in? Or just if ID exists? ID is enough for identifying.
+                        resolveId(id);
+                    } else if (attempts > 60) { // 30 seconds (60 * 500ms)
+                        if (!resolved) {
+                            resolved = true;
+                            OneSignal.User.pushSubscription.removeEventListener('change', changeListener);
+                            clearInterval(checkInterval);
+                            console.warn('Timeout waiting for OneSignal Subscription ID (30s)');
+                            resolve(null);
+                        }
                     }
                 }, 500);
+
+                // 2. Event Listener
+                const changeListener = (event: any) => {
+                    // Check if we have an ID now
+                    const id = OneSignal.User.pushSubscription.id;
+                    if (id) {
+                        resolveId(id);
+                    }
+                };
+
+                try {
+                    OneSignal.User.pushSubscription.addEventListener('change', changeListener);
+                } catch (err) {
+                    console.warn('Could not add push subscription listener:', err);
+                }
             });
         }
 
