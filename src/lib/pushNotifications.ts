@@ -142,9 +142,6 @@ export function initCapacitorOneSignal() {
     OneSignal.Notifications.addEventListener('click', (event) => {
         console.log('Notification clicked:', event);
     });
-
-    // Check if we already have permission
-    console.log("Notification permission state:", OneSignal.Notifications.permission);
 }
 
 /**
