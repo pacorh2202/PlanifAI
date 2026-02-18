@@ -233,3 +233,27 @@ export async function deactivatePushToken(userId: string): Promise<void> {
         console.error('Error deactivating push tokens:', e);
     }
 }
+
+/**
+ * Check if the user is currently opted in to push notifications.
+ */
+export function isPushOptedIn(): boolean {
+    if (!isCapacitorNative()) return false;
+    // v5 property access
+    return OneSignal.User.pushSubscription.optedIn;
+}
+
+/**
+ * Toggle push notification subscription state.
+ */
+export function setPushSubscription(enable: boolean): void {
+    if (!isCapacitorNative()) return;
+
+    if (enable) {
+        console.log('Opting IN to push notifications');
+        OneSignal.User.pushSubscription.optIn();
+    } else {
+        console.log('Opting OUT of push notifications');
+        OneSignal.User.pushSubscription.optOut();
+    }
+}

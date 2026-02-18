@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useMemo, useEffect, useTransition } from 'react';
-import { initCapacitorOneSignal } from './src/lib/pushNotifications';
+import { initCapacitorOneSignal, setPushSubscription, isPushOptedIn } from './src/lib/pushNotifications';
 import { CalendarProvider, useCalendar } from './contexts/CalendarContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { useNotificationHandler } from './src/hooks/useNotificationHandler';
@@ -189,6 +189,19 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { accentColor, userName, assistantName, profileImage, t, language } = useCalendar();
 
+  useEffect(() => {
+    // Sync with actual OneSignal state on mount
+    const enabled = isPushOptedIn();
+    setNotificationsEnabled(enabled);
+  }, []);
+
+  const handleToggleNotifications = () => {
+    const newState = !notificationsEnabled;
+    setNotificationsEnabled(newState);
+    setPushSubscription(newState);
+  };
+
+
   return (
     <div className="flex flex-col h-full overflow-y-auto no-scrollbar bg-background-light dark:bg-background-dark transition-colors duration-300">
       <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-20">
@@ -263,7 +276,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
               <span className="font-bold text-sm">{t.notifications}</span>
             </div>
             <button
-              onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+              onClick={handleToggleNotifications}
               className="relative inline-flex items-center h-7 w-12 rounded-full transition-colors duration-300 focus:outline-none"
               style={{ backgroundColor: notificationsEnabled ? accentColor : '#E2E8F0' }}
             >
