@@ -103,7 +103,7 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
                     <div>
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-4 ml-1">{t.symbol_label}</p>
                       <div className="bg-gray-50 dark:bg-black/50 rounded-[2rem] p-4 border border-gray-100 dark:border-gray-800">
-                        <div className="grid grid-cols-6 sm:grid-cols-8 gap-3 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                        <div className="grid grid-cols-6 sm:grid-cols-8 gap-3 max-h-[220px] overflow-y-auto p-2 custom-scrollbar">
                           {AVAILABLE_ICONS.map((icon) => (
                             <button
                               key={icon.name}

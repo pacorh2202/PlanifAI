@@ -94,23 +94,20 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange }) => 
             <div className="flex bg-gray-100 rounded-[1.8rem] p-1.5 mb-6">
                 <button
                     onClick={() => setTab('grid')}
-                    className={`flex-1 py-2.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
+                    className={`flex-1 py-2 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center ${tab === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
                 >
-                    <Grip size={14} />
                     <span>{t.picker_grid || 'Grid'}</span>
                 </button>
                 <button
                     onClick={() => setTab('spectrum')}
-                    className={`flex-1 py-2.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'spectrum' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
+                    className={`flex-1 py-2 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center ${tab === 'spectrum' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
                 >
-                    <Palette size={14} />
                     <span>{t.picker_spectrum || 'Spectrum'}</span>
                 </button>
                 <button
                     onClick={() => setTab('sliders')}
-                    className={`flex-1 py-2.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'sliders' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
+                    className={`flex-1 py-2 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center ${tab === 'sliders' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
                 >
-                    <Sliders size={14} />
                     <span>{t.picker_sliders || 'Sliders'}</span>
                 </button>
             </div>
