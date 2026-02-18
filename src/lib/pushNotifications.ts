@@ -1,8 +1,8 @@
 /**
  * Push Notification Token Registration
  *
- * Handles registering OneSignal player_id from:
- * 1. Capacitor (iOS/Android) via onesignal-cordova-plugin
+ * Handles registering OneSignal player_id (Subscription ID) from:
+ * 1. Capacitor (iOS/Android) via onesignal-cordova-plugin (v5+)
  * 2. Despia (native web wrapper) via JS bridge
  *
  * Stores tokens in Supabase device_tokens table.
@@ -20,42 +20,56 @@ function isCapacitorNative(): boolean {
 function isDespiaNative(): boolean {
     return typeof (window as any).webkit?.messageHandlers?.despia !== 'undefined'
         || typeof (window as any).Despia !== 'undefined'
+        || typeof (window as any).despia !== 'undefined'
         || /despia/i.test(navigator.userAgent);
 }
 
-// --- Player ID Retrieval ---
+// --- Subscription ID Retrieval ---
 
 /**
- * Get the OneSignal Player ID from available native bridges.
+ * Get the OneSignal Subscription ID from available native bridges.
  */
-async function getOneSignalPlayerId(): Promise<string | null> {
+async function getOneSignalSubscriptionId(): Promise<string | null> {
     try {
-        // 1. Capacitor Native (iOS/Android)
+        // 1. Capacitor Native (iOS/Android) - SDK v5
         if (isCapacitorNative()) {
-            console.log('Detecting Capacitor Native environment...');
-            return new Promise((resolve) => {
-                // Set limit to prevent hanging
-                const timeout = setTimeout(() => {
-                    console.warn('OneSignal getDeviceState timeout');
-                    resolve(null);
-                }, 5000);
+            console.log('Detecting Capacitor Native environment (v5)...');
 
-                OneSignal.getDeviceState((state) => {
-                    clearTimeout(timeout);
-                    if (state && state.userId) {
-                        console.log('Got Capacitor OneSignal userId:', state.userId);
-                        resolve(state.userId);
-                    } else {
-                        console.warn('OneSignal state returned but no userId', state);
+            // In v5, we access the subscription ID via the User namespace
+            const subId = OneSignal.User.pushSubscription.id;
+            const optedIn = OneSignal.User.pushSubscription.optedIn;
+
+            if (subId && optedIn) {
+                console.log('Got Capacitor OneSignal Subscription ID:', subId);
+                return subId;
+            }
+
+            // If not available immediately, wait a bit or return null
+            // For v5 there isn't a direct "getDeviceState" callback in the same way, 
+            // but we can check the state.
+            return new Promise((resolve) => {
+                // Creating a short polling mechanism as `getDeviceState` is gone
+                let attempts = 0;
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    const id = OneSignal.User.pushSubscription.id;
+                    if (id) {
+                        clearInterval(checkInterval);
+                        console.log('Got Subscription ID after polling:', id);
+                        resolve(id);
+                    } else if (attempts > 10) {
+                        clearInterval(checkInterval);
+                        console.warn('Timeout waiting for OneSignal Subscription ID');
                         resolve(null);
                     }
-                });
+                }, 500);
             });
         }
 
         // 2. Despia Native (Web Wrapper)
         if (isDespiaNative()) {
             console.log('Detecting Despia Native environment...');
+            // Check for legacy global
             if ((window as any).__onesignal_player_id) {
                 return (window as any).__onesignal_player_id;
             }
@@ -63,16 +77,21 @@ async function getOneSignalPlayerId(): Promise<string | null> {
             return new Promise((resolve) => {
                 const timeout = setTimeout(() => resolve(null), 3000);
 
-                window.addEventListener('despia-push-token', ((event: CustomEvent) => {
+                const handleToken = (event: CustomEvent) => {
                     clearTimeout(timeout);
                     resolve(event.detail?.player_id || event.detail?.token || null);
-                }) as EventListener, { once: true });
+                };
+
+                window.addEventListener('despia-push-token', handleToken as EventListener, { once: true });
 
                 try {
+                    // Try different bridge signatures
                     if ((window as any).webkit?.messageHandlers?.despia) {
                         (window as any).webkit.messageHandlers.despia.postMessage({ action: 'getPushToken' });
                     } else if ((window as any).Despia?.getPushToken) {
                         (window as any).Despia.getPushToken();
+                    } else if ((window as any).despia?.getPushToken) {
+                        (window as any).despia.getPushToken();
                     }
                 } catch (e) {
                     console.warn('Could not request push token from Despia:', e);
@@ -84,14 +103,16 @@ async function getOneSignalPlayerId(): Promise<string | null> {
 
         // 3. Web SDK (Fallback)
         if ((window as any).OneSignal) {
+            // Web SDK might still use getUserId or similar depending on version, 
+            // but typically we are in native context here.
             return await (window as any).OneSignal.getUserId();
         }
 
-        console.warn('No native push environment detected (not Capacitor, not Despia)');
+        console.warn('No native push environment detected');
         return null;
 
     } catch (e) {
-        console.error('Error getting OneSignal player ID:', e);
+        console.error('Error getting OneSignal ID:', e);
         return null;
     }
 }
@@ -99,25 +120,31 @@ async function getOneSignalPlayerId(): Promise<string | null> {
 // --- Initializer for Capacitor ---
 
 /**
- * Initialize OneSignal for Capacitor.
- * Should be called once at app startup (e.g., in App.tsx or similar).
+ * Initialize OneSignal for Capacitor (SDK v5).
+ * Should be called once at app startup.
  */
 export function initCapacitorOneSignal() {
     if (!isCapacitorNative()) return;
 
-    // Use the User's provided App ID
     const ONESIGNAL_APP_ID = "95b31e0b-147f-485c-9e3e-0f1b2d7615f0";
 
-    OneSignal.setAppId(ONESIGNAL_APP_ID);
+    console.log("Initializing OneSignal SDK v5...");
 
-    OneSignal.setNotificationOpenedHandler(function (jsonData) {
-        console.log('notificationOpenedCallback: ' + JSON.stringify(jsonData));
+    // v5 Initialization
+    OneSignal.initialize(ONESIGNAL_APP_ID);
+
+    // Request Permissions
+    OneSignal.Notifications.requestPermission(true).then((accepted: boolean) => {
+        console.log("User accepted notifications:", accepted);
     });
 
-    // Prompt for push notifications
-    OneSignal.promptForPushNotificationsWithUserResponse(function (accepted) {
-        console.log("User accepted notifications: " + accepted);
+    // Click Handler
+    OneSignal.Notifications.addEventListener('click', (event) => {
+        console.log('Notification clicked:', event);
     });
+
+    // Check if we already have permission
+    console.log("Notification permission state:", OneSignal.Notifications.permission);
 }
 
 /**
@@ -140,32 +167,35 @@ function getDeviceType(): string {
  */
 export async function registerPushToken(userId: string): Promise<void> {
     if (!isDespiaNative() && !isCapacitorNative()) {
-        console.log('Not running in native app (Capacitor/Despia) — skipping push token registration');
         return;
     }
 
     console.log('Attempting to register push token for user:', userId);
 
-    const playerId = await getOneSignalPlayerId();
+    // Login to OneSignal (v5) to associate External ID if needed
+    if (isCapacitorNative()) {
+        OneSignal.login(userId);
+    }
+
+    const playerId = await getOneSignalSubscriptionId();
 
     if (!playerId) {
-        console.warn('Could not obtain OneSignal player_id — push notifications will not work');
+        console.warn('Could not obtain OneSignal Subscription ID');
         return;
     }
 
-    console.log('Got OneSignal player_id:', playerId.substring(0, 8) + '...');
+    console.log('Got OneSignal Subscription ID:', playerId.substring(0, 8) + '...');
 
     const deviceType = getDeviceType();
     const deviceModel = navigator.userAgent.substring(0, 100);
 
     try {
-        // Upsert: if this player_id already exists, update it; otherwise insert
         const { error } = await supabase
             .from('device_tokens')
             .upsert(
                 {
                     user_id: userId,
-                    player_id: playerId,
+                    player_id: playerId, // This is now the Subscription ID
                     device_type: deviceType,
                     device_model: deviceModel,
                     is_active: true,
@@ -178,28 +208,7 @@ export async function registerPushToken(userId: string): Promise<void> {
             );
 
         if (error) {
-            // Fallback for duplicates or constraints
-            if (error.code === '42P10' || error.message.includes('unique')) {
-                const { data: existing } = await supabase
-                    .from('device_tokens')
-                    .select('id')
-                    .eq('user_id', userId)
-                    .eq('player_id', playerId)
-                    .single();
-
-                if (existing) {
-                    await supabase
-                        .from('device_tokens')
-                        .update({ is_active: true, last_used_at: new Date().toISOString() })
-                        .eq('id', existing.id);
-                    console.log('Updated existing device token');
-                } else {
-                    // Retry insert? Usually upsert covers it. Just log.
-                    console.error('Error upserting device token (possible conflict):', error);
-                }
-            } else {
-                console.error('Error upserting device token:', error);
-            }
+            console.error('Error upserting device token:', error);
         } else {
             console.log('✅ Push token registered successfully');
         }
@@ -213,16 +222,16 @@ export async function registerPushToken(userId: string): Promise<void> {
  */
 export async function deactivatePushToken(userId: string): Promise<void> {
     try {
+        // v5 Logout
+        if (isCapacitorNative()) {
+            OneSignal.logout();
+        }
+
         await supabase
             .from('device_tokens')
             .update({ is_active: false })
             .eq('user_id', userId);
         console.log('Push tokens deactivated for user');
-
-        // Also clear from OneSignal if possible, or remove external id
-        if (isCapacitorNative()) {
-            OneSignal.removeExternalUserId();
-        }
     } catch (e) {
         console.error('Error deactivating push tokens:', e);
     }
