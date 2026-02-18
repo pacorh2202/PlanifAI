@@ -56,14 +56,13 @@ const hslToHex = (h: number, s: number, l: number) => {
 
 // --- Constants ---
 const PRESET_COLORS = [
-    // Vibrant Row
+    // Standard extended palette
     '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16', '#22C55E', '#10B981', '#14B8A6', '#06B6D4', '#0EA5E9', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E',
-    // Pastel Row
     '#FECACA', '#FED7AA', '#FDE68A', '#FEF08A', '#D9F99D', '#BBF7D0', '#A7F3D0', '#99F6E4', '#A5F3FC', '#BAE6FD', '#BFDBFE', '#C7D2FE', '#DDD6FE', '#E9D5FF', '#F5D0FE', '#FBCFE8', '#FDE4CF',
-    // Dark Row
     '#7F1D1D', '#7C2D12', '#78350F', '#713F12', '#365314', '#14532D', '#064E3B', '#134E4A', '#164E63', '#0C4A6E', '#1E3A8A', '#312E81', '#4C1D95', '#581C87', '#701A75', '#831843', '#881337',
-    // Gray Scale
     '#FFFFFF', '#F8FAFC', '#F1F5F9', '#E2E8F0', '#CBD5E1', '#94A3B8', '#64748B', '#475569', '#334155', '#1E293B', '#0F172A', '#020617', '#000000',
+    // More grays and specific colors to fill the grid
+    '#71717A', '#52525B', '#3F3F46', '#27272A', '#18181B', '#FAFAFA', '#F4F4F5', '#E4E4E7', '#D4D4D8', '#A1A1AA'
 ];
 
 interface ColorPickerProps {
@@ -72,7 +71,7 @@ interface ColorPickerProps {
 }
 
 export const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange }) => {
-    const { accentColor } = useCalendar();
+    const { t } = useCalendar();
     const [tab, setTab] = useState<'grid' | 'spectrum' | 'sliders'>('grid');
     const [localHex, setLocalHex] = useState(color);
 
@@ -89,42 +88,43 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange }) => 
     };
 
     return (
-        <div className="bg-white dark:bg-[#1A1A1A] rounded-[2rem] p-1 shadow-sm border border-gray-100 dark:border-gray-800">
+        // Force Light Mode styles: bg-white, text-gray-900. No dark: classes.
+        <div className="bg-white rounded-[2rem] p-1 shadow-sm border border-gray-100">
             {/* Tabs */}
-            <div className="flex bg-gray-100 dark:bg-black rounded-[1.8rem] p-1.5 mb-6">
+            <div className="flex bg-gray-100 rounded-[1.8rem] p-1.5 mb-6">
                 <button
                     onClick={() => setTab('grid')}
-                    className={`flex-1 py-2.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'grid' ? 'bg-white dark:bg-gray-800 shadow-sm text-gray-900 dark:text-white' : 'text-gray-400'}`}
+                    className={`flex-1 py-2.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
                 >
                     <Grip size={14} />
-                    <span>Grid</span>
+                    <span>{t.picker_grid || 'Grid'}</span>
                 </button>
                 <button
                     onClick={() => setTab('spectrum')}
-                    className={`flex-1 py-2.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'spectrum' ? 'bg-white dark:bg-gray-800 shadow-sm text-gray-900 dark:text-white' : 'text-gray-400'}`}
+                    className={`flex-1 py-2.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'spectrum' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
                 >
                     <Palette size={14} />
-                    <span>Spectrum</span>
+                    <span>{t.picker_spectrum || 'Spectrum'}</span>
                 </button>
                 <button
                     onClick={() => setTab('sliders')}
-                    className={`flex-1 py-2.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'sliders' ? 'bg-white dark:bg-gray-800 shadow-sm text-gray-900 dark:text-white' : 'text-gray-400'}`}
+                    className={`flex-1 py-2.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'sliders' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
                 >
                     <Sliders size={14} />
-                    <span>Sliders</span>
+                    <span>{t.picker_sliders || 'Sliders'}</span>
                 </button>
             </div>
 
             <div className="px-4 pb-4 min-h-[220px]">
-                {/* --- GRID TAB --- */}
+                {/* --- GRID TAB (Squares) --- */}
                 {tab === 'grid' && (
-                    <div className="grid grid-cols-8 gap-3 animate-fade-in max-h-[240px] overflow-y-auto no-scrollbar p-1">
+                    <div className="grid grid-cols-10 gap-1.5 animate-fade-in max-h-[240px] overflow-y-auto custom-scrollbar p-1">
                         {PRESET_COLORS.map(c => (
                             <button
                                 key={c}
                                 onClick={() => onChange(c)}
-                                className={`w-8 h-8 rounded-full shadow-sm transition-transform active:scale-90 border border-black/5 dark:border-white/10 ${color === c ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-[#1A1A1A]' : ''}`}
-                                style={{ backgroundColor: c, borderColor: c === '#FFFFFF' ? '#E2E8F0' : 'transparent', '--tw-ring-color': c } as any}
+                                className={`aspect-square rounded-[4px] shadow-sm transition-transform active:scale-95 border ${color === c ? 'ring-2 ring-offset-2 ring-blue-500 scale-110 z-10' : 'border-black/5 hover:scale-105'}`}
+                                style={{ backgroundColor: c }}
                             />
                         ))}
                     </div>
@@ -141,17 +141,21 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ color, onChange }) => 
                 )}
             </div>
 
-            {/* Hex Input Footer */}
-            <div className="mt-2 pt-4 border-t border-gray-100 dark:border-gray-800 px-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl shadow-inner border border-gray-100 dark:border-gray-700" style={{ backgroundColor: color }}></div>
-                    <div className="flex items-center bg-gray-50 dark:bg-black rounded-xl px-3 py-2 border border-gray-100 dark:border-gray-800 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+            {/* Hex Input Footer (iOS Style) */}
+            <div className="mt-2 pt-4 border-t border-gray-100 px-4 flex items-center justify-between">
+                <div className="flex items-center gap-3 w-full">
+                    {/* Preview Box */}
+                    <div className="w-12 h-12 rounded-lg shadow-inner border border-gray-200" style={{ backgroundColor: color }}></div>
+
+                    {/* Hex Input */}
+                    <div className="flex flex-1 items-center bg-gray-50 rounded-lg px-3 py-2 border border-gray-200 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                        <span className="text-gray-400 font-bold mr-2 text-xs">{t.picker_hex || 'HEX'}</span>
                         <Hash size={14} className="text-gray-400 mr-1" />
                         <input
                             type="text"
                             value={localHex.replace('#', '')}
                             onChange={(e) => handleHexChange({ target: { value: '#' + e.target.value } } as any)}
-                            className="bg-transparent border-none p-0 text-sm font-bold text-gray-700 dark:text-gray-200 w-20 uppercase focus:ring-0"
+                            className="bg-transparent border-none p-0 text-sm font-bold text-gray-900 w-full uppercase focus:ring-0"
                             maxLength={6}
                         />
                     </div>
@@ -186,7 +190,7 @@ const SpectrumView = ({ color, onChange }: { color: string, onChange: (c: string
             {/* Saturation / Lightness Box */}
             <div
                 ref={spectrumRef}
-                className="w-full h-40 rounded-2xl relative cursor-crosshair touch-none shadow-sm overflow-hidden"
+                className="w-full h-40 rounded-xl relative cursor-crosshair touch-none shadow-sm overflow-hidden border border-gray-200"
                 style={{
                     backgroundColor: `hsl(${hsl.h}, 100%, 50%)`,
                     backgroundImage: `
@@ -196,20 +200,20 @@ const SpectrumView = ({ color, onChange }: { color: string, onChange: (c: string
                 }}
                 onMouseDown={handleSpectrumChange}
                 onTouchMove={handleSpectrumChange}
-                // Quick hack for drag support would need more state, keeping simple click/drag for now
                 onClick={handleSpectrumChange}
             >
                 <div
-                    className="absolute w-5 h-5 border-2 border-white rounded-full shadow-md -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    className="absolute w-6 h-6 border-2 border-white rounded-full shadow-md -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                     style={{
                         left: `${hsl.s}%`,
-                        top: `${100 - hsl.l}%`
+                        top: `${100 - hsl.l}%`,
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                     }}
                 />
             </div>
 
             {/* Hue Slider */}
-            <div className="relative h-6 w-full rounded-full" style={{ background: 'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }}>
+            <div className="relative h-8 w-full rounded-full border border-gray-200" style={{ background: 'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }}>
                 <input
                     type="range" min="0" max="360"
                     value={hsl.h}
@@ -217,7 +221,7 @@ const SpectrumView = ({ color, onChange }: { color: string, onChange: (c: string
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
                 <div
-                    className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white border-2 border-gray-100 shadow-md rounded-full pointer-events-none"
+                    className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-white border-2 border-gray-200 shadow-md rounded-full pointer-events-none"
                     style={{ left: `${(hsl.h / 360) * 100}%`, transform: `translate(-50%, -50%)` }}
                 />
             </div>
@@ -226,6 +230,7 @@ const SpectrumView = ({ color, onChange }: { color: string, onChange: (c: string
 }
 
 const SlidersView = ({ color, onChange }: { color: string, onChange: (c: string) => void }) => {
+    const { t } = useCalendar();
     const rgb = hexToRgb(color);
 
     const updateRgb = (key: 'r' | 'g' | 'b', val: number) => {
@@ -234,61 +239,61 @@ const SlidersView = ({ color, onChange }: { color: string, onChange: (c: string)
     }
 
     return (
-        <div className="space-y-5 animate-fade-in pt-4">
+        <div className="space-y-6 animate-fade-in pt-4">
             {/* Red */}
             <div className="flex items-center gap-4">
-                <span className="text-xs font-black text-gray-400 w-4">R</span>
-                <div className="flex-1 relative h-2 bg-gray-100 dark:bg-gray-800 rounded-full">
-                    <div className="absolute inset-y-0 left-0 bg-red-500 rounded-full" style={{ width: `${(rgb.r / 255) * 100}%` }}></div>
+                <span className="text-xs font-bold text-gray-500 w-12">{t.picker_red || 'Red'}</span>
+                <div className="flex-1 relative h-6 bg-gray-100 rounded-full border border-gray-200">
+                    <div className="absolute inset-y-0 left-0 bg-red-500 rounded-full opacity-50" style={{ width: `${(rgb.r / 255) * 100}%` }}></div>
                     <input
                         type="range" min="0" max="255" value={rgb.r}
                         onChange={(e) => updateRgb('r', parseInt(e.target.value))}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <div className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white shadow-md rounded-full pointer-events-none border border-gray-100" style={{ left: `${(rgb.r / 255) * 100}%`, transform: 'translate(-50%, -50%)' }}></div>
+                    <div className="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white shadow-sm rounded-full pointer-events-none border border-gray-200" style={{ left: `${(rgb.r / 255) * 100}%`, transform: 'translate(-50%, -50%)' }}></div>
                 </div>
                 <input
                     type="number" value={rgb.r}
                     onChange={(e) => updateRgb('r', Math.min(255, Math.max(0, parseInt(e.target.value) || 0)))}
-                    className="w-12 bg-gray-50 dark:bg-gray-900 border-none rounded-lg text-center text-xs font-bold py-1"
+                    className="w-14 bg-gray-50 border border-gray-200 rounded-lg text-center text-sm font-bold py-1.5 text-gray-900"
                 />
             </div>
 
             {/* Green */}
             <div className="flex items-center gap-4">
-                <span className="text-xs font-black text-gray-400 w-4">G</span>
-                <div className="flex-1 relative h-2 bg-gray-100 dark:bg-gray-800 rounded-full">
-                    <div className="absolute inset-y-0 left-0 bg-green-500 rounded-full" style={{ width: `${(rgb.g / 255) * 100}%` }}></div>
+                <span className="text-xs font-bold text-gray-500 w-12">{t.picker_green || 'Green'}</span>
+                <div className="flex-1 relative h-6 bg-gray-100 rounded-full border border-gray-200">
+                    <div className="absolute inset-y-0 left-0 bg-green-500 rounded-full opacity-50" style={{ width: `${(rgb.g / 255) * 100}%` }}></div>
                     <input
                         type="range" min="0" max="255" value={rgb.g}
                         onChange={(e) => updateRgb('g', parseInt(e.target.value))}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <div className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white shadow-md rounded-full pointer-events-none border border-gray-100" style={{ left: `${(rgb.g / 255) * 100}%`, transform: 'translate(-50%, -50%)' }}></div>
+                    <div className="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white shadow-sm rounded-full pointer-events-none border border-gray-200" style={{ left: `${(rgb.g / 255) * 100}%`, transform: 'translate(-50%, -50%)' }}></div>
                 </div>
                 <input
                     type="number" value={rgb.g}
                     onChange={(e) => updateRgb('g', Math.min(255, Math.max(0, parseInt(e.target.value) || 0)))}
-                    className="w-12 bg-gray-50 dark:bg-gray-900 border-none rounded-lg text-center text-xs font-bold py-1"
+                    className="w-14 bg-gray-50 border border-gray-200 rounded-lg text-center text-sm font-bold py-1.5 text-gray-900"
                 />
             </div>
 
             {/* Blue */}
             <div className="flex items-center gap-4">
-                <span className="text-xs font-black text-gray-400 w-4">B</span>
-                <div className="flex-1 relative h-2 bg-gray-100 dark:bg-gray-800 rounded-full">
-                    <div className="absolute inset-y-0 left-0 bg-blue-500 rounded-full" style={{ width: `${(rgb.b / 255) * 100}%` }}></div>
+                <span className="text-xs font-bold text-gray-500 w-12">{t.picker_blue || 'Blue'}</span>
+                <div className="flex-1 relative h-6 bg-gray-100 rounded-full border border-gray-200">
+                    <div className="absolute inset-y-0 left-0 bg-blue-500 rounded-full opacity-50" style={{ width: `${(rgb.b / 255) * 100}%` }}></div>
                     <input
                         type="range" min="0" max="255" value={rgb.b}
                         onChange={(e) => updateRgb('b', parseInt(e.target.value))}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <div className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white shadow-md rounded-full pointer-events-none border border-gray-100" style={{ left: `${(rgb.b / 255) * 100}%`, transform: 'translate(-50%, -50%)' }}></div>
+                    <div className="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white shadow-sm rounded-full pointer-events-none border border-gray-200" style={{ left: `${(rgb.b / 255) * 100}%`, transform: 'translate(-50%, -50%)' }}></div>
                 </div>
                 <input
                     type="number" value={rgb.b}
                     onChange={(e) => updateRgb('b', Math.min(255, Math.max(0, parseInt(e.target.value) || 0)))}
-                    className="w-12 bg-gray-50 dark:bg-gray-900 border-none rounded-lg text-center text-xs font-bold py-1"
+                    className="w-14 bg-gray-50 border border-gray-200 rounded-lg text-center text-sm font-bold py-1.5 text-gray-900"
                 />
             </div>
         </div>

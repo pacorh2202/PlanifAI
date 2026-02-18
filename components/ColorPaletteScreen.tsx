@@ -107,7 +107,7 @@ export const ColorPaletteScreen: React.FC<ColorPaletteScreenProps> = ({ onBack, 
             <div key={idx} className="flex flex-col items-center gap-2.5">
               <IconComp size={16} className="text-gray-400" />
               <span className="text-[10px] font-black text-gray-400 truncate w-full text-center uppercase tracking-tighter">{cat.label}</span>
-              <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: cat.color }}></div>
+              <div className="w-2.5 h-2.5 rounded-[3px] shadow-sm" style={{ backgroundColor: cat.color }}></div>
             </div>
           );
         })}
@@ -133,19 +133,19 @@ export const ColorPaletteScreen: React.FC<ColorPaletteScreenProps> = ({ onBack, 
         <section className="mb-12">
           <h2 className="text-[11px] font-black text-[#CBD5E1] uppercase tracking-[0.3em] mb-6 ml-4">{t.accent_color_label}</h2>
           <div className="bg-white dark:bg-[#121212] rounded-[3rem] p-8 shadow-sm border border-gray-100 dark:border-gray-900 transition-all duration-500">
-            <div className="flex flex-wrap gap-4 mb-10 justify-center">
+            <div className="grid grid-cols-5 gap-3 mb-10 mx-auto max-w-[300px]">
               {PRESET_ACCENTS.map((color) => (
                 <button
                   key={color}
                   onClick={() => selectPreset(color)}
-                  className={`w-12 h-12 rounded-full border-4 transition-all active:scale-90 ${accentColor === color ? 'border-gray-900 dark:border-white scale-110 shadow-lg' : 'border-transparent'
+                  className={`aspect-square rounded-2xl border-4 transition-all active:scale-90 ${accentColor === color ? 'border-gray-900 dark:border-white scale-110 shadow-lg' : 'border-transparent'
                     }`}
                   style={{ backgroundColor: color }}
                 />
               ))}
               <button
                 onClick={() => setShowCustomPicker(!showCustomPicker)}
-                className={`w-12 h-12 rounded-full border-4 flex items-center justify-center transition-all active:scale-90 ${showCustomPicker || !isPreset ? 'border-gray-900 dark:border-white scale-110 shadow-lg' : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'
+                className={`aspect-square rounded-2xl border-4 flex items-center justify-center transition-all active:scale-90 ${showCustomPicker || !isPreset ? 'border-gray-900 dark:border-white scale-110 shadow-lg' : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'
                   }`}
                 style={{ backgroundColor: showCustomPicker || !isPreset ? accentColor : '' }}
               >

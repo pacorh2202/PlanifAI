@@ -282,7 +282,15 @@ export const translations = {
     conflict_desc: "Esta tarea se solapa con \"{existing}\".",
     conflict_keep_both: "Mantener ambas",
     conflict_replace: "Reemplazar",
-    conflict_cancel: "Cancelar"
+    conflict_cancel: "Cancelar",
+    // Color Picker
+    picker_grid: "Cuadrícula",
+    picker_spectrum: "Espectro",
+    picker_sliders: "Reguladores",
+    picker_red: "Rojo",
+    picker_green: "Verde",
+    picker_blue: "Azul",
+    picker_hex: "Color Hexadecimal"
   },
   en: {
     app_name: "PlanifAI",
@@ -566,7 +574,15 @@ export const translations = {
     conflict_desc: "This task overlaps with \"{existing}\".",
     conflict_keep_both: "Keep Both",
     conflict_replace: "Replace",
-    conflict_cancel: "Cancel"
+    conflict_cancel: "Cancel",
+    // Color Picker
+    picker_grid: "Grid",
+    picker_spectrum: "Spectrum",
+    picker_sliders: "Sliders",
+    picker_red: "Red",
+    picker_green: "Green",
+    picker_blue: "Blue",
+    picker_hex: "Hex Color"
   }
 };
 

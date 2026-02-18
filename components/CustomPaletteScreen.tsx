@@ -73,7 +73,7 @@ export const CustomPaletteScreen: React.FC<CustomPaletteScreenProps> = ({ onBack
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: cat.color }}>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: cat.color }}>
                       <IconComponent size={24} />
                     </div>
                     {isEditing ? (
