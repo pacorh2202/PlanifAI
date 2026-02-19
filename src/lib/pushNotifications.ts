@@ -39,17 +39,22 @@ function isWebPush(): boolean {
     return !isCapacitorNative() && !isDespiaNative();
 }
 
-// --- Helper: run a callback via OneSignalDeferred (Web SDK) ---
-function withWebSDK(fn: (sdk: any) => void | Promise<void>): void {
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(fn);
-}
+// --- SDK Init Tracking ---
+// This promise resolves ONLY after OneSignal.init() has fully completed.
+// All subsequent SDK calls (login, subscription read, etc.) MUST await this.
+let _sdkReady: Promise<any>;
+let _sdkResolve: ((sdk: any) => void) | null = null;
 
-// --- Helper: get OneSignal Web SDK instance (resolves after init) ---
+_sdkReady = new Promise((resolve) => {
+    _sdkResolve = resolve;
+});
+
+/**
+ * Returns the OneSignal Web SDK instance, but only AFTER init() has completed.
+ * This prevents the "Cannot read properties of undefined (reading 'tt')" error.
+ */
 function getWebSDK(): Promise<any> {
-    return new Promise((resolve) => {
-        withWebSDK((sdk) => resolve(sdk));
-    });
+    return _sdkReady;
 }
 
 // --- Subscription ID Retrieval ---
@@ -139,7 +144,8 @@ export function initPushNotifications() {
     } else {
         // WEB PUSH
         console.log("[PUSH] OneSignal Web init started");
-        withWebSDK(async (sdk) => {
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        window.OneSignalDeferred.push(async (sdk: any) => {
             try {
                 await sdk.init({
                     appId: ONESIGNAL_APP_ID,
@@ -147,9 +153,13 @@ export function initPushNotifications() {
                     serviceWorkerParam: { scope: '/' },
                     serviceWorkerPath: 'OneSignalSDKWorker.js',
                 });
-                console.log("[PUSH] OneSignal Web init SUCCESS");
+                console.log("[PUSH] OneSignal Web init SUCCESS — resolving SDK promise");
+                // Signal that init is done — all getWebSDK() calls will now resolve
+                if (_sdkResolve) _sdkResolve(sdk);
             } catch (e) {
                 console.error("[PUSH] OneSignal Web init ERROR:", e);
+                // Still resolve so login() doesn't hang forever, it'll fail with a clear error
+                if (_sdkResolve) _sdkResolve(sdk);
             }
 
             sdk.User.PushSubscription.addEventListener("change", (event: any) => {
