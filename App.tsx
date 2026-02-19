@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useMemo, useEffect, useTransition } from 'react';
-import { initPushNotifications, setPushSubscription, isPushOptedIn } from './src/lib/pushNotifications';
+import { setPushSubscription, isPushOptedIn } from './src/lib/pushNotifications';
 import { CalendarProvider, useCalendar } from './contexts/CalendarContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { useNotificationHandler } from './src/hooks/useNotificationHandler';
@@ -153,17 +153,8 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   const { user, loading } = useAuth();
 
-  useEffect(() => {
-    initPushNotifications();
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      import('./src/lib/pushNotifications').then(({ registerPushToken }) => {
-        registerPushToken(user.id);
-      });
-    }
-  }, [user]);
+  // initPushNotifications() is called once in index.tsx
+  // registerPushToken(userId) is called in AuthContext on SIGNED_IN
 
   // Show loading screen while checking auth
   if (loading) {

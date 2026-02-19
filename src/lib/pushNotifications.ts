@@ -26,6 +26,7 @@ declare global {
 
 // --- State tracking ---
 let _webInitialized = false;
+let _initCalled = false;   // guard: prevent double call to initPushNotifications()
 let _webInitPromiseResolve: (() => void) | null = null;
 const _webInitPromise = new Promise<void>((resolve) => {
     _webInitPromiseResolve = resolve;
@@ -146,6 +147,13 @@ async function getOneSignalSubscriptionId(): Promise<string | null> {
  * For Web: this calls OneSignal.init() inside OneSignalDeferred.push().
  */
 export function initPushNotifications() {
+    // ── Guard: only init once ──
+    if (_initCalled) {
+        console.log('[PUSH] initPushNotifications() already called — skipping');
+        return;
+    }
+    _initCalled = true;
+
     if (isCapacitorNative()) {
         console.log("[PUSH] Initializing OneSignal (Capacitor)...");
         OneSignal.initialize(ONESIGNAL_APP_ID);
@@ -158,14 +166,18 @@ export function initPushNotifications() {
 
     } else if (isDespiaNative()) {
         console.log("[PUSH] Despia environment detected.");
+        // Resolve init promise so registerPushToken doesn't hang
+        if (_webInitPromiseResolve) _webInitPromiseResolve();
 
     } else {
         // WEB PUSH — exact pattern from OneSignal v16 docs
         console.log("[PUSH] Queuing OneSignal Web SDK init...");
+        console.log("[PUSH] Current origin:", location.origin);
+        console.log("[PUSH] ⚠️ OneSignal dashboard must allow this origin!");
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         window.OneSignalDeferred.push(async function (OneSignalSDK: any) {
             try {
-                console.log("[PUSH] OneSignal.init() starting...");
+                console.log("[PUSH] OneSignal.init() starting on", location.origin);
                 await OneSignalSDK.init({
                     appId: ONESIGNAL_APP_ID,
                     allowLocalhostAsSecureOrigin: true,
@@ -177,21 +189,27 @@ export function initPushNotifications() {
                 console.log("[PUSH] Permission:", OneSignalSDK.Notifications.permission);
                 console.log("[PUSH] PushSubscription.id:", OneSignalSDK.User.PushSubscription.id);
                 console.log("[PUSH] PushSubscription.optedIn:", OneSignalSDK.User.PushSubscription.optedIn);
-            } catch (e) {
+            } catch (e: any) {
                 console.error("[PUSH] OneSignal.init() FAILED:", e);
+                if (String(e).includes('Can only be used on')) {
+                    console.error('[PUSH] ❌ DOMAIN MISMATCH! Go to OneSignal Dashboard > Settings > Platforms > Web > Site URL');
+                    console.error('[PUSH] ❌ Change allowed origin to:', location.origin);
+                }
             }
 
-            // Resolve the init promise so other functions know init is done
+            // ALWAYS resolve the init promise (even on failure) so login() doesn't hang
             if (_webInitPromiseResolve) _webInitPromiseResolve();
 
-            // Listen for subscription changes
-            OneSignalSDK.User.PushSubscription.addEventListener("change", (event: any) => {
-                console.log("[PUSH] Subscription changed:", JSON.stringify({
-                    prevId: event.previous?.id,
-                    newId: event.current?.id,
-                    optedIn: event.current?.optedIn
-                }));
-            });
+            // Listen for subscription changes (only if init succeeded)
+            if (_webInitialized) {
+                OneSignalSDK.User.PushSubscription.addEventListener("change", (event: any) => {
+                    console.log("[PUSH] Subscription changed:", JSON.stringify({
+                        prevId: event.previous?.id,
+                        newId: event.current?.id,
+                        optedIn: event.current?.optedIn
+                    }));
+                });
+            }
         });
     }
 }
