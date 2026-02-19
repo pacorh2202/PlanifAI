@@ -198,15 +198,20 @@ export async function registerPushToken(userId: string): Promise<void> {
 
     console.log('Attempting to register push token for user:', userId);
 
-    // Login to OneSignal (v5) to associate External ID if needed
+    // Login to OneSignal (v5) to associate External ID = Supabase user_id
     if (isCapacitorNative()) {
-        OneSignal.login(userId);
+        try {
+            OneSignal.login(userId);
+            console.log('✅ OneSignal external_id set OK:', userId.substring(0, 8) + '...');
+        } catch (loginErr) {
+            console.warn('OneSignal.login failed:', loginErr);
+        }
     }
 
     const playerId = await getOneSignalSubscriptionId();
 
     if (!playerId) {
-        console.warn('Could not obtain OneSignal Subscription ID');
+        console.warn('Could not obtain OneSignal Subscription ID — push token NOT registered');
         return;
     }
 
@@ -216,19 +221,21 @@ export async function registerPushToken(userId: string): Promise<void> {
     const deviceModel = navigator.userAgent.substring(0, 100);
 
     try {
+        // IMPORTANT: onConflict must match UNIQUE constraint in DB.
+        // DB has: UNIQUE(player_id) — NOT UNIQUE(user_id, player_id)
         const { error } = await supabase
             .from('device_tokens')
             .upsert(
                 {
                     user_id: userId,
-                    player_id: playerId, // This is now the Subscription ID
+                    player_id: playerId,
                     device_type: deviceType,
                     device_model: deviceModel,
                     is_active: true,
                     last_used_at: new Date().toISOString()
                 },
                 {
-                    onConflict: 'user_id,player_id',
+                    onConflict: 'player_id',
                     ignoreDuplicates: false
                 }
             );
@@ -236,7 +243,7 @@ export async function registerPushToken(userId: string): Promise<void> {
         if (error) {
             console.error('Error upserting device token:', error);
         } else {
-            console.log('✅ Push token registered successfully');
+            console.log('✅ Push token registered successfully for user:', userId.substring(0, 8) + '...');
         }
     } catch (e) {
         console.error('Failed to register push token:', e);

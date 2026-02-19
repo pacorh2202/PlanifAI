@@ -137,6 +137,14 @@ serve(async (req: Request) => {
             { global: { headers: { Authorization: authHeader } } }
         )
 
+        // Admin client with service_role key to bypass RLS
+        // Needed because device_tokens RLS restricts SELECT to auth.uid() = user_id
+        // and the DB trigger calls this EF with a generic anon key (no authenticated user)
+        const adminClient = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        )
+
         const payload = await req.json()
         let notificationToSend: { user_ids: string[], title: string, body: string, data?: any } | null = null
         let smartMetadata: { user_id: string, type: string, style: NotificationStyle } | null = null
@@ -147,7 +155,9 @@ serve(async (req: Request) => {
             const { user_id, type, entity_data } = reqData
 
             // 1. Fetch User Profile (Preferences, Timezone, State)
-            const { data: profile, error: profileError } = await supabaseClient
+            // Use adminClient because this EF is called from DB triggers
+            // with an anon key, not a real user session
+            const { data: profile, error: profileError } = await adminClient
                 .from('profiles')
                 .select('notification_preferences, quiet_hours, timezone, notification_state')
                 .eq('id', user_id)
@@ -252,19 +262,35 @@ serve(async (req: Request) => {
             return new Response(JSON.stringify({ error: 'Invalid payload' }), { status: 400, headers: corsHeaders })
         }
 
-        // Get device tokens
-        const { data: tokens, error: tokensError } = await supabaseClient
-            .from('device_tokens')
-            .select('token')
-            .in('user_id', notificationToSend.user_ids)
-            .eq('is_active', true) // improved query
+        // --- DIAGNOSTIC LOGGING ---
+        console.log('[PUSH] === Push Notification Attempt ===')
+        console.log('[PUSH] Recipients:', JSON.stringify(notificationToSend.user_ids))
+        console.log('[PUSH] Type:', notificationToSend.data?.type || 'legacy')
+        console.log('[PUSH] ONESIGNAL_APP_ID:', ONESIGNAL_APP_ID?.substring(0, 8) + '...')
 
-        if (tokensError || !tokens || tokens.length === 0) {
-            return new Response(JSON.stringify({ success: true, recipients: 0, message: 'Notification logged, but no devices found' }), { headers: corsHeaders })
+        // Get device tokens using ADMIN client (bypasses RLS)
+        // RLS on device_tokens: SELECT only for auth.uid() = user_id
+        // But DB trigger calls this EF with anon key, so auth.uid() is NULL
+        const { data: tokens, error: tokensError } = await adminClient
+            .from('device_tokens')
+            .select('player_id, user_id')
+            .in('user_id', notificationToSend.user_ids)
+            .eq('is_active', true)
+
+        if (tokensError) {
+            console.error('[PUSH] Error fetching device_tokens:', tokensError)
+            return new Response(JSON.stringify({ success: false, error: 'Failed to fetch device tokens', details: tokensError }), { status: 500, headers: corsHeaders })
         }
 
-        // Remove duplicates in tokens (same token for multiple user_ids is rare but possible if shared device?)
-        const uniqueTokens = [...new Set(tokens.map(t => t.token))]
+        if (!tokens || tokens.length === 0) {
+            console.warn('[PUSH] No active device tokens found for users:', notificationToSend.user_ids)
+            return new Response(JSON.stringify({ success: true, recipients: 0, reason: 'no_device_tokens', message: 'No active devices found for recipients' }), { headers: corsHeaders })
+        }
+
+        console.log('[PUSH] Found', tokens.length, 'device token(s):', tokens.map(t => ({ user: t.user_id, player: t.player_id?.substring(0, 8) + '...' })))
+
+        // Remove duplicates
+        const uniqueTokens = [...new Set(tokens.map(t => t.player_id).filter(Boolean))]
 
         // Send to OneSignal
         const oneSignalResponse = await fetch('https://onesignal.com/api/v1/notifications', {
@@ -286,30 +312,20 @@ serve(async (req: Request) => {
 
         const oneSignalData = await oneSignalResponse.json()
 
+        console.log('[PUSH] OneSignal response status:', oneSignalResponse.status)
+        console.log('[PUSH] OneSignal response body:', JSON.stringify(oneSignalData))
+
         if (!oneSignalResponse.ok) {
-            console.error('OneSignal error:', oneSignalData)
-            return new Response(JSON.stringify({ error: 'Failed to send OneSignal', details: oneSignalData }), { status: 500, headers: corsHeaders })
+            console.error('[PUSH] OneSignal API error:', oneSignalData)
+            return new Response(JSON.stringify({ error: 'Failed to send via OneSignal', details: oneSignalData }), { status: 500, headers: corsHeaders })
         }
 
-        // --- LOGGING & STATE UPDATE ---
-
-        // Log to notifications table FIRST (Reliability: Ensure it exists in App even if Push fails or no tokens)
-        const { error: insertError } = await supabaseClient
-            .from('notifications')
-            .insert(
-                notificationToSend.user_ids.map(uid => ({
-                    user_id: uid,
-                    title: notificationToSend!.title,
-                    message: notificationToSend!.body,
-                    type: notificationToSend!.data?.type || 'info', // generic 'info' for legacy
-                    metadata: notificationToSend!.data || {},
-                    is_read: false
-                }))
-            )
-
-        if (insertError) console.error('Error logging notification:', insertError)
-
-        if (insertError) console.error('Error logging notification:', insertError)
+        // --- STATE UPDATE ---
+        // NOTE: We do NOT insert into notifications here.
+        // The DB triggers (trigger_notify_event_invite, trigger_notify_friend_accepted)
+        // already handle in-app notification creation BEFORE calling this Edge Function.
+        // Inserting here would cause duplicates and/or CHECK constraint violations
+        // (DB uses lowercase types like 'event_shared', EF uses 'EVENT_INVITE').
 
         // Update State (Copy Rotation) if Smart Mode
         if (smartMetadata) {
@@ -322,13 +338,13 @@ serve(async (req: Request) => {
             // Re-fetch strict to ensure we don't overwrite other parallel changes? Unlikely collision for single user prefs.
             // We already fetched 'profile' above.
             // Let's construct the new state.
-            const { data: freshProfile } = await supabaseClient.from('profiles').select('notification_state').eq('id', user_id).single()
+            const { data: freshProfile } = await adminClient.from('profiles').select('notification_state').eq('id', user_id).single()
             const currentState = freshProfile?.notification_state as any || { last_styles: {} }
 
             if (!currentState.last_styles) currentState.last_styles = {}
             currentState.last_styles[type] = style
 
-            await supabaseClient.from('profiles').update({ notification_state: currentState }).eq('id', user_id)
+            await adminClient.from('profiles').update({ notification_state: currentState }).eq('id', user_id)
         }
 
         return new Response(JSON.stringify({
