@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useMemo, useEffect, useTransition } from 'react';
-import { initCapacitorOneSignal, setPushSubscription, isPushOptedIn } from './src/lib/pushNotifications';
+import { initPushNotifications, setPushSubscription, isPushOptedIn } from './src/lib/pushNotifications';
 import { CalendarProvider, useCalendar } from './contexts/CalendarContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { useNotificationHandler } from './src/hooks/useNotificationHandler';
@@ -154,7 +154,7 @@ const App: React.FC = () => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    initCapacitorOneSignal();
+    initPushNotifications();
   }, []);
 
   // Show loading screen while checking auth

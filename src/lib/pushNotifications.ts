@@ -149,28 +149,31 @@ async function getOneSignalSubscriptionId(): Promise<string | null> {
 // --- Initializer for Capacitor ---
 
 /**
- * Initialize OneSignal for Capacitor (SDK v5).
+ * Initialize OneSignal for Capacitor (SDK v5) or check Despia availability.
  * Should be called once at app startup.
  */
-export function initCapacitorOneSignal() {
-    if (!isCapacitorNative()) return;
+export function initPushNotifications() {
+    if (isCapacitorNative()) {
+        const ONESIGNAL_APP_ID = "95b31e0b-147f-485c-9e3e-0f1b2d7615f0";
+        console.log("Initializing OneSignal SDK v5 (Capacitor)...");
 
-    const ONESIGNAL_APP_ID = "95b31e0b-147f-485c-9e3e-0f1b2d7615f0";
+        // v5 Initialization
+        OneSignal.initialize(ONESIGNAL_APP_ID);
 
-    console.log("Initializing OneSignal SDK v5...");
+        // Request Permissions
+        OneSignal.Notifications.requestPermission(true).then((accepted: boolean) => {
+            console.log("User accepted notifications:", accepted);
+        });
 
-    // v5 Initialization
-    OneSignal.initialize(ONESIGNAL_APP_ID);
-
-    // Request Permissions
-    OneSignal.Notifications.requestPermission(true).then((accepted: boolean) => {
-        console.log("User accepted notifications:", accepted);
-    });
-
-    // Click Handler
-    OneSignal.Notifications.addEventListener('click', (event) => {
-        console.log('Notification clicked:', event);
-    });
+        // Click Handler
+        OneSignal.Notifications.addEventListener('click', (event) => {
+            console.log('Notification clicked:', event);
+        });
+    } else if (isDespiaNative()) {
+        console.log("✅ Despia Native environment detected. Waiting for token registration events...");
+    } else {
+        console.log("Web environment detected - Push notifications disabled.");
+    }
 }
 
 /**
