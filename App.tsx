@@ -153,9 +153,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   const { user, loading } = useAuth();
 
-  // useEffect(() => {
-  //   initCapacitorOneSignal();
-  // }, []);
+  useEffect(() => {
+    initCapacitorOneSignal();
+  }, []);
 
   // Show loading screen while checking auth
   if (loading) {
