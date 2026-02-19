@@ -1,12 +1,14 @@
 /**
- * Push Notification Token Registration
+ * Push Notification Module
  *
- * Handles registering OneSignal player_id (Subscription ID) from:
+ * Handles OneSignal integration for:
  * 1. Capacitor (iOS/Android) via onesignal-cordova-plugin (v5+)
  * 2. Despia (native web wrapper) via JS bridge
- * 3. Web Push (Chrome/Safari/Firefox) via OneSignal Web SDK
+ * 3. Web Push (Chrome/Safari/Firefox) via OneSignal Web SDK v16
  *
- * Stores tokens in Supabase device_tokens table.
+ * IMPORTANT: OneSignal Web SDK v16 requires ALL calls (login, optIn, etc.)
+ * to go through OneSignalDeferred.push(). You CANNOT cache the SDK object
+ * and call methods on it later — the internal state won't be ready.
  */
 
 import { supabase } from './supabase';
@@ -21,6 +23,13 @@ declare global {
         OneSignal: any;
     }
 }
+
+// --- State tracking ---
+let _webInitialized = false;
+let _webInitPromiseResolve: (() => void) | null = null;
+const _webInitPromise = new Promise<void>((resolve) => {
+    _webInitPromiseResolve = resolve;
+});
 
 // --- Environment Detection ---
 
@@ -39,22 +48,12 @@ function isWebPush(): boolean {
     return !isCapacitorNative() && !isDespiaNative();
 }
 
-// --- SDK Init Tracking ---
-// This promise resolves ONLY after OneSignal.init() has fully completed.
-// All subsequent SDK calls (login, subscription read, etc.) MUST await this.
-let _sdkReady: Promise<any>;
-let _sdkResolve: ((sdk: any) => void) | null = null;
+// --- Device Type ---
 
-_sdkReady = new Promise((resolve) => {
-    _sdkResolve = resolve;
-});
-
-/**
- * Returns the OneSignal Web SDK instance, but only AFTER init() has completed.
- * This prevents the "Cannot read properties of undefined (reading 'tt')" error.
- */
-function getWebSDK(): Promise<any> {
-    return _sdkReady;
+function getDeviceType(): string {
+    if (isCapacitorNative()) return (window as any).Capacitor.getPlatform();
+    if (isDespiaNative()) return 'despia';
+    return 'web';
 }
 
 // --- Subscription ID Retrieval ---
@@ -101,20 +100,38 @@ async function getOneSignalSubscriptionId(): Promise<string | null> {
             });
         }
 
-        // 3. Web Push — wait for SDK, then poll for subscription ID (may take time after permission grant)
+        // 3. Web Push — use the SDK's change listener (more reliable than polling)
         console.log('[PUSH] Getting subscription ID from Web SDK...');
-        const sdk = await getWebSDK();
-        // Poll up to 10 seconds (permission dialog may be pending)
-        for (let i = 0; i < 20; i++) {
-            const id = sdk.User.PushSubscription.id;
-            if (id) {
-                console.log('[PUSH] Web Push subscription ID:', id);
-                return id;
-            }
-            await new Promise(r => setTimeout(r, 500));
-        }
-        console.warn('[PUSH] Web Push subscription ID not available after polling');
-        return null;
+        await _webInitPromise; // Wait for init to complete
+
+        return new Promise((resolve) => {
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            window.OneSignalDeferred.push((OneSignalSDK: any) => {
+                // Try to read immediately
+                const id = OneSignalSDK.User.PushSubscription.id;
+                if (id) {
+                    console.log('[PUSH] Web subscription ID (immediate):', id);
+                    resolve(id);
+                    return;
+                }
+
+                // If not available, listen for changes (permission may still be pending)
+                console.log('[PUSH] Subscription ID not yet available, waiting for change event...');
+                const timeout = setTimeout(() => {
+                    console.warn('[PUSH] Subscription ID timeout after 15s');
+                    resolve(null);
+                }, 15000);
+
+                OneSignalSDK.User.PushSubscription.addEventListener("change", (event: any) => {
+                    const newId = event.current?.id;
+                    console.log('[PUSH] Subscription change event:', JSON.stringify({ id: newId, optedIn: event.current?.optedIn }));
+                    if (newId) {
+                        clearTimeout(timeout);
+                        resolve(newId);
+                    }
+                });
+            });
+        });
 
     } catch (e) {
         console.error('[PUSH] Error getting OneSignal ID:', e);
@@ -126,6 +143,7 @@ async function getOneSignalSubscriptionId(): Promise<string | null> {
 
 /**
  * Initialize OneSignal SDK. Call once at app startup.
+ * For Web: this calls OneSignal.init() inside OneSignalDeferred.push().
  */
 export function initPushNotifications() {
     if (isCapacitorNative()) {
@@ -142,46 +160,50 @@ export function initPushNotifications() {
         console.log("[PUSH] Despia environment detected.");
 
     } else {
-        // WEB PUSH
-        console.log("[PUSH] OneSignal Web init started");
+        // WEB PUSH — exact pattern from OneSignal v16 docs
+        console.log("[PUSH] Queuing OneSignal Web SDK init...");
         window.OneSignalDeferred = window.OneSignalDeferred || [];
-        window.OneSignalDeferred.push(async (sdk: any) => {
+        window.OneSignalDeferred.push(async function (OneSignalSDK: any) {
             try {
-                await sdk.init({
+                console.log("[PUSH] OneSignal.init() starting...");
+                await OneSignalSDK.init({
                     appId: ONESIGNAL_APP_ID,
                     allowLocalhostAsSecureOrigin: true,
                     serviceWorkerParam: { scope: '/' },
                     serviceWorkerPath: 'OneSignalSDKWorker.js',
                 });
-                console.log("[PUSH] OneSignal Web init SUCCESS — resolving SDK promise");
-                // Signal that init is done — all getWebSDK() calls will now resolve
-                if (_sdkResolve) _sdkResolve(sdk);
+                _webInitialized = true;
+                console.log("[PUSH] OneSignal.init() SUCCESS ✅");
+                console.log("[PUSH] Permission:", OneSignalSDK.Notifications.permission);
+                console.log("[PUSH] PushSubscription.id:", OneSignalSDK.User.PushSubscription.id);
+                console.log("[PUSH] PushSubscription.optedIn:", OneSignalSDK.User.PushSubscription.optedIn);
             } catch (e) {
-                console.error("[PUSH] OneSignal Web init ERROR:", e);
-                // Still resolve so login() doesn't hang forever, it'll fail with a clear error
-                if (_sdkResolve) _sdkResolve(sdk);
+                console.error("[PUSH] OneSignal.init() FAILED:", e);
             }
 
-            sdk.User.PushSubscription.addEventListener("change", (event: any) => {
-                console.log("[PUSH] Subscription changed:", JSON.stringify(event));
+            // Resolve the init promise so other functions know init is done
+            if (_webInitPromiseResolve) _webInitPromiseResolve();
+
+            // Listen for subscription changes
+            OneSignalSDK.User.PushSubscription.addEventListener("change", (event: any) => {
+                console.log("[PUSH] Subscription changed:", JSON.stringify({
+                    prevId: event.previous?.id,
+                    newId: event.current?.id,
+                    optedIn: event.current?.optedIn
+                }));
             });
         });
     }
-}
-
-// --- Device Type ---
-
-function getDeviceType(): string {
-    if (isCapacitorNative()) return (window as any).Capacitor.getPlatform();
-    if (isDespiaNative()) return 'despia';
-    return 'web';
 }
 
 // --- Register Push Token ---
 
 /**
  * Bind the current user to OneSignal (set external_id) and save token to Supabase.
- * MUST be called with a valid userId (auth.uid()). Will abort if userId is empty.
+ * MUST be called with a valid userId (auth.uid()).
+ * 
+ * For Web: uses OneSignalDeferred.push() to call login() — the ONLY safe way
+ * per the v16 SDK docs.
  */
 export async function registerPushToken(userId: string): Promise<void> {
     if (!userId) {
@@ -190,7 +212,7 @@ export async function registerPushToken(userId: string): Promise<void> {
     }
 
     const deviceType = getDeviceType();
-    console.log(`[PUSH] registerPushToken: userId=${userId}, device=${deviceType}`);
+    console.log(`[PUSH] registerPushToken START: userId=${userId}, device=${deviceType}`);
 
     // ── Step 1: Set External ID (login) ──
     try {
@@ -200,22 +222,46 @@ export async function registerPushToken(userId: string): Promise<void> {
             console.log('[PUSH] OneSignal.login OK (Capacitor)');
 
         } else if (isWebPush()) {
-            console.log('[PUSH] Calling OneSignal.login (Web)...');
-            const sdk = await getWebSDK();
-            await sdk.login(userId);
-            console.log('[PUSH] OneSignal.login OK (Web) — external_id should now be:', userId);
+            // CRITICAL: Must wait for init() to finish before calling login()
+            console.log('[PUSH] Waiting for Web SDK init to complete...');
+            await _webInitPromise;
+
+            if (!_webInitialized) {
+                console.error('[PUSH] SDK init failed — cannot call login()');
+                return;
+            }
+
+            // Use OneSignalDeferred.push() per official docs
+            console.log('[PUSH] Queuing OneSignal.login() via Deferred...');
+            await new Promise<void>((resolve, reject) => {
+                window.OneSignalDeferred = window.OneSignalDeferred || [];
+                window.OneSignalDeferred.push(async function (OneSignalSDK: any) {
+                    try {
+                        console.log('[PUSH] Calling OneSignal.login(' + userId + ')...');
+                        await OneSignalSDK.login(userId);
+                        console.log('[PUSH] OneSignal.login() SUCCESS ✅ external_id =', userId);
+                        console.log('[PUSH] After login — externalId:', OneSignalSDK.User.externalId);
+                        console.log('[PUSH] After login — onesignalId:', OneSignalSDK.User.onesignalId);
+                        console.log('[PUSH] After login — PushSubscription.id:', OneSignalSDK.User.PushSubscription.id);
+                        resolve();
+                    } catch (e) {
+                        console.error('[PUSH] OneSignal.login() FAILED:', e);
+                        reject(e);
+                    }
+                });
+            });
         }
-        // Despia: external_id binding is handled natively
+        // Despia: external_id binding handled natively
     } catch (e) {
-        console.error('[PUSH] OneSignal.login FAILED:', e);
-        // Don't return — we still want to try capturing the subscription ID
+        console.error('[PUSH] Login step failed:', e);
+        // Continue — we still try to get the subscription ID
     }
 
     // ── Step 2: Get Subscription ID ──
     const playerId = await getOneSignalSubscriptionId();
 
     if (!playerId) {
-        console.warn('[PUSH] No subscription ID obtained. Token NOT saved to Supabase.');
+        console.warn('[PUSH] No subscription ID obtained. Token NOT saved.');
         console.warn('[PUSH] This is expected if permission was not yet granted.');
         return;
     }
@@ -255,8 +301,14 @@ export async function deactivatePushToken(userId: string): Promise<void> {
         if (isCapacitorNative()) {
             OneSignal.logout();
         } else if (isWebPush()) {
-            const sdk = await getWebSDK();
-            await sdk.logout();
+            await _webInitPromise;
+            await new Promise<void>((resolve) => {
+                window.OneSignalDeferred = window.OneSignalDeferred || [];
+                window.OneSignalDeferred.push(async (OneSignalSDK: any) => {
+                    await OneSignalSDK.logout();
+                    resolve();
+                });
+            });
         }
         await supabase
             .from('device_tokens')
@@ -282,14 +334,24 @@ export async function requestWebPushPermission(): Promise<string> {
     if (isCapacitorNative()) return 'granted';
 
     try {
-        const sdk = await getWebSDK();
-        console.log('[PUSH] Requesting web push permission...');
-        await sdk.Slidedown.promptPush();
-        const perm = Notification.permission;
-        console.log('[PUSH] Permission result:', perm);
-        return perm; // 'granted' | 'denied' | 'default'
+        await _webInitPromise;
+        return await new Promise<string>((resolve) => {
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            window.OneSignalDeferred.push(async (OneSignalSDK: any) => {
+                try {
+                    console.log('[PUSH] Requesting web push permission...');
+                    await OneSignalSDK.Slidedown.promptPush();
+                    const perm = Notification.permission;
+                    console.log('[PUSH] Permission result:', perm);
+                    resolve(perm);
+                } catch (e) {
+                    console.error('[PUSH] Error requesting permission:', e);
+                    resolve('error');
+                }
+            });
+        });
     } catch (e) {
-        console.error('[PUSH] Error requesting permission:', e);
+        console.error('[PUSH] Error in requestWebPushPermission:', e);
         return 'error';
     }
 }
@@ -304,17 +366,22 @@ export async function setPushSubscription(enable: boolean): Promise<void> {
     }
 
     if (isWebPush()) {
-        const sdk = await getWebSDK();
-        if (enable) {
-            console.log('[PUSH] Opting in (Web)...');
-            await sdk.User.PushSubscription.optIn();
-            // Also prompt for permission if not granted
-            if (Notification.permission !== 'granted') {
-                await requestWebPushPermission();
-            }
-        } else {
-            console.log('[PUSH] Opting out (Web)...');
-            sdk.User.PushSubscription.optOut();
-        }
+        await _webInitPromise;
+        await new Promise<void>((resolve) => {
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            window.OneSignalDeferred.push(async (OneSignalSDK: any) => {
+                if (enable) {
+                    console.log('[PUSH] Opting in (Web)...');
+                    await OneSignalSDK.User.PushSubscription.optIn();
+                    if (Notification.permission !== 'granted') {
+                        await OneSignalSDK.Slidedown.promptPush();
+                    }
+                } else {
+                    console.log('[PUSH] Opting out (Web)...');
+                    OneSignalSDK.User.PushSubscription.optOut();
+                }
+                resolve();
+            });
+        });
     }
 }
