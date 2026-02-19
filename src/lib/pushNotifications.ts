@@ -18,10 +18,14 @@ function isCapacitorNative(): boolean {
 }
 
 function isDespiaNative(): boolean {
-    return typeof (window as any).webkit?.messageHandlers?.despia !== 'undefined'
+    const isDespia = typeof (window as any).webkit?.messageHandlers?.despia !== 'undefined'
         || typeof (window as any).Despia !== 'undefined'
         || typeof (window as any).despia !== 'undefined'
         || /despia/i.test(navigator.userAgent);
+
+    // DEBUG: Alert only if it looks like we might be in Despia but detection failed, or just to confirm.
+    // console.log('isDespiaNative:', isDespia); 
+    return isDespia;
 }
 
 // --- Subscription ID Retrieval ---
@@ -97,18 +101,25 @@ async function getOneSignalSubscriptionId(): Promise<string | null> {
 
         // 2. Despia Native (Web Wrapper)
         if (isDespiaNative()) {
+            // alert('DEBUG: Despia detected. Asking for token...');
             console.log('Detecting Despia Native environment...');
             // Check for legacy global
             if ((window as any).__onesignal_player_id) {
+                // alert('DEBUG: Found global token: ' + (window as any).__onesignal_player_id);
                 return (window as any).__onesignal_player_id;
             }
 
             return new Promise((resolve) => {
-                const timeout = setTimeout(() => resolve(null), 3000);
+                const timeout = setTimeout(() => {
+                    // alert('DEBUG: Despia token timeout!');
+                    resolve(null);
+                }, 5000);
 
                 const handleToken = (event: CustomEvent) => {
                     clearTimeout(timeout);
-                    resolve(event.detail?.player_id || event.detail?.token || null);
+                    const t = event.detail?.player_id || event.detail?.token || null;
+                    // alert('DEBUG: Got Despia Token event: ' + t);
+                    resolve(t);
                 };
 
                 window.addEventListener('despia-push-token', handleToken as EventListener, { once: true });
@@ -121,8 +132,11 @@ async function getOneSignalSubscriptionId(): Promise<string | null> {
                         (window as any).Despia.getPushToken();
                     } else if ((window as any).despia?.getPushToken) {
                         (window as any).despia.getPushToken();
+                    } else {
+                        // alert('DEBUG: No Despia bridge found!');
                     }
                 } catch (e) {
+                    // alert('DEBUG: Despia bridge error: ' + JSON.stringify(e));
                     console.warn('Could not request push token from Despia:', e);
                     clearTimeout(timeout);
                     resolve(null);
@@ -138,10 +152,12 @@ async function getOneSignalSubscriptionId(): Promise<string | null> {
         }
 
         console.warn('No native push environment detected');
+        // alert('DEBUG: No native env detected (Capacitor/Despia false)');
         return null;
 
     } catch (e) {
         console.error('Error getting OneSignal ID:', e);
+        // alert('DEBUG: Error getting ID: ' + JSON.stringify(e));
         return null;
     }
 }
@@ -195,7 +211,10 @@ function getDeviceType(): string {
  * Call this after login.
  */
 export async function registerPushToken(userId: string): Promise<void> {
+    // alert('DEBUG: registerPushToken start. Despia=' + isDespiaNative() + ' Capacitor=' + isCapacitorNative());
+
     if (!isDespiaNative() && !isCapacitorNative()) {
+        // alert('DEBUG: Aborting registerPushToken - not native');
         return;
     }
 
@@ -215,9 +234,11 @@ export async function registerPushToken(userId: string): Promise<void> {
 
     if (!playerId) {
         console.warn('Could not obtain OneSignal Subscription ID — push token NOT registered');
+        // alert('DEBUG: No Player ID obtained!');
         return;
     }
 
+    // alert('DEBUG: Got Token! ' + playerId);
     console.log('Got OneSignal Subscription ID:', playerId.substring(0, 8) + '...');
 
     const deviceType = getDeviceType();
@@ -245,11 +266,14 @@ export async function registerPushToken(userId: string): Promise<void> {
 
         if (error) {
             console.error('Error upserting device token:', error);
+            // alert('DEBUG: DB Error: ' + JSON.stringify(error));
         } else {
             console.log('✅ Push token registered successfully for user:', userId.substring(0, 8) + '...');
+            // alert('DEBUG: SUCCESS! Token registered in DB.');
         }
     } catch (e) {
         console.error('Failed to register push token:', e);
+        // alert('DEBUG: Exception in DB insert: ' + JSON.stringify(e));
     }
 }
 
