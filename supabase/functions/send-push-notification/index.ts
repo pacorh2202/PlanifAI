@@ -264,50 +264,32 @@ serve(async (req: Request) => {
 
         // --- DIAGNOSTIC LOGGING ---
         console.log('[PUSH] === Push Notification Attempt ===')
-        console.log('[PUSH] Recipients:', JSON.stringify(notificationToSend.user_ids))
+        console.log('[PUSH] Recipients (user_ids):', JSON.stringify(notificationToSend.user_ids))
+        console.log('[PUSH] Title:', notificationToSend.title)
         console.log('[PUSH] Type:', notificationToSend.data?.type || 'legacy')
-        console.log('[PUSH] ONESIGNAL_APP_ID:', ONESIGNAL_APP_ID?.substring(0, 8) + '...')
 
-        // Get device tokens using ADMIN client (bypasses RLS)
-        // RLS on device_tokens: SELECT only for auth.uid() = user_id
-        // But DB trigger calls this EF with anon key, so auth.uid() is NULL
-        const { data: tokens, error: tokensError } = await adminClient
-            .from('device_tokens')
-            .select('player_id, user_id')
-            .in('user_id', notificationToSend.user_ids)
-            .eq('is_active', true)
-
-        if (tokensError) {
-            console.error('[PUSH] Error fetching device_tokens:', tokensError)
-            return new Response(JSON.stringify({ success: false, error: 'Failed to fetch device tokens', details: tokensError }), { status: 500, headers: corsHeaders })
+        // ── Strategy A: Send via external_id (always available if user did OneSignal.login) ──
+        // This is the PRIMARY method. It does NOT depend on device_tokens table.
+        // OneSignal maps external_id → subscriptions internally.
+        const aliasPayload = {
+            app_id: ONESIGNAL_APP_ID,
+            // Target users by their external_id (= Supabase auth.uid())
+            include_aliases: { external_id: notificationToSend.user_ids },
+            target_channel: 'push',
+            headings: { en: notificationToSend.title },
+            contents: { en: notificationToSend.body },
+            data: notificationToSend.data || {},
         }
 
-        if (!tokens || tokens.length === 0) {
-            console.warn('[PUSH] No active device tokens found for users:', notificationToSend.user_ids)
-            return new Response(JSON.stringify({ success: true, recipients: 0, reason: 'no_device_tokens', message: 'No active devices found for recipients' }), { headers: corsHeaders })
-        }
+        console.log('[PUSH] Sending via include_aliases (external_id):', JSON.stringify(notificationToSend.user_ids))
 
-        console.log('[PUSH] Found', tokens.length, 'device token(s):', tokens.map(t => ({ user: t.user_id, player: t.player_id?.substring(0, 8) + '...' })))
-
-        // Remove duplicates
-        const uniqueTokens = [...new Set(tokens.map(t => t.player_id).filter(Boolean))]
-
-        // Send to OneSignal
-        const oneSignalResponse = await fetch('https://onesignal.com/api/v1/notifications', {
+        const oneSignalResponse = await fetch('https://api.onesignal.com/notifications', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Basic ${ONESIGNAL_API_KEY}`
             },
-            body: JSON.stringify({
-                app_id: ONESIGNAL_APP_ID,
-                include_player_ids: uniqueTokens,
-                headings: { en: notificationToSend.title },
-                contents: { en: notificationToSend.body },
-                data: notificationToSend.data || {},
-                // Android/iOS specific settings for deep linking can be added here
-                // e.g., url: `planifai://...` if we constructed it from entity_data
-            })
+            body: JSON.stringify(aliasPayload)
         })
 
         const oneSignalData = await oneSignalResponse.json()
@@ -316,8 +298,46 @@ serve(async (req: Request) => {
         console.log('[PUSH] OneSignal response body:', JSON.stringify(oneSignalData))
 
         if (!oneSignalResponse.ok) {
-            console.error('[PUSH] OneSignal API error:', oneSignalData)
-            return new Response(JSON.stringify({ error: 'Failed to send via OneSignal', details: oneSignalData }), { status: 500, headers: corsHeaders })
+            console.error('[PUSH] OneSignal API error:', JSON.stringify(oneSignalData))
+
+            // ── Strategy B (fallback): Try include_player_ids from device_tokens ──
+            console.log('[PUSH] Falling back to device_tokens (include_player_ids)...')
+            const { data: tokens, error: tokensError } = await adminClient
+                .from('device_tokens')
+                .select('player_id, user_id')
+                .in('user_id', notificationToSend.user_ids)
+                .eq('is_active', true)
+
+            if (tokensError || !tokens || tokens.length === 0) {
+                console.error('[PUSH] Fallback failed — no device tokens found:', tokensError)
+                return new Response(JSON.stringify({ error: 'Failed to send via OneSignal', primary_error: oneSignalData, fallback: 'no_tokens' }), { status: 500, headers: corsHeaders })
+            }
+
+            const uniqueTokens = [...new Set(tokens.map(t => t.player_id).filter(Boolean))]
+            console.log('[PUSH] Fallback: sending to', uniqueTokens.length, 'player_id(s)')
+
+            const fallbackResponse = await fetch('https://api.onesignal.com/notifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${ONESIGNAL_API_KEY}`
+                },
+                body: JSON.stringify({
+                    app_id: ONESIGNAL_APP_ID,
+                    include_player_ids: uniqueTokens,
+                    headings: { en: notificationToSend.title },
+                    contents: { en: notificationToSend.body },
+                    data: notificationToSend.data || {},
+                })
+            })
+            const fallbackData = await fallbackResponse.json()
+            console.log('[PUSH] Fallback response:', fallbackResponse.status, JSON.stringify(fallbackData))
+
+            if (!fallbackResponse.ok) {
+                return new Response(JSON.stringify({ error: 'Both sending strategies failed', primary: oneSignalData, fallback: fallbackData }), { status: 500, headers: corsHeaders })
+            }
+
+            return new Response(JSON.stringify({ success: true, method: 'fallback_player_ids', recipients: uniqueTokens.length, onesignal_id: fallbackData.id }), { headers: corsHeaders })
         }
 
         // --- STATE UPDATE ---
@@ -349,7 +369,8 @@ serve(async (req: Request) => {
 
         return new Response(JSON.stringify({
             success: true,
-            recipients: uniqueTokens.length,
+            method: 'include_aliases',
+            recipients: notificationToSend.user_ids.length,
             onesignal_id: oneSignalData.id
         }), { headers: corsHeaders })
 

@@ -157,6 +157,14 @@ const App: React.FC = () => {
     initPushNotifications();
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      import('./src/lib/pushNotifications').then(({ registerPushToken }) => {
+        registerPushToken(user.id);
+      });
+    }
+  }, [user]);
+
   // Show loading screen while checking auth
   if (loading) {
     return (
