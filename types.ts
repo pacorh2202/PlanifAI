@@ -79,5 +79,9 @@ export interface CalendarAction {
     searchStart?: string;
     searchEnd?: string;
     durationMinutes?: number;
+    energyLevel?: 'alta' | 'media' | 'baja';
+    focusType?: 'profundo' | 'ligero' | 'social';
+    suggestBestTime?: boolean;
+    automate?: boolean;
   }>;
 }

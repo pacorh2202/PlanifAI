@@ -29,14 +29,14 @@ export const usePlanAILive = () => {
 
   const calendarTool: FunctionDeclaration = {
     name: 'manageCalendar',
-    description: 'Crea, actualiza, elimina o mueve eventos y tareas. Úsala para CUALQUIER cambio en la agenda.',
+    description: 'Crea, actualiza, elimina o mueve eventos y tareas. Úsala para CUALQUIER cambio en la agenda o para optimizar tareas existentes de forma iterativa.',
     parameters: {
       type: Type.OBJECT,
       properties: {
         actionType: {
           type: Type.STRING,
           enum: ['create', 'update', 'delete', 'move', 'findSlots'],
-          description: "Tipo de operación. Usa 'findSlots' para buscar huecos libres con amigos."
+          description: "Tipo de operación. 'update' es la clave para iterar sobre una tarea existente: ajustar hora, duración, categoría, notas, etc. 'findSlots' busca el mejor hueco disponible. 'move' reubica la tarea en otra franja horaria."
         },
         eventId: {
           type: Type.STRING,
@@ -49,19 +49,40 @@ export const usePlanAILive = () => {
         eventData: {
           type: Type.OBJECT,
           properties: {
-            title: { type: Type.STRING, description: "Título de la tarea sin emojis (el icono se asignará automáticamente según la categoría)." },
+            title: { type: Type.STRING, description: "Título de la tarea sin emojis." },
             start: { type: Type.STRING, description: "Fecha y hora de inicio en ISO 8601 con offset de zona horaria (ej: 2026-02-12T17:00:00+01:00). OBLIGATORIO para create." },
-            end: { type: Type.STRING, description: "Fecha y hora de fin en ISO 8601 con offset de zona horaria. OBLIGATORIO para create. Si no se especifica duración, asume 1 hora." },
-            type: { type: Type.STRING, enum: categoryLabels, description: "Categoría exacta del evento." },
-            location: { type: Type.STRING, description: "Ubicación o dirección física, si se menciona." },
-            descriptionPoints: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Lista de detalles, notas, o subtareas mencionadas." },
+            end: { type: Type.STRING, description: "Fecha y hora de fin en ISO 8601 con offset de zona horaria." },
+            type: { type: Type.STRING, enum: categoryLabels, description: "Categoría exacta del evento. Para cambiar la categoría de una tarea usa 'update' con solo este campo." },
+            location: { type: Type.STRING, description: "Ubicación o dirección física." },
+            descriptionPoints: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Lista COMPLETA de notas y subtareas. Para AÑADIR una nota, incluye las notas existentes MÁS la nueva. NUNCA omitas notas previas." },
             allDay: { type: Type.BOOLEAN },
             attendees: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Nombres EXACTOS de los amigos invitados." },
             searchStart: { type: Type.STRING, description: "Inicio del rango de búsqueda (ISO) para 'findSlots'." },
             searchEnd: { type: Type.STRING, description: "Fin del rango de búsqueda (ISO) para 'findSlots'." },
-            durationMinutes: { type: Type.NUMBER, description: "Duración deseada en minutos para 'findSlots' (defecto 60)." }
+            durationMinutes: {
+              type: Type.NUMBER,
+              description: "Duración en minutos. Para 'findSlots': gap mínimo. Para 'update': recalcula 'end' = start_actual + durationMinutes, sin cambiar 'start'. Ejemplo: 'hazla de 45 minutos' → durationMinutes: 45 sin enviar 'end'."
+            },
+            energyLevel: {
+              type: Type.STRING,
+              enum: ['alta', 'media', 'baja'],
+              description: "Nivel de energía requerido. 'alta' → mañana (8-13h), 'media' → mediodía (13-17h), 'baja' → tarde/noche (17-21h). Úsalo con findSlots para alinear con los ritmos del usuario."
+            },
+            focusType: {
+              type: Type.STRING,
+              enum: ['profundo', 'ligero', 'social'],
+              description: "Tipo de concentración: 'profundo' = cognitivo intenso, 'ligero' = rutinario, 'social' = con otras personas."
+            },
+            suggestBestTime: {
+              type: Type.BOOLEAN,
+              description: "Si el usuario pregunta cuándo es mejor hacer una tarea, pon true y llama a 'findSlots' con el rango apropiado. Propón las opciones en voz y espera confirmación antes de mover/crear."
+            },
+            automate: {
+              type: Type.BOOLEAN,
+              description: "Si el usuario pide automatizar o repetir esta tarea periódicamente, pon true. Habilita la repetición nativa de la app."
+            }
           },
-          description: "Para 'create': title, start, end, type obligatorios. Para 'findSlots': attendees, searchStart, searchEnd obligatorios."
+          description: "Para 'update': envía SOLO los campos que cambian. Para 'create': title, start, end, type son obligatorios. Para 'findSlots': searchStart, searchEnd son obligatorios."
         }
       },
       required: ['actionType']
@@ -205,7 +226,7 @@ export const usePlanAILive = () => {
 
       console.log('[AI] 📡 Connecting to Gemini Live API with origin:', window.location.origin);
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025', // User requested exact model
+        model: 'gemini-2.0-flash-exp', // Corrected model identifier
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
@@ -216,7 +237,7 @@ export const usePlanAILive = () => {
 ## Personalidad y Tono
 - **Natural y Humano**: Habla de forma fluida, como un amigo eficiente. Evita sonar como un robot.
 - **Brevedad Extrema**: Nunca des explicaciones largas. Si puedes decir algo en 5 palabras, no uses 10.
-- **Sin Repeticiones**: NUNCA repitas una frase que ya hayas dicho. Cada respuesta se dice UNA SOLA VEZ. Cuando termines de hablar, detente limpiamente. No añadas nada más después de la despedida o confirmación.
+- **Sin Repeticiones (REGLA DE ORO)**: NUNCA repitas una frase que ya hayas dicho en este turno o en los anteriores. Cada respuesta se dice UNA SOLA VEZ. Una vez que hayas dado la información necesaria o confirmado una acción, DETENTE inmediatamente. No añadas coletillas, despedidas redundantes ni variaciones de lo ya dicho.
 
 ## Calidad de Habla (CRÍTICO)
 - Pronuncia cada palabra COMPLETA y CLARA, especialmente la ÚLTIMA palabra de cada frase.
@@ -227,8 +248,27 @@ export const usePlanAILive = () => {
 ## Protocolo de Acción (CRÍTICO)
 1. **Ejecución Directa**: Cuando el usuario pida algo, llama a la herramienta manageCalendar INMEDIATAMENTE. No pidas permiso ni digas "vale, lo hago".
 2. **Extracción de Títulos Limpios (ESTRICTO)**: NUNCA incluyas nombres de personas en el título de la tarea (ej. "con Pepe", "y María"). El título debe ser solo la actividad. El nombre debe ir EXCLUSIVAMENTE al campo \`attendees\`. Ejemplo: "Inglés con Pepe" -> title: "Inglés", attendees: ["Pepe"].
-3. **Confirmación Única**: Tras una acción EXITOSA, di EXACTAMENTE: "${confirmationPhrase}". Esa frase se pronuncia UNA ÚNICA VEZ. Después de decirla, CALLA y espera al usuario. PROHIBIDO repetirla o añadir variaciones.
-4. **Manejo de Errores**: Si algo falla, explica brevemente por qué y pregunta qué quieres hacer.
+3. **Confirmación Única y Final**: Tras una acción EXITOSA no de optimización, di EXACTAMENTE: "${confirmationPhrase}". Esa frase se pronuncia UNA ÚNICA VEZ. Tras una optimización (update sobre tarea existente), puedes añadir UNA pregunta de seguimiento breve: "¿Quieres también ajustar la duración o añadir notas?". Después, CALLA y espera.
+4. **Manejo de Errores**: Si algo falla, explica brevemente por qué y pregunta qué hacer.
+
+## Optimización Iterativa de Tareas (NUEVO — MUY IMPORTANTE)
+Trata cada tarea como un **objeto editable y vivo**, no como un output final. Para modificar una tarea existente, usa siempre 'update' + eventId extraído de los Eventos Actuales.
+
+**Qué puede pedirte el usuario sobre una tarea:**
+- "Muévela una hora" / "Retrásala" / "Adelántala" → 'move' con nuevos start y end
+- "Hazla de 45 minutos" → 'update' con durationMinutes: 45 (NUNCA envíes 'end' si usas durationMinutes)
+- "Cámbiala a Salud/Trabajo/Estudio" → 'update' con solo el campo 'type'
+- "Añade nota: llevar documentos" → 'update' con descriptionPoints completo (existentes + nueva)
+- "¿Cuándo sería mejor?" → 'findSlots' con suggestBestTime: true + energyLevel apropiado
+- "Optimízala para cuando tengo más energía" → 'findSlots' con energyLevel: 'alta' (8-13h)
+- "Automatízala / repite esta tarea" → 'update' con automate: true
+- "Hay conflicto con X" → describe el conflicto y usa replaceEventId si el usuario confirma reemplazar
+
+**Regla de energía para smart scheduling:**
+- Alta intensidad (Estudio, Trabajo cognitivo): energyLevel 'alta' → 8-13h
+- Intensidad media (Reuniones, recados): energyLevel 'media' → 13-17h
+- Baja intensidad (Gym ligero, Ocio): energyLevel 'baja' → 17-21h
+
 
 ## Zona Horaria (MUY IMPORTANTE)
 - Zona horaria del usuario: ${userTZ} (UTC${isoOffset}).
@@ -368,6 +408,9 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             if (msg.toolCall) {
               console.log('[AI] 🔧 Tool call received:', JSON.stringify(msg.toolCall, null, 2));
               setIsThinking(true);
+              isTalkingRef.current = true; // Block mic during tool processing
+              setIsTalking(true);
+
               const functionResponses = [];
               for (const fc of msg.toolCall.functionCalls) {
                 console.log('[AI] 📞 Function:', fc.name, '| Args:', JSON.stringify(fc.args, null, 2));

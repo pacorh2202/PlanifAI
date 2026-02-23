@@ -711,23 +711,58 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           return message;
         }
 
-        case 'update':
+        case 'update': {
           if (!action.eventId) return "Error: ID de evento requerido.";
-          await updateEvent(action.eventId, action.eventData || {});
+          const updateData = action.eventData || {};
+
+          // Handle durationMinutes: recalculate 'end' from current event start
+          if (updateData.durationMinutes && !updateData.end) {
+            const targetEvent = events.find(e => e.id === action.eventId);
+            if (targetEvent) {
+              const newEnd = new Date(new Date(targetEvent.start).getTime() + updateData.durationMinutes * 60 * 1000);
+              updateData.end = newEnd.toISOString();
+              console.log(`[executeAction] Duration update → new end: ${updateData.end}`);
+            }
+            delete updateData.durationMinutes;
+          }
+
+          // Handle automate flag: log as an automation activity
+          if (updateData.automate) {
+            if (user) {
+              calendarApi.logActivity(user.id, 'automated', { eventId: action.eventId });
+            }
+            delete updateData.automate;
+          }
+
+          await updateEvent(action.eventId, updateData);
           return "Evento actualizado correctamente.";
+        }
 
         case 'move':
           if (!action.eventId || !action.eventData?.start) return "Error: Datos de movimiento incompletos.";
-          await updateEvent(action.eventId, {
-            start: action.eventData.start,
-            end: action.eventData.end,
-            status: 'moved'
-          });
+          {
+            const moveData: Partial<any> = {
+              start: action.eventData.start,
+              status: 'moved'
+            };
+
+            // If durationMinutes provided, compute end from new start; otherwise use provided end
+            if (action.eventData.durationMinutes && !action.eventData.end) {
+              moveData.end = new Date(
+                new Date(action.eventData.start).getTime() + action.eventData.durationMinutes * 60 * 1000
+              ).toISOString();
+            } else {
+              moveData.end = action.eventData.end;
+            }
+
+            await updateEvent(action.eventId, moveData);
+          }
           // Log reorganization activity if it's a move
           if (user) {
             calendarApi.logActivity(user.id, 'reorganized', { eventId: action.eventId, action: 'move' });
           }
           return "Evento movido correctamente.";
+
 
         case 'delete':
           if (!action.eventId) return "Error: ID de evento requerido.";
