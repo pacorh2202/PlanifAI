@@ -63,7 +63,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [eventsLoaded, setEventsLoaded] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
 
-  const [language, setLanguageState] = useState<Language>('es');
+  const [language, setLanguageState] = useState<Language>('en');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [accentColor, setAccentColorState] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -186,7 +186,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Initialize from profile
   useEffect(() => {
     if (profile) {
-      setLanguageState(profile.language as Language || 'es');
+      setLanguageState(profile.language as Language || 'en');
       setIsDarkMode(profile.is_dark_mode || false);
       if (profile.accent_color) {
         setAccentColorState(profile.accent_color);
