@@ -42,7 +42,7 @@ serve(async (req) => {
         }
 
 
-        const { actionType, eventData, userId, replaceEventId } = await req.json();
+        const { actionType, eventData, userId, replaceEventId, eventId } = await req.json();
 
         console.log(`[Request] Action: ${actionType} User: ${userId}`);
 
@@ -120,8 +120,9 @@ serve(async (req) => {
 
         // ---------------------------------------------------------
         // AGENT 3: VALIDATOR (Rule-based consistency check)
+        // For 'update'/'move': lenient validation (partial data is OK)
         // ---------------------------------------------------------
-        const validationResult = validateEvent(eventData);
+        const validationResult = validateEvent(eventData, actionType);
         if (!validationResult.valid) {
             console.log(`[Agent 3] ❌ Validation failed: ${validationResult.reason}`);
             return new Response(
@@ -135,10 +136,11 @@ serve(async (req) => {
 
         // ---------------------------------------------------------
         // AGENT 9: CONFLICT DETECTOR (Database check)
+        // Only check when dates are present; exclude self-event for update/move
         // ---------------------------------------------------------
-        // Solo chequeamos conflictos en creación o movimiento
         if (actionType === 'create' || actionType === 'move' || actionType === 'update') {
-            const conflictResult = await detectConflicts(supabaseClient, userId, processedData, replaceEventId);
+            const selfEventId = (actionType === 'update' || actionType === 'move') ? (eventId || replaceEventId) : undefined;
+            const conflictResult = await detectConflicts(supabaseClient, userId, processedData, replaceEventId, selfEventId);
 
             if (conflictResult.hasConflict) {
                 console.log(`[Agent 9] ⚠️ Conflict detected: ${conflictResult.details}`);
@@ -146,7 +148,6 @@ serve(async (req) => {
                     JSON.stringify({
                         success: false,
                         denialReason: `Conflict detected: ${conflictResult.details}`,
-                        // Opcional: devolver slots alternativos si el agente es listo
                     }),
                     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
                 );

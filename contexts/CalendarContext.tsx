@@ -487,7 +487,8 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           action.actionType,
           action.eventData || {},
           user.id,
-          action.replaceEventId
+          action.replaceEventId,
+          action.eventId            // Exclude self-event from conflict check on update/move
         );
 
         if (!agentResponse.success) {

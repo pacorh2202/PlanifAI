@@ -10,7 +10,8 @@ export const detectConflicts = async (
     supabase: SupabaseClient,
     userId: string,
     eventData: any,
-    replaceEventId?: string
+    replaceEventId?: string,
+    eventId?: string      // For update/move: exclude the event itself from conflict check
 ): Promise<ConflictResult> => {
 
     if (!eventData.start || !eventData.end) {
@@ -21,7 +22,6 @@ export const detectConflicts = async (
     const newEnd = new Date(eventData.end).toISOString();
 
     // Query for overlapping events
-    // Logic: existing.start_time < newEnd AND existing.end_time > newStart
     let query = supabase
         .from('calendar_events')
         .select('id, title, start_time, end_time')
@@ -29,17 +29,21 @@ export const detectConflicts = async (
         .lt('start_time', newEnd)
         .gt('end_time', newStart);
 
+    // Exclude the event being replaced (conflict resolution)
     if (replaceEventId) {
         query = query.neq('id', replaceEventId);
+    }
+
+    // Exclude the event itself when updating/moving (self-conflict)
+    if (eventId) {
+        query = query.neq('id', eventId);
     }
 
     const { data: conflicts, error } = await query;
 
     if (error) {
         console.error("Error checking conflicts:", error);
-        return { hasConflict: false }; // Fail open (permitir si hay error de DB?)
-        // Or fail closed? Better fail open to not block user specific actions if DB is glitchy, 
-        // but maybe log it.
+        return { hasConflict: false }; // Fail open
     }
 
     if (conflicts && conflicts.length > 0) {

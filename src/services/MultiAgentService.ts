@@ -17,7 +17,8 @@ export const MultiAgentService = {
         actionType: string,
         eventData: any,
         userId: string,
-        replaceEventId?: string
+        replaceEventId?: string,
+        eventId?: string       // For update/move: the ID of the event being modified
     ): Promise<MultiAgentResponse> {
         try {
             console.log('[MultiAgentService] 📤 Sending request to backend:', { actionType });
@@ -36,7 +37,8 @@ export const MultiAgentService = {
                     actionType,
                     eventData,
                     userId,
-                    replaceEventId
+                    replaceEventId,
+                    eventId           // Pass for self-conflict exclusion
                 },
                 // Explicitly pass the token to be safe, though invoke does it automatically
                 headers: session ? {
