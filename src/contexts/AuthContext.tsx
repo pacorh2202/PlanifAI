@@ -94,7 +94,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
     }, [loading]);
 
-    // Sign up new user
     const signUp = async (
         email: string,
         password: string,
@@ -107,6 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 options: {
                     data: {
                         user_name: userName,
+                        language: 'en',   // Default language for new users
                     },
                 },
             });
