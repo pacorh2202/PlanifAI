@@ -1,0 +1,7 @@
+{
+  "name": "PlanifAI Bilingüe",
+  "description": "An intelligent voice-first AI assistant that organizes your calendar and tracks your productivity with a high-end iOS aesthetic.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

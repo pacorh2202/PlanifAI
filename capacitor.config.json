@@ -1,0 +1,6 @@
+{
+    "appId": "com.planifai.app",
+    "appName": "PlanifAI",
+    "webDir": "dist",
+    "bundledWebRuntime": false
+}
