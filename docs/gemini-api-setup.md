@@ -28,11 +28,11 @@ const apiKey = import.meta.env.VITE_GEMINI_API_KEY; // ✅ Funciona
 
 ## 🧪 Verificación
 
-**El servidor de desarrollo se ha reiniciado** en http://localhost:3000
+**El servidor de desarrollo se ha reiniciado** en `http://localhost:3000`
 
 Puedes verificar que funciona:
 
-1. Abre la app en http://localhost:3000
+1. Abre la app en `http://localhost:3000`
 2. Inicia sesión o crea cuenta
 3. Click en el botón del micrófono (asistente de voz)
 4. Habla: *"Añade gimnasio mañana a las 5pm"*
@@ -46,7 +46,7 @@ Puedes verificar que funciona:
 | **Tipos TypeScript** | ✅ Creados | src/vite-env.d.ts |
 | **usePlanAILive** | ✅ Actualizado | Usa import.meta.env |
 | **Build** | ✅ Exitoso | 0 errores TypeScript |
-| **Dev Server** | ✅ Running | http://localhost:3000 |
+| **Dev Server** | ✅ Running | `http://localhost:3000` |
 
 ## 🔐 Seguridad
 
@@ -117,4 +117,4 @@ Esto permite:
 - Crear/editar/eliminar eventos por voz
 - Responder en español o inglés
 
-**Pruébalo ahora** en http://localhost:3000 🎤
+**Pruébalo ahora** en `http://localhost:3000` 🎤

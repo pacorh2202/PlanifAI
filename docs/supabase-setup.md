@@ -46,7 +46,7 @@ npm run dev
 
 ### 4. Test the Flow
 
-1. Open http://localhost:5173
+1. Open `http://localhost:5173`
 2. You should see the AuthScreen (login/signup)
 3. Create a new account with email + password
 4. Verify profile created in Supabase dashboard
