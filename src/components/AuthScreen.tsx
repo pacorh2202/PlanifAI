@@ -7,6 +7,30 @@ interface AuthScreenProps {
     onSuccess?: () => void;
 }
 
+// Translate common Supabase auth errors to Spanish
+function translateAuthError(msg: string): string {
+    const lower = msg.toLowerCase();
+    if (lower.includes('invalid login credentials') || lower.includes('invalid credentials')) {
+        return 'Correo o contraseña incorrectos. Por favor, comprueba tus datos.';
+    }
+    if (lower.includes('email not confirmed')) {
+        return 'Tu correo no está confirmado. Revisa tu bandeja de entrada.';
+    }
+    if (lower.includes('user already registered') || lower.includes('already been registered')) {
+        return 'Este correo ya está registrado. Intenta iniciar sesión.';
+    }
+    if (lower.includes('password should be at least')) {
+        return 'La contraseña debe tener al menos 6 caracteres.';
+    }
+    if (lower.includes('rate limit') || lower.includes('too many requests')) {
+        return 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.';
+    }
+    if (lower.includes('network') || lower.includes('failed to fetch')) {
+        return 'Error de conexión. Comprueba tu internet e inténtalo de nuevo.';
+    }
+    return msg; // return original if no match
+}
+
 export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     const { signIn, signUp, signInWithGoogle } = useAuth();
     const [mode, setMode] = useState<'signin' | 'signup'>('signin');
@@ -55,7 +79,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             if (mode === 'signin') {
                 const { error } = await signIn(email, password);
                 if (error) {
-                    setError(error.message);
+                    setError(translateAuthError(error.message));
                 } else {
                     onSuccess?.();
                 }
@@ -82,7 +106,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
                 const { error } = await signUp(email, password, username);
                 if (error) {
-                    setError(error.message);
+                    setError(translateAuthError(error.message));
                 } else {
                     onSuccess?.();
                 }
@@ -101,7 +125,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         try {
             const { error } = await signInWithGoogle();
             if (error) {
-                setError(error.message || 'Error al iniciar sesión con Google');
+                setError(translateAuthError(error.message || 'Error al iniciar sesión con Google'));
                 setLoading(false);
             }
             // Note: OAuth will redirect user, so we don't set loading to false here

@@ -55,6 +55,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 fetchProfile(session.user.id);
             }
             setLoading(false);
+        }).catch(() => {
+            setLoading(false);
         });
 
         // Listen for auth changes
@@ -75,24 +77,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else {
                 setProfile(null);
             }
-            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-                setLoading(false);
-            }
+            // Always unblock loading after any auth event
+            setLoading(false);
         });
 
         // Safety timeout for loading state (e.g. if OAuth fragment fails to trigger state change)
         const timeout = setTimeout(() => {
-            if (loading) {
-                console.log('Auth timeout reached, forcing loading false');
-                setLoading(false);
-            }
+            setLoading(false);
         }, 5000);
 
         return () => {
             subscription.unsubscribe();
             clearTimeout(timeout);
         };
-    }, [loading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const signUp = async (
         email: string,
@@ -147,17 +146,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Sign in with Google OAuth
     const signInWithGoogle = async (): Promise<{ error: AuthError | null }> => {
         try {
-            // Determine the best redirect URL
-            // On Despia/Native, window.location.origin might be non-standard
-            // We force the production URL for all non-standard environments
             const origin = window.location.origin;
-            const isProduction = origin.includes('planifai-bilingue.pages.dev');
-            const isLocalhost = origin.includes('localhost');
+            const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
 
-            // If we're not on production or localhost, we force production redirect
-            const redirectTo = (isProduction || isLocalhost)
-                ? origin
-                : 'https://planifai-bilingue.pages.dev';
+            // Always redirect back to the actual origin so OAuth tokens are received.
+            // For production we normalise to the canonical Pages domain.
+            const productionUrl = 'https://planif-ai.pages.dev';
+            const redirectTo = isLocalhost ? origin : productionUrl;
 
             console.log('SignInWithGoogle - Origin:', origin, 'RedirectTo:', redirectTo);
 

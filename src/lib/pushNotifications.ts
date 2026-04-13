@@ -12,7 +12,20 @@
  */
 
 import { supabase } from './supabase';
-import OneSignal from 'onesignal-cordova-plugin';
+
+// OneSignal Capacitor plugin — loaded dynamically ONLY in native environments
+// to avoid crashing the web bundle where the native plugin doesn't exist.
+let _oneSignal: any = null;
+async function getOneSignalCapacitor(): Promise<any> {
+    if (_oneSignal !== null) return _oneSignal;
+    try {
+        const mod = await import('onesignal-cordova-plugin');
+        _oneSignal = mod.default ?? mod;
+    } catch {
+        _oneSignal = null;
+    }
+    return _oneSignal;
+}
 
 // despia-native SDK: lazily loaded so it doesn't break the web/Capacitor bundle
 let _despiaSDK: any = undefined;
@@ -77,6 +90,8 @@ async function getOneSignalSubscriptionId(): Promise<string | null> {
         // 1. Capacitor Native
         if (isCapacitorNative()) {
             console.log('[PUSH] Getting subscription ID from Capacitor...');
+            const OneSignal = await getOneSignalCapacitor();
+            if (!OneSignal) return null;
             const subId = OneSignal.User.pushSubscription.id;
             if (subId) return subId;
 
@@ -174,12 +189,15 @@ export function initPushNotifications() {
 
     if (isCapacitorNative()) {
         console.log("[PUSH] Initializing OneSignal (Capacitor)...");
-        OneSignal.initialize(ONESIGNAL_APP_ID);
-        OneSignal.Notifications.requestPermission(true).then((accepted: boolean) => {
-            console.log("[PUSH] Capacitor permission:", accepted);
-        });
-        OneSignal.Notifications.addEventListener('click', (event) => {
-            console.log('[PUSH] Notification clicked:', event);
+        getOneSignalCapacitor().then(OneSignal => {
+            if (!OneSignal) return;
+            OneSignal.initialize(ONESIGNAL_APP_ID);
+            OneSignal.Notifications.requestPermission(true).then((accepted: boolean) => {
+                console.log("[PUSH] Capacitor permission:", accepted);
+            });
+            OneSignal.Notifications.addEventListener('click', (event: any) => {
+                console.log('[PUSH] Notification clicked:', event);
+            });
         });
 
     } else if (isDespiaNative()) {
@@ -256,8 +274,11 @@ export async function registerPushToken(userId: string): Promise<void> {
     try {
         if (isCapacitorNative()) {
             console.log('[PUSH] Calling OneSignal.login (Capacitor)...');
-            OneSignal.login(userId);
-            console.log('[PUSH] OneSignal.login OK (Capacitor)');
+            const OneSignal = await getOneSignalCapacitor();
+            if (OneSignal) {
+                OneSignal.login(userId);
+                console.log('[PUSH] OneSignal.login OK (Capacitor)');
+            }
 
         } else if (isDespiaNative()) {
             // Associate the native OneSignal player_id with this user via Despia bridge.
@@ -355,7 +376,8 @@ export async function registerPushToken(userId: string): Promise<void> {
 export async function deactivatePushToken(userId: string): Promise<void> {
     try {
         if (isCapacitorNative()) {
-            OneSignal.logout();
+            const OneSignal = await getOneSignalCapacitor();
+            if (OneSignal) OneSignal.logout();
         } else if (isWebPush()) {
             await _webInitPromise;
             await new Promise<void>((resolve) => {
@@ -379,7 +401,11 @@ export async function deactivatePushToken(userId: string): Promise<void> {
 // --- Opt-in status ---
 
 export function isPushOptedIn(): boolean {
-    if (isCapacitorNative()) return OneSignal.User.pushSubscription.optedIn;
+    if (isCapacitorNative()) {
+        // Can't do async here — best effort check from window object
+        const cap = (window as any).cordova?.plugins?.OneSignal;
+        return cap?.User?.pushSubscription?.optedIn ?? false;
+    }
     if (typeof Notification !== 'undefined') return Notification.permission === 'granted';
     return false;
 }
@@ -416,8 +442,11 @@ export async function requestWebPushPermission(): Promise<string> {
 
 export async function setPushSubscription(enable: boolean): Promise<void> {
     if (isCapacitorNative()) {
-        if (enable) OneSignal.User.pushSubscription.optIn();
-        else OneSignal.User.pushSubscription.optOut();
+        const OneSignal = await getOneSignalCapacitor();
+        if (OneSignal) {
+            if (enable) OneSignal.User.pushSubscription.optIn();
+            else OneSignal.User.pushSubscription.optOut();
+        }
         return;
     }
 
