@@ -42,7 +42,7 @@ Puedes verificar que funciona:
 
 | Componente | Estado | Detalles |
 |------------|--------|----------|
-| **API Key en .env** | ✅ Configurada | AIzaSyB6...Tdq8 |
+| **API Key en .env** | ✅ Configurada | AIzaSyAn...KVSY |
 | **Tipos TypeScript** | ✅ Creados | src/vite-env.d.ts |
 | **usePlanAILive** | ✅ Actualizado | Usa import.meta.env |
 | **Build** | ✅ Exitoso | 0 errores TypeScript |
