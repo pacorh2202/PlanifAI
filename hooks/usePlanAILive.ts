@@ -226,7 +226,7 @@ export const usePlanAILive = () => {
 
       console.log('[AI] 📡 Connecting to Gemini Live API with origin:', window.location.origin);
       const sessionPromise = ai.live.connect({
-        model: 'gemini-live-2.5-flash-native-audio', // Si falla con error 1007, prueba con 'gemini-2.0-flash'
+        model: 'gemini-2.0-flash', // Estándar de AI Studio para Audio Nativo GA (no usar el nombre de Vertex AI)
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
