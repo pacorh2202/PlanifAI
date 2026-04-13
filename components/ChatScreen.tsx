@@ -39,7 +39,7 @@ export const ChatScreen: React.FC = () => {
       </div>
 
       {/* Simplified Navigation Top Bar */}
-      <div className="px-6 z-20 flex justify-center items-center relative" style={{ paddingTop: 'max(3.5rem, calc(env(safe-area-inset-top) + 12px))' }}>
+      <div className="px-6 pt-10 pb-2 z-20 flex justify-center items-center relative" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
         <div className="text-center">
           <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">PlanifAI</h1>
           <p className="text-[10px] text-[#94A3B8] uppercase font-black tracking-[0.2em] mt-0.5">{t.subtitle}</p>
@@ -52,7 +52,7 @@ export const ChatScreen: React.FC = () => {
       </div>
 
       {/* Connection Toggle Button */}
-      <div className="pt-4 px-4 flex justify-center z-20" style={{ paddingBottom: 'max(10rem, calc(8rem + env(safe-area-inset-bottom)))' }}>
+      <div className="pt-4 pb-20 px-4 flex justify-center z-20" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8rem)' }}>
         <button
           onClick={handleToggleConnection}
           className={`relative group rounded-full transition-all duration-500 focus:outline-none focus:ring-0 tap-highlight-transparent ${connected ? 'scale-110' : 'scale-100 hover:scale-105'}`}

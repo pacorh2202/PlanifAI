@@ -133,7 +133,7 @@ export const CalendarScreen: React.FC = () => {
   const renderHeader = () => {
     const monthName = selectedDate.toLocaleDateString(localeStr, { month: 'long' }).toUpperCase();
     return (
-      <header className="px-6 pb-2 flex flex-col gap-4 bg-[#F8FAFC] dark:bg-black transition-colors duration-300" style={{ paddingTop: 'max(3.5rem, calc(env(safe-area-inset-top) + 8px))' }}>
+      <header className="px-6 pt-10 pb-2 flex flex-col gap-4 bg-[#F8FAFC] dark:bg-black transition-colors duration-300" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}>
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-[10px] font-black tracking-[0.2em] text-[#94A3B8] uppercase">
