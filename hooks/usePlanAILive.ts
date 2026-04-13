@@ -226,7 +226,7 @@ export const usePlanAILive = () => {
 
       console.log('[AI] 📡 Connecting to Gemini Live API with origin:', window.location.origin);
       const sessionPromise = ai.live.connect({
-        model: 'gemini-live-2.5-flash-native-audio', // Versión optimizada Native Audio GA
+        model: 'gemini-live-2.5-flash-native-audio', // Si falla con error 1007, prueba con 'gemini-2.0-flash'
         config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
@@ -438,6 +438,14 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
           },
           onclose: (e: any) => {
             console.log('[AI] 🔌 WebSocket connection closed:', e.code, e.reason);
+            
+            // Error 1007 (Invalid Argument) es típico de "API Key not valid" por falta de permisos de dominio (HTTP Referrer)
+            if (e.code === 1007 || String(e.reason).includes('API key not valid')) {
+                const errorMsg = 'Error de validación (1007): Google rechazó la conexión. \n\nIMPORTANTÍSIMO: Asegúrate de haber añadido "https://planif-ai.pages.dev/*" a las Restricciones de HTTP Referrer de tu API Key en Google Cloud Console.';
+                console.error('[AI] 🚨 DOMAIN RESTRICTION DETECTED:', errorMsg);
+                alert(errorMsg);
+            }
+
             setConnected(false);
             setIsTalking(false);
             setIsConnecting(false);
