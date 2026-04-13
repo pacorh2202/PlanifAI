@@ -361,7 +361,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isCre
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] animate-fade-in transition-opacity duration-300 cursor-pointer" onClick={onClose}></div>
 
       <div
-        className={`relative bg-[#F8FAFC] dark:bg-gray-950 w-full h-[85vh] rounded-t-[3.5rem] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.4)] border-t border-white/20 overflow-hidden ${isClosing ? '' : 'animate-slide-up'}`}
+        className={`relative bg-[#F8FAFC] dark:bg-gray-950 w-full h-[85dvh] rounded-t-[3.5rem] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.4)] border-t border-white/20 overflow-hidden ${isClosing ? '' : 'animate-slide-up'}`}
         style={{
           transform: `translateY(${isClosing ? '100%' : `${dragY}px`})`,
           transition: isDragging ? 'none' : 'transform 0.3s ease-out',

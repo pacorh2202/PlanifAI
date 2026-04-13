@@ -246,11 +246,13 @@ export const StatsScreen: React.FC = () => {
     const cats = activeTemplate?.categories || [];
     const healthCat = cats.find(c => c.type === 'health');
     const personalCat = cats.find(c => c.type === 'personal');
+    const studyCat = cats.find(c => c.type === 'study');
     const foodCat = cats.find(c => c.label?.toLowerCase().includes('aliment') || c.label?.toLowerCase().includes('food') || (c.type === 'other' && c.icon === 'Utensils'));
     return {
       exercise: healthCat?.color || '#FF7566',
       wakeUp: personalCat?.color || '#FFF4E0',
       eatHealthy: foodCat?.color || '#B2D3A1',
+      study: studyCat?.color || '#C1B3E3',
     };
   }, [activeTemplate]);
 
@@ -332,7 +334,7 @@ export const StatsScreen: React.FC = () => {
         className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar pb-40 transition-opacity duration-300"
         style={{ willChange: 'opacity', contain: 'content' }}
       >
-        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20">
+        <header className="px-6 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20" style={{ paddingTop: 'max(2.5rem, calc(env(safe-area-inset-top) + 8px))' }}>
           <div className="w-10"></div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.stats_title}</h1>
           <div className="w-10"></div>
@@ -995,7 +997,9 @@ const StressGauge: React.FC<{ value: number }> = ({ value }) => {
 };
 
 // ─── Article Card (REDESIGNED – CSS gradients, no images) ───────────────
-const ArticleCard: React.FC<{ article: any; onOpen: () => void }> = ({ article, onOpen }) => (
+const ArticleCard: React.FC<{ article: any; onOpen: () => void }> = ({ article, onOpen }) => {
+  const { t } = useCalendar();
+  return (
   <button
     onClick={onOpen}
     className="w-full text-left bg-white dark:bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md active:scale-[0.98] transition-all duration-200"
@@ -1017,12 +1021,13 @@ const ArticleCard: React.FC<{ article: any; onOpen: () => void }> = ({ article, 
       <h4 className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-2">{article.title}</h4>
       <p className="text-xs text-gray-500 font-medium leading-relaxed mb-4 line-clamp-2">{article.desc}</p>
       <div className="flex items-center gap-1.5 text-xs font-bold transition-colors group-hover:text-purple-600" style={{ color: '#667eea' }}>
-        <span>Leer artículo</span>
+        <span>{t.read_article}</span>
         <ArrowRight size={14} />
       </div>
     </div>
   </button>
-);
+  );
+};
 
 // ─── Apple-Style Article Modal ──────────────────────────────────────────
 const ArticleModal: React.FC<{ article: any; onClose: () => void }> = ({ article, onClose }) => (

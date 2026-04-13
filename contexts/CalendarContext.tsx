@@ -329,10 +329,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  // Recalculate stats when events change
-  useEffect(() => {
-    refreshStats();
-  }, [events]);
+  // NOTE: Duplicate useEffect for refreshStats removed (already exists at line 273)
 
   useEffect(() => {
     if (isDarkMode) {
@@ -440,13 +437,16 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  const deleteEvent = (id: string) => {
+  const deleteEvent = async (id: string): Promise<void> => {
     if (!user) return;
     const deletedEvent = events.find(e => e.id === id);
     setEvents(prev => prev.filter(e => e.id !== id));
-    calendarApi.deleteEvent(id, user.id).catch(err => {
+    try {
+      await calendarApi.deleteEvent(id, user.id);
+    } catch (err) {
+      console.error('Error deleting event:', err);
       if (deletedEvent) setEvents(prev => [...prev, deletedEvent]);
-    });
+    }
   };
 
 

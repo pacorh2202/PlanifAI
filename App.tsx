@@ -104,7 +104,7 @@ const AppContent: React.FC = () => {
       )}
 
       {showNavbar && (
-        <div className="fixed bottom-8 left-0 right-0 px-6 z-[9999] animate-fade-in flex justify-center pointer-events-none">
+        <div className="fixed left-0 right-0 px-6 z-[9999] animate-fade-in flex justify-center pointer-events-none" style={{ bottom: 'max(2rem, calc(env(safe-area-inset-bottom) + 8px))' }}>
           <nav className="w-full max-w-[22rem] bg-white/80 dark:bg-gray-900/85 backdrop-blur-3xl border border-white/40 dark:border-gray-800 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.2)] rounded-[2.2rem] h-[4.5rem] flex items-center justify-around px-1.5 pointer-events-auto transition-all duration-500">
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
@@ -212,7 +212,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
 
   return (
     <div className="flex flex-col h-full overflow-y-auto no-scrollbar bg-background-light dark:bg-background-dark transition-colors duration-300">
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-20">
+      <header className="px-6 pb-6 flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-20" style={{ paddingTop: 'max(2.5rem, calc(env(safe-area-inset-top) + 8px))' }}>
         <div className="w-10"></div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.settings_title}</h1>
         <div className="w-10"></div>
