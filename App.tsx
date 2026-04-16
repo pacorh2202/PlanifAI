@@ -212,17 +212,17 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
 
   return (
     <div className="flex flex-col h-full overflow-y-auto no-scrollbar bg-background-light dark:bg-background-dark transition-colors duration-300">
-      <header className="px-6 pb-4 pt-safe flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
+      <header className="px-6 pb-6 pt-safe flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 48px)' }}>
         <div className="w-10"></div>
         <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{t.settings_title}</h1>
         <div className="w-10"></div>
       </header>
 
       <div className="px-6 pt-2">
-        <section className="flex flex-col items-center py-6 bg-white dark:bg-gray-900 rounded-[2.2rem] shadow-sm mb-4 border border-gray-100 dark:border-gray-800">
-          <div className="mb-3">
+        <section className="flex flex-col items-center py-8 bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-sm mb-6 border border-gray-100 dark:border-gray-800">
+          <div className="mb-4">
             <div
-              className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold border-4 border-white dark:border-gray-800 shadow-lg transition-colors duration-500 overflow-hidden"
+              className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-4 border-white dark:border-gray-800 shadow-lg transition-colors duration-500 overflow-hidden"
               style={{ backgroundColor: profileImage ? 'transparent' : `${accentColor}33`, color: accentColor }}
             >
               {profileImage ? (
@@ -244,7 +244,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
         </section>
 
         <main className="space-y-3 pb-52">
-          <button onClick={() => onViewChange('colors')} className="w-full bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <button onClick={() => onViewChange('colors')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
                 <Palette size={18} />
@@ -254,7 +254,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>
 
-          <button onClick={() => onViewChange('voice-settings')} className="w-full bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <button onClick={() => onViewChange('voice-settings')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
                 <Mic size={18} />
@@ -267,7 +267,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>
 
-          <button onClick={() => onViewChange('account')} className="w-full bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <button onClick={() => onViewChange('account')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
                 <Settings size={18} />
@@ -277,7 +277,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
             <ChevronRight size={14} className="text-gray-300 group-active:translate-x-1 transition-transform" />
           </button>
 
-          <div className="w-full bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center justify-between border border-gray-100 dark:border-gray-800 transition-colors">
+          <div className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 transition-colors">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
                 <Bell size={18} />
@@ -296,7 +296,7 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
             </button>
           </div>
 
-          <button onClick={() => onViewChange('language')} className="w-full bg-white dark:bg-gray-900 rounded-2xl p-4 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
+          <button onClick={() => onViewChange('language')} className="w-full bg-white dark:bg-gray-900 rounded-3xl p-5 flex items-center justify-between border border-gray-100 dark:border-gray-800 active:bg-gray-50 transition-colors group">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ color: accentColor }}>
                 <Globe size={18} />

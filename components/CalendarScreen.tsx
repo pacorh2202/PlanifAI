@@ -133,14 +133,14 @@ export const CalendarScreen: React.FC = () => {
   const renderHeader = () => {
     const monthName = selectedDate.toLocaleDateString(localeStr, { month: 'long' }).toUpperCase();
     return (
-      <header className="px-6 pb-2 flex flex-col gap-4 bg-[#F8FAFC] dark:bg-black transition-colors duration-300" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
+      <header className="px-6 pb-2 flex flex-col gap-4 bg-[#F8FAFC] dark:bg-black transition-colors duration-300" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 48px)' }}>
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-[10px] font-black tracking-[0.2em] text-[#94A3B8] uppercase">
               {monthName} {selectedDate.getFullYear()}
             </h2>
             <div className="flex flex-col">
-              <h1 className={`font-black text-gray-900 dark:text-white tracking-tighter mt-1 ${view === 'day' ? 'text-4xl' : 'text-3xl'}`}>
+              <h1 className={`font-black text-gray-900 dark:text-white tracking-tighter mt-1 ${view === 'day' ? 'text-6xl' : 'text-5xl'}`}>
                 {selectedDate.getDate()}
               </h1>
               {view === 'day' && nextEventStatus && (
@@ -211,15 +211,15 @@ export const CalendarScreen: React.FC = () => {
                   <button
                     key={idx}
                     onClick={() => setSelectedDate(new Date(d))}
-                    className={`flex flex-col items-center justify-center w-12 h-16 rounded-2xl transition-all duration-300 ${isSelected
-                      ? 'bg-[#EFF4FF] dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 shadow-sm scale-110 z-10'
+                    className={`flex flex-col items-center justify-center w-14 h-20 rounded-2xl transition-all duration-300 ${isSelected
+                      ? 'bg-[#EFF4FF] dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 shadow-sm'
                       : 'opacity-40'
                       }`}
                   >
                     <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${isSelected ? 'text-blue-800 dark:text-blue-300' : 'text-gray-400'}`}>
                       {d.toLocaleDateString(localeStr, { weekday: 'short' }).slice(0, 3)}
                     </span>
-                    <span className={`text-xl font-black ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>
+                    <span className={`text-2xl font-black ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>
                       {d.getDate()}
                     </span>
                   </button>
@@ -230,9 +230,9 @@ export const CalendarScreen: React.FC = () => {
           </div>
         </section>
 
-        <div className="mt-4 bg-white dark:bg-gray-950 rounded-t-[3.5rem] flex-1 border-t border-gray-100 dark:border-gray-900 overflow-y-auto no-scrollbar">
-          <div className="p-5 relative" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}>
-            <div className="space-y-4">
+        <div className="mt-8 bg-white dark:bg-gray-950 rounded-t-[3.5rem] flex-1 border-t border-gray-100 dark:border-gray-900 overflow-y-auto no-scrollbar">
+          <div className="p-8 relative" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}>
+            <div className="space-y-6">
               {dayEvents.length === 0 ? (
                 <div className="text-center py-20 text-gray-300 font-bold uppercase tracking-widest text-[10px]">{t.no_events}</div>
               ) : dayEvents.map(event => {
@@ -252,20 +252,20 @@ export const CalendarScreen: React.FC = () => {
                     </div>
                     <div className="flex-1 flex gap-4 items-center relative z-10">
                       <div
-                        className="w-12 h-20 rounded-[1.8rem] flex items-center justify-center shadow-sm shrink-0 transition-colors duration-500 box-border"
+                        className="w-14 h-24 rounded-[2rem] flex items-center justify-center shadow-sm shrink-0 transition-colors duration-500 box-border"
                         style={{
                           backgroundColor: dynamicColor,
                           opacity: isPast ? 0.5 : 1,
                           filter: isPast ? 'grayscale(30%)' : 'none'
                         }}
                       >
-                        <Icon size={20} strokeWidth={2.5} className="text-white" />
+                        <Icon size={24} strokeWidth={2.5} className="text-white" />
                       </div>
                       <div className="flex flex-col justify-center flex-1">
                         <span className="text-[9px] font-black text-[#94A3B8] uppercase tracking-wider mb-0.5">
                           {timeStr} — {endTimeStr}
                         </span>
-                        <h3 className={`text-[15px] font-bold text-gray-900 dark:text-white leading-tight ${event.status === 'completed' ? 'line-through opacity-50' : ''}`}>
+                        <h3 className={`text-[17px] font-bold text-gray-900 dark:text-white leading-tight ${event.status === 'completed' ? 'line-through opacity-50' : ''}`}>
                           {event.title}
                         </h3>
                         {event.location && (
@@ -282,7 +282,7 @@ export const CalendarScreen: React.FC = () => {
                         }}
                         className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${event.status === 'completed'
                           ? 'bg-blue-600 border-blue-600 text-white'
-                          : 'bg-gray-50/50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-800'
+                          : 'border-gray-100 dark:border-gray-800'
                           }`}
                       >
                         {event.status === 'completed' && <Check size={18} strokeWidth={4} />}

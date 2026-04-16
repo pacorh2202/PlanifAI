@@ -50,7 +50,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
     if (isSubmitted) {
         return (
             <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black transition-colors duration-300">
-                <header className="px-6 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
+                <header className="px-6 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 48px)' }}>
                     <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
                         <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
                     </button>
@@ -80,7 +80,7 @@ export const SuggestionsScreen: React.FC<SuggestionsScreenProps> = ({ onBack }) 
 
     return (
         <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black transition-colors duration-300">
-            <header className="px-6 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
+            <header className="px-6 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 48px)' }}>
                 <button onClick={onBack} className="p-2 -ml-2 rounded-full active:bg-gray-100 dark:active:bg-gray-800 transition-colors">
                     <ChevronLeft className="text-gray-900 dark:text-white" size={28} />
                 </button>

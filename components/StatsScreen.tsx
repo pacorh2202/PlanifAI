@@ -334,7 +334,7 @@ export const StatsScreen: React.FC = () => {
         className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar transition-opacity duration-300"
         style={{ willChange: 'opacity', contain: 'content', paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}
       >
-        <header className="px-6 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
+        <header className="px-6 pb-6 pt-safe flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 48px)' }}>
           <div className="w-10"></div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.stats_title}</h1>
           <div className="w-10"></div>
@@ -342,7 +342,7 @@ export const StatsScreen: React.FC = () => {
 
         <main className="flex flex-col gap-6 px-6 pt-2">
           {/* Card: Racha Actual */}
-          <section className="bg-white dark:bg-gray-900 rounded-[2.2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+          <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-1">{t.current_streak.toUpperCase()}</p>
@@ -393,7 +393,7 @@ export const StatsScreen: React.FC = () => {
             {/* REAL DATA KPIS */}
 
             {/* 1. Completion Rate */}
-            <section className="bg-white dark:bg-gray-900 rounded-[2.2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                   <CheckCircle2 size={16} strokeWidth={3} />
@@ -418,7 +418,7 @@ export const StatsScreen: React.FC = () => {
             </section>
 
             {/* 2. Activity Chart */}
-            <section className="bg-white dark:bg-gray-900 rounded-[2.2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800 h-72 flex flex-col">
+            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 h-80 flex flex-col">
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{t.activities}</h3>
@@ -466,7 +466,7 @@ export const StatsScreen: React.FC = () => {
             </section>
 
             {/* 3. Distribution Donut */}
-            <section className="bg-white dark:bg-gray-900 rounded-[2.2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
               <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6">{t.weekly_distribution.toUpperCase()}</p>
 
               <div className="flex items-center gap-6">
