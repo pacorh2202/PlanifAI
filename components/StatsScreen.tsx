@@ -342,7 +342,7 @@ export const StatsScreen: React.FC = () => {
 
         <main className="flex flex-col gap-6 px-6 pt-2">
           {/* Card: Racha Actual */}
-          <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+          <section className="bg-white dark:bg-gray-900 rounded-[2.2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-1">{t.current_streak.toUpperCase()}</p>
@@ -393,7 +393,7 @@ export const StatsScreen: React.FC = () => {
             {/* REAL DATA KPIS */}
 
             {/* 1. Completion Rate */}
-            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+            <section className="bg-white dark:bg-gray-900 rounded-[2.2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                   <CheckCircle2 size={16} strokeWidth={3} />
@@ -418,7 +418,7 @@ export const StatsScreen: React.FC = () => {
             </section>
 
             {/* 2. Activity Chart */}
-            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 h-80 flex flex-col">
+            <section className="bg-white dark:bg-gray-900 rounded-[2.2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800 h-72 flex flex-col">
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{t.activities}</h3>
@@ -466,7 +466,7 @@ export const StatsScreen: React.FC = () => {
             </section>
 
             {/* 3. Distribution Donut */}
-            <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+            <section className="bg-white dark:bg-gray-900 rounded-[2.2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
               <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6">{t.weekly_distribution.toUpperCase()}</p>
 
               <div className="flex items-center gap-6">
@@ -750,7 +750,7 @@ export const StatsScreen: React.FC = () => {
           </section>
 
           {/* Stress Load – REDESIGNED */}
-          <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 mt-4">
+          <section className="bg-white dark:bg-gray-900 rounded-[2.2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800 mt-4">
             <p className="text-[#94A3B8] text-[10px] font-black uppercase tracking-[0.2em] mb-6 text-center">{t.stress_level}</p>
             <div className="relative flex justify-center mb-4">
               <StressGauge value={kpiStats.stressLevel} />

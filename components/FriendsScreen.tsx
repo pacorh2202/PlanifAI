@@ -242,11 +242,11 @@ export const FriendsScreen: React.FC = () => {
                   const isPending = friends.some(f => f.id === user.id && f.status === 'pending');
 
                   return (
-                    <div key={user.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800">
+                    <div key={user.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-3 rounded-[1.6rem] shadow-sm border border-gray-100 dark:border-gray-800">
                       <img
                         src={user.avatar || '/default-avatar.png'}
                         alt={user.handle}
-                        className="w-14 h-14 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
+                        className="w-12 h-12 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
                       />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-black text-gray-900 dark:text-white text-[15px] leading-tight truncate">{(user.handle || '').replace(/^@/, '')}</h3>
@@ -338,11 +338,11 @@ export const FriendsScreen: React.FC = () => {
               ) : (
                 <div className="space-y-3">
                   {myNetwork.map(friend => (
-                    <div key={friend.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800 relative">
+                    <div key={friend.id} className="flex items-center gap-4 bg-white dark:bg-gray-900 p-3 rounded-[1.6rem] shadow-sm border border-gray-100 dark:border-gray-800">
                       <img
                         src={friend.avatar || '/default-avatar.png'}
                         alt={friend.handle}
-                        className="w-14 h-14 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
+                        className="w-12 h-12 rounded-full object-cover bg-gray-50 dark:bg-gray-800"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
