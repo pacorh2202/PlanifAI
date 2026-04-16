@@ -24,6 +24,7 @@ export const usePlanAILive = () => {
   const turnActiveRef = useRef<boolean>(false);
   const isTalkingRef = useRef<boolean>(false);
   const unmuteCooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeSessionRef = useRef<any>(null); // Stores the resolved session object (not a Promise)
 
   const categoryLabels = activeTemplate.categories.map(c => c.label);
 
@@ -119,6 +120,8 @@ export const usePlanAILive = () => {
       if (outputContextRef.current.state !== 'closed') await outputContextRef.current.close();
       outputContextRef.current = null;
     }
+    // Clear active session on disconnect
+    activeSessionRef.current = null;
     setConnected(false);
     setIsTalking(false);
     setIsThinking(false);
@@ -327,6 +330,11 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
             await audioContextRef.current?.resume();
             await outputContextRef.current?.resume();
 
+            // Resolve the session and store it safely for audio sending
+            const session = await sessionPromise;
+            activeSessionRef.current = session;
+            console.log('[AI] ✅ Session resolved and stored in activeSessionRef');
+
             setConnected(true);
             setIsConnecting(false);
             if (audioContextRef.current && mediaStreamRef.current && outputContextRef.current) {
@@ -338,7 +346,6 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
 
               pcmNode.port.onmessage = (e) => {
                 const { pcm, rms } = e.data;
-                // Periodic log to verify worklet is alive
                 if (Math.random() < 0.01) console.log('[AI] 🎙️ AudioWorklet active, rms:', rms.toFixed(4));
 
                 setVolume(rms);
@@ -346,20 +353,21 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
                 // CRITICAL: Mute mic input while AI is speaking to prevent echo feedback
                 if (isTalkingRef.current) return;
 
-                sessionPromise.then(session => {
-                  try {
-                    // Correct conversion: Uint8Array(pcm) -> base64
-                    const uint8 = new Uint8Array(pcm);
-                    let binary = '';
-                    for (let i = 0; i < uint8.length; i++) {
-                      binary += String.fromCharCode(uint8[i]);
-                    }
-                    const base64 = btoa(binary);
-                    session.sendRealtimeInput({ media: { data: base64, mimeType: 'audio/pcm;rate=16000' } });
-                  } catch (err) {
-                    // Silently warn, don't flood console
+                // Use the pre-resolved session ref instead of the Promise to avoid race conditions
+                const activeSession = activeSessionRef.current;
+                if (!activeSession) return; // Session not ready or already closed
+
+                try {
+                  const uint8 = new Uint8Array(pcm);
+                  let binary = '';
+                  for (let i = 0; i < uint8.length; i++) {
+                    binary += String.fromCharCode(uint8[i]);
                   }
-                });
+                  const base64 = btoa(binary);
+                  activeSession.sendRealtimeInput({ media: { data: base64, mimeType: 'audio/pcm;rate=16000' } });
+                } catch (err) {
+                  // Silently warn, don't flood console
+                }
               };
 
               // 2. Playback Processor
@@ -383,9 +391,11 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
               pcmNode.connect(audioContextRef.current.destination);
             }
             if (isFirstRun) {
-              const session = await sessionPromise;
-              const greeting = language === 'es' ? `Hola ${userName}, soy ${assistantName}. ${t.onboarding_msg}` : `Hello ${userName}, I'm ${assistantName}. ${t.onboarding_msg}`;
-              session.sendRealtimeInput({ text: greeting });
+              const greetingSession = activeSessionRef.current;
+              if (greetingSession) {
+                const greeting = language === 'es' ? `Hola ${userName}, soy ${assistantName}. ${t.onboarding_msg}` : `Hello ${userName}, I'm ${assistantName}. ${t.onboarding_msg}`;
+                greetingSession.sendRealtimeInput({ text: greeting });
+              }
             }
           },
           onmessage: async (msg: LiveServerMessage) => {
@@ -446,14 +456,17 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
               }
               if (functionResponses.length > 0) {
                 console.log('[AI] 📤 Sending responses:', functionResponses);
-                const session = await sessionPromise;
-                session.sendToolResponse({ functionResponses });
+                const toolSession = activeSessionRef.current;
+                if (toolSession) {
+                  toolSession.sendToolResponse({ functionResponses });
+                }
               }
             }
           },
           onclose: (e: any) => {
             console.log('[AI] 🔌 WebSocket connection closed:', e.code, e.reason);
-            
+            activeSessionRef.current = null; // Clear resolved session on close
+
             // Error 1007 = Invalid Argument / API key not valid / model not found
             if (e.code === 1007 || String(e.reason).includes('API key not valid')) {
                 const errorMsg = `Error de validación (${e.code}): ${e.reason}\n\nPosibles causas:\n1. API Key sin permiso para este dominio. Añade "${window.location.origin}/*" a HTTP Referrers en Google Cloud Console.\n2. Modelo no encontrado o obsoleto.`;
