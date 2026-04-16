@@ -142,7 +142,7 @@ export const usePlanAILive = () => {
     nextStartTimeRef.current = 0;
     activeSourceCountRef.current = 0;
 
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (process as any)?.env?.GEMINI_API_KEY || 'AIzaSyAnGl94fJrfeLnTCqI466jTScp9cdkKVSY';
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (process as any)?.env?.GEMINI_API_KEY;
     console.log('[AI] 🔑 API Key status:', apiKey ? `Found (length: ${apiKey.length})` : 'NOT FOUND');
 
     if (!apiKey) {
