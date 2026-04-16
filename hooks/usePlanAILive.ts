@@ -319,7 +319,11 @@ ${friendsSummary}
 - **Búsqueda de Disponibilidad (NUEVO)**: Si el usuario quiere quedar con alguien (ej: "cena con Héctor el viernes"), primero usa \`manageCalendar\` con \`actionType: 'findSlots'\` para buscar huecos libres. Propón las opciones que te devuelva la herramienta y, UNA VEZ QUE EL USUARIO CONFIRME una opción, usa \`actionType: 'create'\` para agendarla.
 - **IMPORTANTE (CRÍTICO)**: Cuando llames a 'create' después de buscar huecos, **TIENES QUE VOLVER A INCLUIR** explícitamente el campo 'attendees' con los mismos participantes (ej: ['@pepe']) que usaste en la búsqueda. Si no los pones, se creará el evento solo para el usuario y NADIE recibirá la invitación.
 
-Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática perfecta.`
+## REGLA CRÍTICA DE IDIOMA (MÁXIMA PRIORIDAD)
+${language === 'es' 
+  ? "REGLA ABSOLUTA: Tienes terminantemente prohibido usar el inglés. Debes procesar el audio, razonar tu respuesta, hablar y responderme SIEMPRE y EXCLUSIVAMENTE en IDIOMA ESPAÑOL DE ESPAÑA." 
+  : "ABSOLUTE RULE: You are strictly forbidden from using Spanish. You must process audio, reason your answer, speak, and respond ALWAYS and EXCLUSIVELY in the ENGLISH LANGUAGE."
+}`
             }]
           },
           speechConfig: {
