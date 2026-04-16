@@ -39,7 +39,7 @@ export const ChatScreen: React.FC = () => {
       </div>
 
       {/* Simplified Navigation Top Bar */}
-      <div className="px-6 pt-10 pb-2 z-20 flex justify-center items-center relative" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
+      <div className="px-6 pb-2 z-20 flex justify-center items-center relative" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
         <div className="text-center">
           <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">PlanifAI</h1>
           <p className="text-[10px] text-[#94A3B8] uppercase font-black tracking-[0.2em] mt-0.5">{t.subtitle}</p>

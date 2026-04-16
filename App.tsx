@@ -104,8 +104,8 @@ const AppContent: React.FC = () => {
       )}
 
       {showNavbar && (
-        <div className="fixed left-0 right-0 px-6 z-[9999] animate-fade-in flex justify-center pointer-events-none pb-safe" style={{ bottom: '2rem' }}>
-          <nav className="w-full max-w-[22rem] bg-white/80 dark:bg-gray-900/85 backdrop-blur-3xl border border-white/40 dark:border-gray-800 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.2)] rounded-[2.2rem] h-[4.5rem] flex items-center justify-around px-1.5 pointer-events-auto transition-all duration-500">
+        <div className="fixed left-0 right-0 px-6 z-[9999] animate-fade-in flex justify-center pointer-events-none pb-safe" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+          <nav className="w-full max-w-[22rem] bg-white/80 dark:bg-gray-900/85 backdrop-blur-3xl border border-white/40 dark:border-gray-800 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.2)] rounded-[3rem] h-[4.8rem] flex items-center justify-around px-2 pointer-events-auto transition-all duration-500">
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               const Icon = tab.icon;
@@ -134,8 +134,8 @@ const AppContent: React.FC = () => {
 
                   {/* Notification Badge */}
                   {tab.id === 'friends' && unreadCount > 0 && (
-                    <div className="absolute top-3 right-[25%] min-w-[16px] h-4 px-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 z-20 shadow-sm animate-pulse">
-                      <span className="text-[9px] font-bold text-white leading-none">
+                    <div className="absolute top-2.5 right-[22%] min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 z-20 shadow-md">
+                      <span className="text-[9px] font-black text-white leading-none">
                         {unreadCount > 99 ? '99+' : unreadCount}
                       </span>
                     </div>
@@ -212,9 +212,9 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
 
   return (
     <div className="flex flex-col h-full overflow-y-auto no-scrollbar bg-background-light dark:bg-background-dark transition-colors duration-300">
-      <header className="px-6 pb-6 pt-safe mt-6 flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-20">
+      <header className="px-6 pb-6 pt-safe flex items-center justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
         <div className="w-10"></div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.settings_title}</h1>
+        <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{t.settings_title}</h1>
         <div className="w-10"></div>
       </header>
 
@@ -237,8 +237,9 @@ const SettingsMainView: React.FC<{ onViewChange: (v: any) => void, onClose: () =
             <h2 className="text-2xl font-black text-gray-900 dark:text-white leading-tight">
               {t.hello}, {userName}!
             </h2>
-            <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mt-1">{t.premium_plan}</p>
-
+            <div className="mt-2 px-3 py-1 bg-gradient-to-r from-amber-400/20 to-orange-500/20 border border-amber-500/20 rounded-full">
+              <p className="text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-[0.2em]">{t.premium_plan}</p>
+            </div>
           </div>
         </section>
 

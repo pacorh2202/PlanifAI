@@ -331,10 +331,10 @@ export const StatsScreen: React.FC = () => {
   return (
     <>
       <div
-        className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar pb-40 transition-opacity duration-300"
-        style={{ willChange: 'opacity', contain: 'content' }}
+        className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto no-scrollbar transition-opacity duration-300"
+        style={{ willChange: 'opacity', contain: 'content', paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}
       >
-        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}>
+        <header className="px-6 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-20" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
           <div className="w-10"></div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t.stats_title}</h1>
           <div className="w-10"></div>

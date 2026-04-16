@@ -36,7 +36,7 @@ export const VoiceSettingsScreen: React.FC<VoiceSettingsScreenProps> = ({ onBack
         <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 w-[140%] h-[40%] rounded-full blur-[120px] transition-all duration-[1500ms] ${isEditing ? 'opacity-[0.22] scale-110' : 'opacity-[0.08] dark:opacity-[0.15]'}`} style={{ backgroundColor: accentColor }}></div>
       </div>
 
-      <header className="px-6 pt-14 pb-4 flex items-center justify-between sticky top-0 z-30">
+      <header className="px-6 pb-4 flex items-center justify-between sticky top-0 z-30" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
         <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl border border-white/20 dark:border-gray-800 active:scale-90 transition-all">
           <ChevronLeft className="text-gray-900 dark:text-white" size={20} />
         </button>

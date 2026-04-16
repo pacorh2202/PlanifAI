@@ -128,7 +128,7 @@ export const FriendsScreen: React.FC = () => {
   return (
     <>
       <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black transition-colors duration-300" onClick={() => setActiveMenuId(null)}>
-        <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-30" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}>
+        <header className="px-6 pb-6 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/80 dark:bg-black/80 backdrop-blur-md z-30" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
           <div className="w-10"></div>
           <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{t.friends_tab}</h1>
           <button
@@ -146,7 +146,7 @@ export const FriendsScreen: React.FC = () => {
           </button>
         </header>
 
-        <main className="flex-1 overflow-y-auto no-scrollbar pb-40">
+        <main className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}>
           <div className="sticky top-0 z-20 bg-[#F9FAFB] dark:bg-black px-6 py-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
@@ -159,7 +159,7 @@ export const FriendsScreen: React.FC = () => {
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => { if (!search) setSearchFocused(false); }}
                   placeholder={t.friends_search}
-                  className="w-full bg-gray-200/70 dark:bg-gray-800 border-0 rounded-full py-3.5 pl-12 pr-10 text-sm text-gray-900 dark:text-white outline-none ring-0 shadow-none focus:ring-0 focus:shadow-none focus:outline-none focus:border-0 placeholder:text-gray-400 transition-colors"
+                  className="w-full bg-gray-200/70 dark:bg-gray-800 border-0 rounded-full py-3.5 pl-12 pr-10 text-[16px] text-gray-900 dark:text-white outline-none ring-0 shadow-none focus:ring-0 focus:shadow-none focus:outline-none focus:border-0 placeholder:text-gray-400 transition-colors"
                 />
                 {search && (
                   <button

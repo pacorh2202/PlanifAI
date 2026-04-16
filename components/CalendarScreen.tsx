@@ -133,7 +133,7 @@ export const CalendarScreen: React.FC = () => {
   const renderHeader = () => {
     const monthName = selectedDate.toLocaleDateString(localeStr, { month: 'long' }).toUpperCase();
     return (
-      <header className="px-6 pt-10 pb-2 flex flex-col gap-4 bg-[#F8FAFC] dark:bg-black transition-colors duration-300" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}>
+      <header className="px-6 pb-2 flex flex-col gap-4 bg-[#F8FAFC] dark:bg-black transition-colors duration-300" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}>
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-[10px] font-black tracking-[0.2em] text-[#94A3B8] uppercase">
@@ -231,7 +231,7 @@ export const CalendarScreen: React.FC = () => {
         </section>
 
         <div className="mt-8 bg-white dark:bg-gray-950 rounded-t-[3.5rem] flex-1 border-t border-gray-100 dark:border-gray-900 overflow-y-auto no-scrollbar">
-          <div className="p-8 pb-80 relative">
+          <div className="p-8 relative" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}>
             <div className="space-y-6">
               {dayEvents.length === 0 ? (
                 <div className="text-center py-20 text-gray-300 font-bold uppercase tracking-widest text-[10px]">{t.no_events}</div>
@@ -388,7 +388,7 @@ export const CalendarScreen: React.FC = () => {
         className="flex flex-col h-full bg-white dark:bg-gray-950 transition-colors duration-300 overflow-y-auto no-scrollbar relative"
       >
         {/* Sticky day header */}
-        <div className="px-6 pt-4 flex sticky top-0 bg-white dark:bg-gray-950 z-20 pb-4">
+        <div className="px-6 flex sticky top-0 bg-white dark:bg-gray-950 z-20 pb-4" style={{ paddingTop: '12px' }}>
           <div className="w-12 shrink-0"></div>
           <div className="flex-1 grid grid-cols-7 text-center gap-1">
             {dayLabels.map((label, i) => {
@@ -424,7 +424,7 @@ export const CalendarScreen: React.FC = () => {
 
         {/* Scrollable time grid — no grid lines */}
         <div className="flex-1 relative pt-2 pb-80">
-          <div className="flex px-4 relative" style={{ minHeight: `${totalHeight}px` }}>
+          <div className="flex px-4 relative" style={{ minHeight: `${totalHeight}px`, paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}>
             {/* Hour labels column */}
             <div className="w-12 shrink-0 flex flex-col text-[10px] font-black text-gray-300 dark:text-gray-600 pt-0">
               {hours.map(h => (
@@ -500,7 +500,7 @@ export const CalendarScreen: React.FC = () => {
 
     return (
       <div className="h-full overflow-y-auto no-scrollbar bg-white dark:bg-gray-950 transition-colors duration-300">
-        <div className="px-6 pt-4 pb-80">
+        <div className="px-6 pt-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 120px)' }}>
           <div className="flex justify-end gap-3 mb-6">
             <button onClick={handlePrev} className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 active:scale-90 transition-transform">
               <ChevronLeft size={20} />

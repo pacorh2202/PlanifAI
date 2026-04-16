@@ -162,7 +162,7 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onBack }
     return (
         <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-black overflow-y-auto overflow-x-hidden no-scrollbar pb-32 transition-colors duration-500" style={{ touchAction: 'pan-y' }}>
             {/* Elegant Header */}
-            <header className="px-6 pt-12 pb-8 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/90 dark:bg-black/90 backdrop-blur-xl z-[100] border-b border-gray-100 dark:border-gray-900 transition-all">
+            <header className="px-6 pb-8 flex items-center justify-between sticky top-0 bg-[#F8FAFC]/90 dark:bg-black/90 backdrop-blur-xl z-[100] border-b border-gray-100 dark:border-gray-900 transition-all" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
                 <button onClick={onBack} className="p-3 -ml-3 rounded-2xl active:scale-95 bg-white dark:bg-gray-900 shadow-sm border border-gray-100 dark:border-gray-800 transition-all">
                     <ChevronLeft className="text-gray-900 dark:text-white" size={20} />
                 </button>
