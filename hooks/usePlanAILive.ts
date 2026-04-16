@@ -225,9 +225,24 @@ export const usePlanAILive = () => {
       console.log('[AI] Calendar tool configured:', calendarTool.name);
 
       console.log('[AI] 📡 Connecting to Gemini Live API with origin:', window.location.origin);
-      const sessionPromise = ai.live.connect({
-        model: 'gemini-2.0-flash', // Estándar de AI Studio para Audio Nativo GA (no usar el nombre de Vertex AI)
-        config: {
+
+      // Models for Live API (Google AI Studio / Developer API):
+      // Primary: gemini-2.5-flash-native-audio-preview-12-2025 (flagship, native audio)
+      // Fallback: gemini-3.1-flash-live-preview (newest, high quality A2A)
+      const LIVE_MODELS = [
+        'gemini-2.5-flash-native-audio-preview-12-2025',
+        'gemini-3.1-flash-live-preview',
+      ];
+
+      let sessionPromise: Promise<any> | null = null;
+      let lastConnectError: any = null;
+
+      for (const modelName of LIVE_MODELS) {
+        try {
+          console.log(`[AI] 🔄 Trying model: ${modelName}`);
+          sessionPromise = ai.live.connect({
+            model: modelName,
+            config: {
           responseModalities: [Modality.AUDIO],
           tools: [{ functionDeclarations: [calendarTool] }],
           systemInstruction: {
@@ -439,10 +454,10 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
           onclose: (e: any) => {
             console.log('[AI] 🔌 WebSocket connection closed:', e.code, e.reason);
             
-            // Error 1007 (Invalid Argument) es típico de "API Key not valid" por falta de permisos de dominio (HTTP Referrer)
+            // Error 1007 = Invalid Argument / API key not valid / model not found
             if (e.code === 1007 || String(e.reason).includes('API key not valid')) {
-                const errorMsg = 'Error de validación (1007): Google rechazó la conexión. \n\nIMPORTANTÍSIMO: Asegúrate de haber añadido "https://planif-ai.pages.dev/*" a las Restricciones de HTTP Referrer de tu API Key en Google Cloud Console.';
-                console.error('[AI] 🚨 DOMAIN RESTRICTION DETECTED:', errorMsg);
+                const errorMsg = `Error de validación (${e.code}): ${e.reason}\n\nPosibles causas:\n1. API Key sin permiso para este dominio. Añade "${window.location.origin}/*" a HTTP Referrers en Google Cloud Console.\n2. Modelo no encontrado o obsoleto.`;
+                console.error('[AI] 🚨 CONNECTION REJECTED:', errorMsg);
                 alert(errorMsg);
             }
 
@@ -458,6 +473,24 @@ Habla siempre en ${language === 'es' ? 'Español' : 'Inglés'} con gramática pe
           }
         }
       });
+
+          // If we get here, the connect call didn't throw synchronously
+          console.log(`[AI] ✅ Connection initiated with model: ${modelName}`);
+          lastConnectError = null;
+          break; // Success — don't try fallback models
+
+        } catch (modelErr: any) {
+          console.warn(`[AI] ⚠️ Model ${modelName} failed:`, modelErr.message || modelErr);
+          lastConnectError = modelErr;
+          sessionPromise = null;
+          // Continue to next model
+        }
+      }
+
+      if (!sessionPromise) {
+        throw lastConnectError || new Error('No se pudo conectar con ningún modelo de Gemini Live API.');
+      }
+
       sessionRef.current = sessionPromise;
     } catch (err: any) {
       console.error('[AI] ❌ Critical connect error:', err);
