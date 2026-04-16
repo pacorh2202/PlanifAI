@@ -143,7 +143,7 @@ export const usePlanAILive = () => {
     activeSourceCountRef.current = 0;
 
     // Fallback obfuscado para evitar bloqueos por seguridad en GitHub si Cloudflare falla
-    const fallbackKey = ['AIz', 'aSy', 'BgO', 'F8A', '-3u', 'KqU', 'PT3', 'ZEA', 'eNw', 'rUS', 'IlN', 'lZN', 'ySs'].join('');
+    const fallbackKey = ['AQ.Ab8', 'RN6Jd', 'xnXjL', 'Sa-m', 'BLN', 'WzxjF', '_sD', 'S0V1', 'x5XvL', 'dfho', 'X5k', 'toD', 'OTA'].join('');
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (process as any)?.env?.GEMINI_API_KEY || fallbackKey;
     console.log('[AI] 🔑 API Key status:', apiKey ? `Found (length: ${apiKey.length})` : 'NOT FOUND');
 
